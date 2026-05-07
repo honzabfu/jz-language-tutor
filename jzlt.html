@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="LangTutor">
+<title>Language Tutor</title>
+<style>
+  :root {
+    --c-bg: #f8f9fa; --c-surface: #ffffff; --c-border: #e2e8f0;
+    --c-primary: #3b82f6; --c-primary-d: #2563eb; --c-primary-t: #eff6ff;
+    --c-text: #1e293b; --c-muted: #64748b; --c-success: #16a34a;
+    --c-warn: #d97706; --c-error: #dc2626;
+    --c-user-bg: #3b82f6; --c-tutor-bg: #ffffff;
+    --r: 12px; --r-sm: 8px; --shadow: 0 1px 3px rgba(0,0,0,.08);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--c-bg); color: var(--c-text); font-size: 15px; }
+
+/* ── Layout ── */
+#app { display: flex; flex-direction: column; height: 100%; height: 100dvh; }
+.view { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+.view.active { display: flex; }
+
+/* ── Header ── */
+.hdr { background: var(–c-surface); border-bottom: 1px solid var(–c-border); padding: 12px 16px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; box-shadow: var(–shadow); }
+.hdr h1 { font-size: 17px; font-weight: 700; flex: 1; }
+.hdr-actions { display: flex; gap: 8px; align-items: center; }
+.icon-btn { background: none; border: none; cursor: pointer; padding: 6px; border-radius: var(–r-sm); color: var(–c-muted); display: flex; align-items: center; justify-content: center; }
+.icon-btn:hover { background: var(–c-bg); color: var(–c-text); }
+.icon-btn svg { width: 20px; height: 20px; }
+
+/* ── Lang selector ── */
+select { border: 1px solid var(–c-border); border-radius: var(–r-sm); padding: 6px 10px; font-size: 14px; background: var(–c-surface); color: var(–c-text); cursor: pointer; }
+select:focus { outline: 2px solid var(–c-primary); }
+
+/* ── Messages ── */
+#msg-list { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; -webkit-overflow-scrolling: touch; }
+.msg { max-width: 78%; display: flex; flex-direction: column; gap: 3px; animation: fadeIn .2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.msg.user { align-self: flex-end; align-items: flex-end; }
+.msg.tutor { align-self: flex-start; align-items: flex-start; }
+.bubble { padding: 10px 14px; border-radius: var(–r); line-height: 1.5; word-break: break-word; }
+.msg.user .bubble { background: var(–c-user-bg); color: #fff; border-bottom-right-radius: 4px; }
+.msg.tutor .bubble { background: var(–c-tutor-bg); border: 1px solid var(–c-border); border-bottom-left-radius: 4px; box-shadow: var(–shadow); }
+.msg-meta { font-size: 11px; color: var(–c-muted); }
+.translation { font-size: 12px; color: var(–c-muted); font-style: italic; margin-top: 4px; padding: 6px 10px; background: var(–c-bg); border-radius: var(–r-sm); border: 1px solid var(–c-border); }
+.translate-btn { background: none; border: none; font-size: 11px; color: var(–c-primary); cursor: pointer; padding: 2px 0; }
+
+/* ── Empty state ── */
+#empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(–c-muted); text-align: center; padding: 32px; }
+#empty .flag { font-size: 48px; }
+#empty h2 { font-size: 18px; font-weight: 600; color: var(–c-text); }
+#empty p { font-size: 14px; line-height: 1.5; }
+
+/* ── Typing indicator ── */
+.typing { align-self: flex-start; display: flex; align-items: center; gap: 6px; padding: 10px 14px; background: var(–c-tutor-bg); border: 1px solid var(–c-border); border-radius: var(–r); border-bottom-left-radius: 4px; box-shadow: var(–shadow); }
+.dot { width: 7px; height: 7px; background: var(–c-muted); border-radius: 50%; animation: bounce .9s infinite; }
+.dot:nth-child(2) { animation-delay: .15s; }
+.dot:nth-child(3) { animation-delay: .3s; }
+@keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
+#typing-row { display: none; }
+
+/* ── Feedback banner ── */
+#feedback-bar { display: none; flex-shrink: 0; border-top: 1px solid var(–c-border); background: var(–c-surface); }
+#feedback-bar.visible { display: block; }
+.fb-tabs { display: flex; border-bottom: 1px solid var(–c-border); }
+.fb-tab { flex: 1; padding: 8px; font-size: 12px; font-weight: 600; background: none; border: none; cursor: pointer; color: var(–c-muted); border-bottom: 2px solid transparent; }
+.fb-tab.active { color: var(–c-primary); border-bottom-color: var(–c-primary); }
+.fb-content { padding: 10px 14px; font-size: 13px; line-height: 1.5; max-height: 90px; overflow-y: auto; color: var(–c-text); }
+.fb-content ul { padding-left: 16px; }
+.fb-content li { margin-bottom: 3px; }
+
+/* ── Input area ── */
+#input-area { background: var(–c-surface); border-top: 1px solid var(–c-border); padding: 10px 12px; padding-bottom: calc(10px + var(–safe-bottom)); display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0; }
+#msg-input { flex: 1; border: 1px solid var(–c-border); border-radius: var(–r); padding: 10px 14px; font-size: 15px; font-family: inherit; resize: none; outline: none; max-height: 120px; line-height: 1.4; background: var(–c-bg); transition: border-color .2s; }
+#msg-input:focus { border-color: var(–c-primary); background: var(–c-surface); }
+#send-btn { background: var(–c-primary); color: #fff; border: none; border-radius: var(–r); padding: 10px 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .2s; }
+#send-btn:hover { background: var(–c-primary-d); }
+#send-btn:disabled { opacity: .45; cursor: default; }
+#send-btn svg { width: 20px; height: 20px; }
+
+/* ── Settings view ── */
+#settings-view { background: var(–c-bg); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.settings-body { padding: 20px 16px; max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+.card { background: var(–c-surface); border: 1px solid var(–c-border); border-radius: var(–r); padding: 16px; }
+.card h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(–c-muted); margin-bottom: 14px; }
+.field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+.field label { font-size: 13px; font-weight: 600; }
+.field input, .field select { border: 1px solid var(–c-border); border-radius: var(–r-sm); padding: 9px 12px; font-size: 14px; font-family: inherit; background: var(–c-bg); color: var(–c-text); width: 100%; }
+.field input:focus, .field select:focus { outline: 2px solid var(–c-primary); }
+.field .hint { font-size: 12px; color: var(–c-muted); }
+.field .hint a { color: var(–c-primary); }
+.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+.status-ok { background: var(–c-success); }
+.status-empty { background: var(–c-muted); }
+.provider-status { font-size: 12px; color: var(–c-muted); margin-top: 4px; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { padding: 9px 16px; border-radius: var(–r-sm); font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
+.btn-primary { background: var(–c-primary); color: #fff; }
+.btn-primary:hover { background: var(–c-primary-d); }
+.btn-ghost { background: transparent; border: 1px solid var(–c-border); color: var(–c-text); }
+.btn-ghost:hover { background: var(–c-bg); }
+.btn-danger { background: transparent; border: 1px solid var(–c-error); color: var(–c-error); }
+.btn-danger:hover { background: #fef2f2; }
+.save-toast { display: none; font-size: 13px; color: var(–c-success); font-weight: 600; }
+.save-toast.visible { display: inline; }
+
+/* ── Provider badge in header ── */
+.provider-badge { font-size: 12px; padding: 3px 8px; border-radius: 20px; background: var(–c-primary-t); color: var(–c-primary); font-weight: 600; white-space: nowrap; }
+.provider-badge.warn { background: #fffbeb; color: var(–c-warn); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-thumb { background: var(–c-border); border-radius: 3px; }
+</style>
+
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══════════════ CHAT VIEW ═══════════════ -->
+
+  <div id="chat-view" class="view active">
+    <div class="hdr">
+      <button class="icon-btn" onclick="clearChat()" title="">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.68"/></svg>
+      </button>
+      <h1 id="hdr-title">Language Tutor</h1>
+      <div class="hdr-actions">
+        <span id="provider-badge" class="provider-badge warn">–</span>
+        <select id="lang-select" onchange="onLangChange(this.value)">
+          <option value="spanish">🇪🇸 Spanish</option>
+          <option value="french">🇫🇷 French</option>
+          <option value="german">🇩🇪 German</option>
+          <option value="japanese">🇯🇵 Japanese</option>
+          <option value="italian">🇮🇹 Italian</option>
+          <option value="portuguese">🇵🇹 Portuguese</option>
+          <option value="chinese">🇨🇳 Chinese</option>
+          <option value="korean">🇰🇷 Korean</option>
+        </select>
+        <button class="icon-btn" onclick="showView('settings')" title="">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </div>
+
+```
+<div id="msg-list">
+  <div id="empty">
+    <div class="flag" id="empty-flag">🌍</div>
+    <h2 id="empty-title">Připrav se na procvičování!</h2>
+    <p id="empty-desc">Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.</p>
+  </div>
+  <div id="typing-row" class="typing">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+</div>
+
+<div id="feedback-bar">
+  <div class="fb-tabs">
+    <button class="fb-tab active" onclick="switchFbTab('positive', this)" id="fb-tab-positive">✅ <span id="fb-lbl-positive">Správně</span></button>
+    <button class="fb-tab" onclick="switchFbTab('corrections', this)" id="fb-tab-corrections">✏️ <span id="fb-lbl-corrections">Opravy</span></button>
+    <button class="fb-tab" onclick="switchFbTab('suggestions', this)" id="fb-tab-suggestions">💡 <span id="fb-lbl-suggestions">Tipy</span></button>
+  </div>
+  <div id="fb-content" class="fb-content"></div>
+</div>
+
+<div id="input-area">
+  <textarea id="msg-input" rows="1" placeholder="" onkeydown="onKey(event)" oninput="autoResize(this)"></textarea>
+  <button id="send-btn" onclick="sendMessage()" disabled>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+  </button>
+</div>
+```
+
+  </div>
+
+  <!-- ═══════════════ SETTINGS VIEW ═══════════════ -->
+
+  <div id="settings-view" class="view">
+    <div class="hdr">
+      <button class="icon-btn" onclick="showView('chat')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <h1 id="settings-title">Nastavení</h1>
+    </div>
+    <div class="settings-body">
+
+```
+  <!-- LLM Provider -->
+  <div class="card">
+    <h3 id="s-provider-title">LLM Poskytovatel</h3>
+    <div class="field">
+      <label id="s-provider-label">Poskytovatel</label>
+      <select id="cfg-provider" onchange="onProviderChange(this.value)">
+        <option value="anthropic">Anthropic (Claude)</option>
+        <option value="openai">OpenAI (GPT)</option>
+        <option value="gemini">Google (Gemini)</option>
+        <option value="ollama">Ollama (lokální)</option>
+      </select>
+    </div>
+    <div class="field" id="field-model">
+      <label id="s-model-label">Model</label>
+      <select id="cfg-model"></select>
+    </div>
+    <div class="field" id="field-apikey">
+      <label id="s-apikey-label">API klíč</label>
+      <input type="password" id="cfg-apikey" placeholder="sk-..." autocomplete="off">
+      <div class="hint" id="apikey-hint"></div>
+      <div class="provider-status" id="apikey-status"></div>
+    </div>
+    <div class="field" id="field-ollama-url" style="display:none">
+      <label>Ollama URL</label>
+      <input type="text" id="cfg-ollama-url" placeholder="http://localhost:11434">
+      <div class="hint">Ollama musí mít povoleno CORS pro tuto doménu.</div>
+    </div>
+  </div>
+
+  <!-- Tutor behaviour -->
+  <div class="card">
+    <h3 id="s-tutor-title">Chování tutora</h3>
+    <div class="field">
+      <label id="s-level-label">Úroveň studenta</label>
+      <select id="cfg-level">
+        <option value="beginner" id="opt-beginner">Začátečník (A1–A2)</option>
+        <option value="intermediate" id="opt-intermediate">Mírně pokročilý (B1–B2)</option>
+        <option value="advanced" id="opt-advanced">Pokročilý (C1–C2)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label id="s-feedback-label">Styl zpětné vazby</label>
+      <select id="cfg-feedback-style">
+        <option value="gentle" id="opt-gentle">Jemný (povzbuzující)</option>
+        <option value="balanced" id="opt-balanced">Vyvážený</option>
+        <option value="strict" id="opt-strict">Přísný (každá chyba)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- UI -->
+  <div class="card">
+    <h3>UI</h3>
+    <div class="field">
+      <label id="s-lang-label">Jazyk rozhraní</label>
+      <select id="cfg-ui-lang" onchange="onUiLangChange(this.value)">
+        <option value="cs">Čeština</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Data -->
+  <div class="card">
+    <h3 id="s-data-title">Data</h3>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveSettings()"><span id="s-save-btn">Uložit nastavení</span></button>
+      <button class="btn btn-ghost" onclick="exportSettings()"><span id="s-export-btn">Export JSON</span></button>
+      <button class="btn btn-ghost" onclick="importSettings()"><span id="s-import-btn">Import JSON</span></button>
+    </div>
+    <div style="margin-top:12px" class="btn-row">
+      <button class="btn btn-danger" onclick="clearData()"><span id="s-clear-btn">Smazat vše</span></button>
+    </div>
+    <span id="save-toast" class="save-toast"></span>
+  </div>
+
+  <!-- Version -->
+  <div style="text-align:center;font-size:12px;color:var(--c-muted);padding-bottom:8px">
+    Language Tutor v0.1 · <span id="s-pwa-hint">Pro PWA: přidej do plochy</span>
+  </div>
+</div>
+```
+
+  </div>
+
+</div><!-- #app -->
+
+<script>
+// ══════════════════════════════════════════════
+// I18N
+// ══════════════════════════════════════════════
+const I18N = {
+  cs: {
+    appTitle: 'Language Tutor', settingsTitle: 'Nastavení',
+    emptyTitle: 'Připrav se na procvičování!',
+    emptyDesc: 'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',
+    inputPlaceholder: lang => `Napiš zprávu v jazyce ${lang}…`,
+    typing: 'Tutor přemýšlí…',
+    sProviderTitle: 'LLM Poskytovatel', sProviderLabel: 'Poskytovatel',
+    sModelLabel: 'Model', sApiKeyLabel: 'API klíč',
+    sTutorTitle: 'Chování tutora', sLevelLabel: 'Úroveň studenta',
+    sFeedbackLabel: 'Styl zpětné vazby', sLangLabel: 'Jazyk rozhraní',
+    sDataTitle: 'Data', sSaveBtn: 'Uložit nastavení',
+    sExportBtn: 'Export JSON', sImportBtn: 'Import JSON', sClearBtn: 'Smazat vše',
+    saveToast: 'Uloženo ✓', clearConfirm: 'Opravdu smazat vše (včetně API klíčů)?',
+    importPrompt: 'Vlož JSON konfiguraci:',
+    noApiKey: 'API klíč není nastaven',
+    apiKeySet: 'API klíč nastaven', providerReady: 'Připraven',
+    fbPositive: 'Správně', fbCorrections: 'Opravy', fbSuggestions: 'Tipy',
+    pwaHint: 'Pro PWA: přidej do plochy',
+    apiHints: {
+      anthropic: 'Vygeneruj na console.anthropic.com',
+      openai: 'Vygeneruj na platform.openai.com/api-keys',
+      gemini: 'Vygeneruj na aistudio.google.com',
+      ollama: ''
+    },
+    levels: ['Začátečník (A1–A2)', 'Mírně pokročilý (B1–B2)', 'Pokročilý (C1–C2)'],
+    fbStyles: ['Jemný (povzbuzující)', 'Vyvážený', 'Přísný (každá chyba)'],
+    translateBtn: 'přeložit', hideTranslation: 'skrýt překlad',
+    translationLabel: 'Překlad (EN)',
+    errNoKey: 'API klíč není nastaven. Přejdi do Nastavení.',
+    errNetwork: 'Chyba sítě nebo CORS. Zkontroluj URL a klíč.',
+    errGeneric: 'Chyba při komunikaci s LLM:',
+    clearTooltip: 'Nový rozhovor', settingsTooltip: 'Nastavení',
+  },
+  en: {
+    appTitle: 'Language Tutor', settingsTitle: 'Settings',
+    emptyTitle: 'Ready to practice!',
+    emptyDesc: 'Type anything and the tutor will respond with explanations and feedback.',
+    inputPlaceholder: lang => `Type a message in ${lang}…`,
+    typing: 'Tutor is thinking…',
+    sProviderTitle: 'LLM Provider', sProviderLabel: 'Provider',
+    sModelLabel: 'Model', sApiKeyLabel: 'API key',
+    sTutorTitle: 'Tutor Behaviour', sLevelLabel: 'Student level',
+    sFeedbackLabel: 'Feedback style', sLangLabel: 'Interface language',
+    sDataTitle: 'Data', sSaveBtn: 'Save settings',
+    sExportBtn: 'Export JSON', sImportBtn: 'Import JSON', sClearBtn: 'Clear all',
+    saveToast: 'Saved ✓', clearConfirm: 'Really delete everything (incl. API keys)?',
+    importPrompt: 'Paste JSON configuration:',
+    noApiKey: 'API key not set',
+    apiKeySet: 'API key set', providerReady: 'Ready',
+    fbPositive: 'Correct', fbCorrections: 'Corrections', fbSuggestions: 'Tips',
+    pwaHint: 'For PWA: add to home screen',
+    apiHints: {
+      anthropic: 'Generate at console.anthropic.com',
+      openai: 'Generate at platform.openai.com/api-keys',
+      gemini: 'Generate at aistudio.google.com',
+      ollama: ''
+    },
+    levels: ['Beginner (A1–A2)', 'Intermediate (B1–B2)', 'Advanced (C1–C2)'],
+    fbStyles: ['Gentle (encouraging)', 'Balanced', 'Strict (every error)'],
+    translateBtn: 'translate', hideTranslation: 'hide translation',
+    translationLabel: 'Translation (EN)',
+    errNoKey: 'API key not set. Go to Settings.',
+    errNetwork: 'Network error or CORS issue. Check URL and key.',
+    errGeneric: 'LLM error:',
+    clearTooltip: 'New conversation', settingsTooltip: 'Settings',
+  }
+};
+
+// ══════════════════════════════════════════════
+// MODEL CATALOGUE
+// ══════════════════════════════════════════════
+const MODELS = {
+  anthropic: ['claude-sonnet-4-5', 'claude-opus-4-5', 'claude-haiku-4-5-20251001'],
+  openai:    ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+  gemini:    ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-2.0-flash'],
+  ollama:    ['llama3', 'llama3:8b', 'mistral', 'phi3', 'gemma2']
+};
+
+const LANG_META = {
+  spanish:    { name: 'Spanish',    native: 'Español',   flag: '🇪🇸' },
+  french:     { name: 'French',     native: 'Français',  flag: '🇫🇷' },
+  german:     { name: 'German',     native: 'Deutsch',   flag: '🇩🇪' },
+  japanese:   { name: 'Japanese',   native: '日本語',     flag: '🇯🇵' },
+  italian:    { name: 'Italian',    native: 'Italiano',  flag: '🇮🇹' },
+  portuguese: { name: 'Portuguese', native: 'Português', flag: '🇵🇹' },
+  chinese:    { name: 'Chinese',    native: '中文',       flag: '🇨🇳' },
+  korean:     { name: 'Korean',     native: '한국어',     flag: '🇰🇷' }
+};
+
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let cfg = {
+  provider: 'anthropic', model: MODELS.anthropic[0],
+  apiKey: '', ollamaUrl: 'http://localhost:11434',
+  level: 'beginner', feedbackStyle: 'balanced', uiLang: 'cs'
+};
+let history = [];   // [{role:'user'|'assistant', content}]
+let currentLang = 'spanish';
+let currentFbData = null;
+let activeFbTab = 'positive';
+let t = I18N.cs;
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+(function init() {
+  const saved = localStorage.getItem('lt-cfg');
+  if (saved) try { Object.assign(cfg, JSON.parse(saved)); } catch {}
+  const savedLang = localStorage.getItem('lt-lang');
+  if (savedLang && LANG_META[savedLang]) currentLang = savedLang;
+
+  t = I18N[cfg.uiLang] || I18N.cs;
+  applyI18n();
+  populateSettingsUI();
+  updateProviderBadge();
+  document.getElementById('lang-select').value = currentLang;
+  updateEmptyState();
+  updateInputPlaceholder();
+  document.getElementById('msg-input').addEventListener('input', () => {
+    document.getElementById('send-btn').disabled = !document.getElementById('msg-input').value.trim();
+  });
+})();
+
+// ══════════════════════════════════════════════
+// I18N APPLICATION
+// ══════════════════════════════════════════════
+function applyI18n() {
+  document.getElementById('hdr-title').textContent = t.appTitle;
+  document.getElementById('settings-title').textContent = t.settingsTitle;
+  document.getElementById('empty-title').textContent = t.emptyTitle;
+  document.getElementById('empty-desc').textContent = t.emptyDesc;
+  document.getElementById('s-provider-title').textContent = t.sProviderTitle;
+  document.getElementById('s-provider-label').textContent = t.sProviderLabel;
+  document.getElementById('s-model-label').textContent = t.sModelLabel;
+  document.getElementById('s-apikey-label').textContent = t.sApiKeyLabel;
+  document.getElementById('s-tutor-title').textContent = t.sTutorTitle;
+  document.getElementById('s-level-label').textContent = t.sLevelLabel;
+  document.getElementById('s-feedback-label').textContent = t.sFeedbackLabel;
+  document.getElementById('s-lang-label').textContent = t.sLangLabel;
+  document.getElementById('s-data-title').textContent = t.sDataTitle;
+  document.getElementById('s-save-btn').textContent = t.sSaveBtn;
+  document.getElementById('s-export-btn').textContent = t.sExportBtn;
+  document.getElementById('s-import-btn').textContent = t.sImportBtn;
+  document.getElementById('s-clear-btn').textContent = t.sClearBtn;
+  document.getElementById('s-pwa-hint').textContent = t.pwaHint;
+  const fbl = ['positive','corrections','suggestions'];
+  const fblKeys = ['fbPositive','fbCorrections','fbSuggestions'];
+  fbl.forEach((k,i) => { const el = document.getElementById(`fb-lbl-${k}`); if(el) el.textContent = t[fblKeys[i]]; });
+  updateInputPlaceholder();
+  updateApiKeyHint();
+  updateApiKeyStatus();
+  // level/feedback options
+  const levelOpts = ['beginner','intermediate','advanced'];
+  levelOpts.forEach((v,i) => { const el = document.querySelector(`#cfg-level option[value="${v}"]`); if(el) el.textContent = t.levels[i]; });
+  const fbOpts = ['gentle','balanced','strict'];
+  fbOpts.forEach((v,i) => { const el = document.querySelector(`#cfg-feedback-style option[value="${v}"]`); if(el) el.textContent = t.fbStyles[i]; });
+}
+
+function updateInputPlaceholder() {
+  const meta = LANG_META[currentLang];
+  document.getElementById('msg-input').placeholder = t.inputPlaceholder(meta ? meta.name : currentLang);
+}
+
+function updateEmptyState() {
+  const meta = LANG_META[currentLang];
+  if (!meta) return;
+  document.getElementById('empty-flag').textContent = meta.flag;
+}
+
+// ══════════════════════════════════════════════
+// VIEW SWITCHING
+// ══════════════════════════════════════════════
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(name + '-view').classList.add('active');
+  if (name === 'chat') { updateProviderBadge(); updateInputPlaceholder(); }
+}
+
+// ══════════════════════════════════════════════
+// SETTINGS UI
+// ══════════════════════════════════════════════
+function populateSettingsUI() {
+  document.getElementById('cfg-provider').value = cfg.provider;
+  document.getElementById('cfg-ui-lang').value = cfg.uiLang;
+  document.getElementById('cfg-level').value = cfg.level;
+  document.getElementById('cfg-feedback-style').value = cfg.feedbackStyle;
+  document.getElementById('cfg-apikey').value = cfg.apiKey || '';
+  document.getElementById('cfg-ollama-url').value = cfg.ollamaUrl;
+  rebuildModelList(cfg.provider);
+  document.getElementById('cfg-model').value = cfg.model;
+  toggleOllamaUrl(cfg.provider);
+  updateApiKeyHint();
+  updateApiKeyStatus();
+}
+
+function onProviderChange(prov) {
+  cfg.provider = prov;
+  rebuildModelList(prov);
+  toggleOllamaUrl(prov);
+  updateApiKeyHint();
+  updateApiKeyStatus();
+}
+
+function rebuildModelList(prov) {
+  const sel = document.getElementById('cfg-model');
+  sel.innerHTML = '';
+  (MODELS[prov] || []).forEach(m => {
+    const o = document.createElement('option');
+    o.value = o.textContent = m;
+    sel.appendChild(o);
+  });
+  // restore saved model if still valid
+  if ((MODELS[prov] || []).includes(cfg.model)) sel.value = cfg.model;
+}
+
+function toggleOllamaUrl(prov) {
+  document.getElementById('field-apikey').style.display = prov === 'ollama' ? 'none' : '';
+  document.getElementById('field-ollama-url').style.display = prov === 'ollama' ? '' : 'none';
+}
+
+function updateApiKeyHint() {
+  const el = document.getElementById('apikey-hint');
+  const hint = t.apiHints[cfg.provider] || '';
+  el.innerHTML = hint ? `<a href="#" onclick="return false">${hint}</a>` : '';
+}
+
+function updateApiKeyStatus() {
+  const el = document.getElementById('apikey-status');
+  if (cfg.provider === 'ollama') { el.textContent = ''; return; }
+  const key = document.getElementById('cfg-apikey')?.value || cfg.apiKey || '';
+  if (key.length > 8) {
+    el.innerHTML = `<span class="status-dot status-ok"></span>${t.apiKeySet}`;
+  } else {
+    el.innerHTML = `<span class="status-dot status-empty"></span>${t.noApiKey}`;
+  }
+}
+
+function onUiLangChange(lang) {
+  cfg.uiLang = lang;
+  t = I18N[lang] || I18N.cs;
+  applyI18n();
+}
+
+function saveSettings() {
+  cfg.provider = document.getElementById('cfg-provider').value;
+  cfg.model = document.getElementById('cfg-model').value;
+  cfg.apiKey = document.getElementById('cfg-apikey').value.trim();
+  cfg.ollamaUrl = document.getElementById('cfg-ollama-url').value.trim();
+  cfg.level = document.getElementById('cfg-level').value;
+  cfg.feedbackStyle = document.getElementById('cfg-feedback-style').value;
+  cfg.uiLang = document.getElementById('cfg-ui-lang').value;
+  localStorage.setItem('lt-cfg', JSON.stringify(cfg));
+  updateProviderBadge();
+  const toast = document.getElementById('save-toast');
+  toast.textContent = t.saveToast;
+  toast.classList.add('visible');
+  setTimeout(() => toast.classList.remove('visible'), 2000);
+  updateApiKeyStatus();
+}
+
+function exportSettings() {
+  const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'langtutor-config.json';
+  a.click();
+}
+
+function importSettings() {
+  const raw = prompt(t.importPrompt);
+  if (!raw) return;
+  try {
+    const imported = JSON.parse(raw);
+    Object.assign(cfg, imported);
+    localStorage.setItem('lt-cfg', JSON.stringify(cfg));
+    t = I18N[cfg.uiLang] || I18N.cs;
+    applyI18n();
+    populateSettingsUI();
+    updateProviderBadge();
+  } catch (e) { alert('Invalid JSON'); }
+}
+
+function clearData() {
+  if (!confirm(t.clearConfirm)) return;
+  localStorage.removeItem('lt-cfg');
+  localStorage.removeItem('lt-lang');
+  cfg = { provider: 'anthropic', model: MODELS.anthropic[0], apiKey: '', ollamaUrl: 'http://localhost:11434', level: 'beginner', feedbackStyle: 'balanced', uiLang: 'cs' };
+  t = I18N.cs;
+  applyI18n();
+  populateSettingsUI();
+  updateProviderBadge();
+  clearChat();
+}
+
+// ══════════════════════════════════════════════
+// PROVIDER BADGE
+// ══════════════════════════════════════════════
+function updateProviderBadge() {
+  const el = document.getElementById('provider-badge');
+  const labels = { anthropic: 'Claude', openai: 'GPT', gemini: 'Gemini', ollama: 'Ollama' };
+  const hasKey = cfg.provider === 'ollama' || (cfg.apiKey && cfg.apiKey.length > 8);
+  el.textContent = labels[cfg.provider] || cfg.provider;
+  el.className = 'provider-badge' + (hasKey ? '' : ' warn');
+}
+
+// ══════════════════════════════════════════════
+// LANG CHANGE
+// ══════════════════════════════════════════════
+function onLangChange(lang) {
+  currentLang = lang;
+  localStorage.setItem('lt-lang', lang);
+  updateEmptyState();
+  updateInputPlaceholder();
+  clearChat();
+}
+
+// ══════════════════════════════════════════════
+// CHAT
+// ══════════════════════════════════════════════
+function clearChat() {
+  history = [];
+  currentFbData = null;
+  const list = document.getElementById('msg-list');
+  // keep #empty and #typing-row
+  [...list.children].forEach(el => {
+    if (el.id !== 'empty' && el.id !== 'typing-row') el.remove();
+  });
+  document.getElementById('empty').style.display = '';
+  document.getElementById('feedback-bar').classList.remove('visible');
+  document.getElementById('typing-row').style.display = 'none';
+}
+
+function onKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function scrollBottom() {
+  const list = document.getElementById('msg-list');
+  list.scrollTop = list.scrollHeight;
+}
+
+function appendMsg(role, text, translation) {
+  document.getElementById('empty').style.display = 'none';
+  const list = document.getElementById('msg-list');
+  const typingRow = document.getElementById('typing-row');
+
+  const wrap = document.createElement('div');
+  wrap.className = `msg ${role}`;
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = text;
+  wrap.appendChild(bubble);
+
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  wrap.appendChild(meta);
+
+  if (role === 'tutor' && translation) {
+    const transDiv = document.createElement('div');
+    transDiv.className = 'translation';
+    transDiv.style.display = 'none';
+    transDiv.innerHTML = `<strong>${t.translationLabel}:</strong> ${translation}`;
+
+    const btn = document.createElement('button');
+    btn.className = 'translate-btn';
+    btn.textContent = t.translateBtn;
+    btn.onclick = () => {
+      const visible = transDiv.style.display !== 'none';
+      transDiv.style.display = visible ? 'none' : '';
+      btn.textContent = visible ? t.translateBtn : t.hideTranslation;
+    };
+    wrap.appendChild(btn);
+    wrap.appendChild(transDiv);
+  }
+
+  list.insertBefore(wrap, typingRow);
+  scrollBottom();
+}
+
+function setTyping(visible) {
+  document.getElementById('typing-row').style.display = visible ? 'flex' : 'none';
+  if (visible) scrollBottom();
+}
+
+// ══════════════════════════════════════════════
+// LLM PROVIDERS
+// ══════════════════════════════════════════════
+function buildSystemPrompt() {
+  const meta = LANG_META[currentLang];
+  const levelMap = { beginner: 'A1-A2', intermediate: 'B1-B2', advanced: 'C1-C2' };
+  const fbMap = { gentle: 'encouraging and gentle', balanced: 'balanced', strict: 'strict and exhaustive' };
+  return `You are a friendly language tutor helping the user practice ${meta.name} (${meta.native}).
+Student level: ${levelMap[cfg.level] || 'A1-A2'}.
+Feedback style: ${fbMap[cfg.feedbackStyle] || 'balanced'}.
+
+Always respond ONLY with a valid JSON object (no markdown, no preamble):
+{
+  "reply": "<your response in ${meta.name}>",
+  "translation": "<English translation of reply>",
+  "feedback": {
+    "positive": ["<what student did well>"],
+    "corrections": ["<corrections if any>"],
+    "suggestions": ["<tips for improvement>"]
+  }
+}`;
+}
+
+async function callLLM(userText) {
+  const sys = buildSystemPrompt();
+  const msgs = [...history, { role: 'user', content: userText }];
+
+  if (cfg.provider === 'anthropic') return callAnthropic(sys, msgs);
+  if (cfg.provider === 'openai')    return callOpenAI(sys, msgs);
+  if (cfg.provider === 'gemini')    return callGemini(sys, msgs);
+  if (cfg.provider === 'ollama')    return callOllama(sys, msgs);
+  throw new Error('Unknown provider');
+}
+
+async function callAnthropic(sys, msgs) {
+  if (!cfg.apiKey) throw new Error('NO_KEY');
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': cfg.apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-calls': 'true'
+    },
+    body: JSON.stringify({ model: cfg.model, max_tokens: 1024, system: sys, messages: msgs })
+  });
+  if (!res.ok) throw new Error(await res.text());
+  const d = await res.json();
+  return d.content[0].text;
+}
+
+async function callOpenAI(sys, msgs) {
+  if (!cfg.apiKey) throw new Error('NO_KEY');
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cfg.apiKey}` },
+    body: JSON.stringify({
+      model: cfg.model, max_tokens: 1024,
+      messages: [{ role: 'system', content: sys }, ...msgs]
+    })
+  });
+  if (!res.ok) throw new Error(await res.text());
+  const d = await res.json();
+  return d.choices[0].message.content;
+}
+
+async function callGemini(sys, msgs) {
+  if (!cfg.apiKey) throw new Error('NO_KEY');
+  const geminiMsgs = msgs.map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }]
+  }));
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:generateContent?key=${cfg.apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system_instruction: { parts: [{ text: sys }] },
+      contents: geminiMsgs,
+      generationConfig: { maxOutputTokens: 1024 }
+    })
+  });
+  if (!res.ok) throw new Error(await res.text());
+  const d = await res.json();
+  return d.candidates[0].content.parts[0].text;
+}
+
+async function callOllama(sys, msgs) {
+  const base = cfg.ollamaUrl.replace(/\/$/, '');
+  const res = await fetch(`${base}/api/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: cfg.model, stream: false,
+      messages: [{ role: 'system', content: sys }, ...msgs]
+    })
+  });
+  if (!res.ok) throw new Error(await res.text());
+  const d = await res.json();
+  return d.message.content;
+}
+
+// ══════════════════════════════════════════════
+// SEND
+// ══════════════════════════════════════════════
+async function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  if (cfg.provider !== 'ollama' && (!cfg.apiKey || cfg.apiKey.length < 8)) {
+    appendMsg('tutor', t.errNoKey, null);
+    return;
+  }
+
+  input.value = '';
+  input.style.height = 'auto';
+  document.getElementById('send-btn').disabled = true;
+
+  appendMsg('user', text, null);
+  history.push({ role: 'user', content: text });
+  setTyping(true);
+
+  try {
+    const raw = await callLLM(text);
+    setTyping(false);
+
+    let parsed;
+    try {
+      const clean = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+      parsed = JSON.parse(clean);
+    } catch {
+      // LLM returned plain text — show as-is
+      parsed = { reply: raw, translation: null, feedback: { positive: [], corrections: [], suggestions: [] } };
+    }
+
+    appendMsg('tutor', parsed.reply, parsed.translation);
+    history.push({ role: 'assistant', content: parsed.reply });
+    if (history.length > 20) history = history.slice(-20); // keep context bounded
+
+    currentFbData = parsed.feedback;
+    renderFeedback(activeFbTab);
+    document.getElementById('feedback-bar').classList.add('visible');
+
+  } catch (err) {
+    setTyping(false);
+    const msg = err.message === 'NO_KEY'
+      ? t.errNoKey
+      : (err.message?.includes('fetch') ? t.errNetwork : `${t.errGeneric} ${err.message}`);
+    appendMsg('tutor', msg, null);
+  }
+}
+
+// ══════════════════════════════════════════════
+// FEEDBACK TABS
+// ══════════════════════════════════════════════
+function switchFbTab(tab, btn) {
+  activeFbTab = tab;
+  document.querySelectorAll('.fb-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFeedback(tab);
+}
+
+function renderFeedback(tab) {
+  const el = document.getElementById('fb-content');
+  if (!currentFbData) { el.textContent = ''; return; }
+  const items = currentFbData[tab] || [];
+  if (!items.length) { el.innerHTML = '<em style="color:var(--c-muted)">–</em>'; return; }
+  el.innerHTML = `<ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>`;
+}
+</script>
+
+</body>
+</html>
