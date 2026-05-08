@@ -181,6 +181,7 @@ select:focus{outline:2px solid var(--pri)}
       <button id="mode-btn" class="mode-badge mode-chat" onclick="toggleLessonMode()">Chat</button>
       <span id="provider-badge" class="provider-badge warn">–</span>
       <select id="lang-select" onchange="onLangChange(this.value)">
+        <option value="english">🇬🇧 English</option>
         <option value="spanish">🇪🇸 Spanish</option>
         <option value="french">🇫🇷 French</option>
         <option value="german">🇩🇪 German</option>
@@ -223,6 +224,7 @@ select:focus{outline:2px solid var(--pri)}
     <h1 id="vocab-hdr-title">Slovní zásoba</h1>
     <div style="display:flex;gap:6px;align-items:center">
       <select id="vocab-lang-select" onchange="onVocabLangChange(this.value)">
+        <option value="english">🇬🇧 English</option>
         <option value="spanish">🇪🇸 Spanish</option>
         <option value="french">🇫🇷 French</option>
         <option value="german">🇩🇪 German</option>
@@ -253,6 +255,7 @@ select:focus{outline:2px solid var(--pri)}
   <div class="hdr">
     <h1 id="fc-hdr-title">Flashcards</h1>
     <select id="fc-lang-select" onchange="startFlashcards(this.value)">
+      <option value="english">🇬🇧 English</option>
       <option value="spanish">🇪🇸 Spanish</option>
       <option value="french">🇫🇷 French</option>
       <option value="german">🇩🇪 German</option>
@@ -275,6 +278,7 @@ select:focus{outline:2px solid var(--pri)}
     </button>
     <h1 id="quiz-hdr-title">Quiz</h1>
     <select id="quiz-lang-select" onchange="startQuiz()">
+      <option value="english">🇬🇧 English</option>
       <option value="spanish">🇪🇸 Spanish</option>
       <option value="french">🇫🇷 French</option>
       <option value="german">🇩🇪 German</option>
@@ -424,6 +428,7 @@ select:focus{outline:2px solid var(--pri)}
     <div class="field"><label>Obsah souboru</label><textarea id="import-text" style="min-height:120px;font-family:monospace;font-size:12px" placeholder="hola,ahoj,pozdrav&#10;gracias,děkuji"></textarea></div>
     <div class="field"><label>Cílový jazyk</label>
       <select id="import-lang-sel">
+        <option value="english">🇬🇧 English</option>
         <option value="spanish">🇪🇸 Spanish</option>
         <option value="french">🇫🇷 French</option>
         <option value="german">🇩🇪 German</option>
@@ -449,7 +454,7 @@ select:focus{outline:2px solid var(--pri)}
 // CONSTANTS & STATE
 // ══════════════════════════════════════════════
 const MODELS={anthropic:['claude-sonnet-4-6','claude-opus-4-7','claude-haiku-4-5-20251001'],openai:['gpt-5.5','gpt-5.4-mini','gpt-5.4-nano','gpt-4o'],gemini:['gemini-2.5-flash','gemini-2.5-pro','gemini-3.1-flash-lite','gemini-2.5-flash-lite'],ollama:['llama3.3','llama3.2','mistral','phi4','gemma3','qwen2.5'],custom:[]};
-const LANG_META={spanish:{name:'Spanish',native:'Español',flag:'🇪🇸'},french:{name:'French',native:'Français',flag:'🇫🇷'},german:{name:'German',native:'Deutsch',flag:'🇩🇪'},japanese:{name:'Japanese',native:'日本語',flag:'🇯🇵'},italian:{name:'Italian',native:'Italiano',flag:'🇮🇹'},portuguese:{name:'Portuguese',native:'Português',flag:'🇵🇹'},chinese:{name:'Chinese',native:'中文',flag:'🇨🇳'},korean:{name:'Korean',native:'한국어',flag:'🇰🇷'}};
+const LANG_META={english:{name:'English',native:'English',flag:'🇬🇧'},spanish:{name:'Spanish',native:'Español',flag:'🇪🇸'},french:{name:'French',native:'Français',flag:'🇫🇷'},german:{name:'German',native:'Deutsch',flag:'🇩🇪'},japanese:{name:'Japanese',native:'日本語',flag:'🇯🇵'},italian:{name:'Italian',native:'Italiano',flag:'🇮🇹'},portuguese:{name:'Portuguese',native:'Português',flag:'🇵🇹'},chinese:{name:'Chinese',native:'中文',flag:'🇨🇳'},korean:{name:'Korean',native:'한국어',flag:'🇰🇷'}};
 const SORT_MODES=['alpha','due','new'];
 let sortIdx=0;
 
