@@ -245,7 +245,7 @@ select:focus{outline:2px solid var(--pri)}
     <h1 id="vocab-hdr-title">Slovní zásoba</h1>
     <div style="display:flex;gap:6px;align-items:center">
       <select id="vocab-lang-select" onchange="onVocabLangChange(this.value)"></select>
-      <button class="icon-btn" onclick="openWordModal(null)" title="Přidat slovo">
+      <button class="icon-btn" id="add-word-btn" onclick="openWordModal(null)" title="Přidat slovo">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
     </div>
@@ -256,16 +256,16 @@ select:focus{outline:2px solid var(--pri)}
     <button class="btn btn-ghost btn-sm" onclick="exportVocab()">⬇ Export</button>
     <button class="btn btn-ghost btn-sm" onclick="openGenerateModal()">✨ Generovat</button>
     <button class="btn btn-ghost btn-sm" id="sort-btn" onclick="cycleSort()">↕ Řadit</button>
-    <button class="btn btn-ghost btn-sm" onclick="deleteLearnedWords()">🗑 Naučená</button>
+    <button class="btn btn-ghost btn-sm" id="delete-learned-btn" onclick="deleteLearnedWords()">🗑 Naučená</button>
     <button class="btn btn-ghost btn-sm" id="bulk-mode-btn" onclick="toggleBulkMode()">☑ Vybrat</button>
     <span id="vocab-count" style="font-size:0.8rem;color:var(--mut);margin-left:auto"></span>
   </div>
   <div id="vocab-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
   <div id="bulk-bar">
     <span id="bulk-count" style="font-size:0.87rem;flex:1;color:var(--mut)">0 vybráno</span>
-    <button class="btn btn-ghost btn-sm" onclick="bulkSelectAll()">Vybrat vše</button>
-    <button class="btn btn-danger btn-sm" onclick="deleteSelectedWords()">Smazat</button>
-    <button class="btn btn-ghost btn-sm" onclick="toggleBulkMode()">Zrušit</button>
+    <button class="btn btn-ghost btn-sm" id="bulk-select-all-btn" onclick="bulkSelectAll()">Vybrat vše</button>
+    <button class="btn btn-danger btn-sm" id="bulk-delete-btn" onclick="deleteSelectedWords()">Smazat</button>
+    <button class="btn btn-ghost btn-sm" id="bulk-cancel-btn" onclick="toggleBulkMode()">Zrušit</button>
   </div>
 </div>
 
@@ -395,8 +395,8 @@ select:focus{outline:2px solid var(--pri)}
 <!-- ═══════ PWA INSTALL BANNER ═══════ -->
 
 <div id="pwa-banner">
-  <span>📲 Přidat Language Tutor na plochu</span>
-  <button class="pwa-install-btn" onclick="pwaInstall()">Přidat</button>
+  <span id="pwa-banner-text">📲 Přidat Language Tutor na plochu</span>
+  <button class="pwa-install-btn" id="pwa-install-btn" onclick="pwaInstall()">Přidat</button>
   <button class="pwa-dismiss-btn" onclick="pwaDismiss()" title="Zavřít">×</button>
 </div>
 
@@ -430,17 +430,17 @@ select:focus{outline:2px solid var(--pri)}
 <div id="word-modal" class="overlay" onclick="closeWordModalOutside(event)">
   <div class="sheet">
     <h2 id="modal-title">Přidat slovo</h2>
-    <div class="field"><label>Slovo / fráze *</label><input type="text" id="modal-word" placeholder="hola"></div>
-    <div class="field"><label>Překlad *</label><input type="text" id="modal-trans" placeholder="ahoj"></div>
-    <div class="field"><label>Poznámka</label><textarea id="modal-notes" placeholder="příklad použití, kontext…"></textarea></div>
-    <div class="field"><label>Tagy</label><input type="text" id="modal-tags" placeholder="pozdravy, B1 (čárkou oddělené)"></div>
+    <div class="field"><label id="modal-word-label">Slovo / fráze *</label><input type="text" id="modal-word" placeholder="hola"></div>
+    <div class="field"><label id="modal-trans-label">Překlad *</label><input type="text" id="modal-trans" placeholder="ahoj"></div>
+    <div class="field"><label id="modal-note-label">Poznámka</label><textarea id="modal-notes" placeholder="příklad použití, kontext…"></textarea></div>
+    <div class="field"><label id="modal-tags-label">Tagy</label><input type="text" id="modal-tags" placeholder="pozdravy, B1 (čárkou oddělené)"></div>
     <div id="modal-sm2-info" style="display:none;background:var(--bg2);border-radius:10px;padding:10px 14px;font-size:0.87rem;color:var(--muted);display:none">
-      <div style="font-weight:600;margin-bottom:6px;color:var(--fg)">Statistiky opakování</div>
+      <div id="modal-sm2-title" style="font-weight:600;margin-bottom:6px;color:var(--fg)">Statistiky opakování</div>
       <div id="modal-sm2-rows" style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px"></div>
     </div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="saveWord()">Uložit</button>
-      <button class="btn btn-ghost" onclick="closeWordModal()">Zrušit</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="saveWord()">Uložit</button>
+      <button class="btn btn-ghost" id="modal-cancel-btn" onclick="closeWordModal()">Zrušit</button>
       <button class="btn btn-danger" id="modal-delete-btn" onclick="deleteWord()" style="display:none">Smazat</button>
     </div>
   </div>
@@ -451,12 +451,12 @@ select:focus{outline:2px solid var(--pri)}
 <div id="import-modal" class="overlay" onclick="closeImportOutside(event)">
   <div class="sheet">
     <h2 id="import-title">Import slovní zásoby</h2>
-    <p style="font-size:0.87rem;color:var(--mut);margin-bottom:12px">CSV nebo TXT: každý řádek = <code>slovo,překlad,poznámka(volitelné)</code><br>Nebo vlož JSON ze zálohy.</p>
-    <div class="field"><label>Obsah souboru</label><textarea id="import-text" style="min-height:120px;font-family:monospace;font-size:0.8rem" placeholder="hola,ahoj,pozdrav&#10;gracias,děkuji"></textarea></div>
-    <div class="field"><label>Cílový jazyk</label>
+    <p id="import-desc" style="font-size:0.87rem;color:var(--mut);margin-bottom:12px">CSV nebo TXT: každý řádek = <code>slovo,překlad,poznámka(volitelné)</code><br>Nebo vlož JSON ze zálohy.</p>
+    <div class="field"><label id="import-content-label">Obsah souboru</label><textarea id="import-text" style="min-height:120px;font-family:monospace;font-size:0.8rem" placeholder="hola,ahoj,pozdrav&#10;gracias,děkuji"></textarea></div>
+    <div class="field"><label id="import-lang-label">Cílový jazyk</label>
       <select id="import-lang-sel"></select>
     </div>
-    <div class="field"><label>Pořadí sloupců</label>
+    <div class="field"><label id="import-col-label">Pořadí sloupců</label>
       <select id="import-col-order">
         <option value="normal">Cizí jazyk, Překlad (výchozí)</option>
         <option value="reverse">Překlad, Cizí jazyk</option>
@@ -464,9 +464,9 @@ select:focus{outline:2px solid var(--pri)}
     </div>
     <div class="hint" id="import-preview" style="margin-bottom:10px"></div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="confirmImport()">Importovat</button>
-      <button class="btn btn-ghost" onclick="closeImportModal()">Zrušit</button>
-      <button class="btn btn-ghost" onclick="document.getElementById('file-input').click()">📂 Ze souboru</button>
+      <button class="btn btn-primary" id="import-confirm-btn" onclick="confirmImport()">Importovat</button>
+      <button class="btn btn-ghost" id="import-cancel-btn" onclick="closeImportModal()">Zrušit</button>
+      <button class="btn btn-ghost" id="import-file-btn" onclick="document.getElementById('file-input').click()">📂 Ze souboru</button>
     </div>
   </div>
 </div>
@@ -476,13 +476,13 @@ select:focus{outline:2px solid var(--pri)}
 
 <div id="backup-import-modal" class="overlay" onclick="closeBackupModalOutside(event)">
   <div class="sheet">
-    <h2>Import zálohy</h2>
-    <p style="font-size:0.87rem;color:var(--mut);margin-bottom:12px">Vlož JSON zálohu nebo ji načti ze souboru.</p>
-    <div class="field"><label>JSON záloha</label><textarea id="backup-import-text" style="min-height:120px;font-family:monospace;font-size:0.8rem" placeholder='{"version":2,"cfg":{},"vocab":{}}'></textarea></div>
+    <h2 id="backup-import-title">Import zálohy</h2>
+    <p id="backup-import-desc" style="font-size:0.87rem;color:var(--mut);margin-bottom:12px">Vlož JSON zálohu nebo ji načti ze souboru.</p>
+    <div class="field"><label id="backup-import-label">JSON záloha</label><textarea id="backup-import-text" style="min-height:120px;font-family:monospace;font-size:0.8rem" placeholder='{"version":2,"cfg":{},"vocab":{}}'></textarea></div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="confirmBackupImport()">Importovat</button>
-      <button class="btn btn-ghost" onclick="closeBackupModal()">Zrušit</button>
-      <button class="btn btn-ghost" onclick="document.getElementById('backup-file-input').click()">📂 Ze souboru</button>
+      <button class="btn btn-primary" id="backup-import-btn" onclick="confirmBackupImport()">Importovat</button>
+      <button class="btn btn-ghost" id="backup-cancel-btn" onclick="closeBackupModal()">Zrušit</button>
+      <button class="btn btn-ghost" id="backup-file-btn" onclick="document.getElementById('backup-file-input').click()">📂 Ze souboru</button>
     </div>
   </div>
 </div>
@@ -492,12 +492,12 @@ select:focus{outline:2px solid var(--pri)}
 
 <div id="gen-modal" class="overlay" onclick="closeGenModalOutside(event)">
   <div class="sheet">
-    <h2>✨ Generovat slovíčka</h2>
+    <h2 id="gen-title">✨ Generovat slovíčka</h2>
     <div id="gen-form">
-      <div class="field"><label>Téma *</label>
+      <div class="field"><label id="gen-topic-label">Téma *</label>
         <input type="text" id="gen-topic" placeholder="cestování, jídlo, rodina…" onkeydown="if(event.key==='Enter')generateVocab()">
       </div>
-      <div class="field"><label>Počet slov</label>
+      <div class="field"><label id="gen-count-label">Počet slov</label>
         <select id="gen-count">
           <option value="5">5</option>
           <option value="10" selected>10</option>
@@ -505,7 +505,7 @@ select:focus{outline:2px solid var(--pri)}
           <option value="50">50</option>
         </select>
       </div>
-      <div class="field"><label>Úroveň</label>
+      <div class="field"><label id="gen-level-label">Úroveň</label>
         <select id="gen-level">
           <option value="beginner">Začátečník (A1–A2)</option>
           <option value="intermediate">Mírně pokročilý (B1–B2)</option>
@@ -515,15 +515,15 @@ select:focus{outline:2px solid var(--pri)}
       <p id="gen-api-note" class="hint" style="margin-bottom:12px"></p>
       <div class="btn-row">
         <button class="btn btn-primary" id="gen-action-btn" onclick="generateVocab()">Generovat</button>
-        <button class="btn btn-ghost" onclick="closeGenModal()">Zrušit</button>
+        <button class="btn btn-ghost" id="gen-cancel-btn" onclick="closeGenModal()">Zrušit</button>
       </div>
     </div>
     <div id="gen-preview" style="display:none">
-      <p style="font-size:0.87rem;color:var(--mut);margin-bottom:8px">Zaškrtni slovíčka, která chceš importovat:</p>
+      <p id="gen-preview-hint" style="font-size:0.87rem;color:var(--mut);margin-bottom:8px">Zaškrtni slovíčka, která chceš importovat:</p>
       <div id="gen-word-list" style="max-height:260px;overflow-y:auto;border:1px solid var(--bdr);border-radius:var(--rs)"></div>
       <div class="btn-row" style="margin-top:12px">
-        <button class="btn btn-primary" onclick="confirmGenerateImport()">Importovat vybrané</button>
-        <button class="btn btn-ghost" onclick="showGenForm()">← Zpět</button>
+        <button class="btn btn-primary" id="gen-import-selected-btn" onclick="confirmGenerateImport()">Importovat vybrané</button>
+        <button class="btn btn-ghost" id="gen-back-btn" onclick="showGenForm()">← Zpět</button>
       </div>
     </div>
   </div>
@@ -558,8 +558,8 @@ const selectedIds=new Set();
 
 // ── I18N ──
 const I18N={
-  cs:{appTitle:'Language Tutor',settingsTitle:'Nastavení',emptyTitle:'Připrav se na procvičování!',emptyDesc:'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',inputPH:l=>`Napiš zprávu v jazyce ${l}…`,fbPositive:'Správně',fbCorrections:'Opravy',fbSuggestions:'Tipy',navChat:'Chat',navVocab:'Slovíčka',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Nastavení',vocabHdr:'Slovní zásoba',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lekce',modeChatDesc:'Volný rozhovor — tutor opravuje chyby a navrhuje zlepšení',modeLessonDesc:'Tutor aktivně procvičuje tvá slovíčka ze seznamu',saveToast:'Uloženo ✓',clearConfirm:'Smazat vše včetně API klíčů a slovní zásoby?',errNoKey:'API klíč není nastaven. Přejdi do Nastavení.',errNetwork:'Chyba sítě nebo CORS.',errGeneric:'Chyba LLM:',apiKeySet:'API klíč nastaven',noApiKey:'API klíč není nastaven',translationLabel:'Překlad',translateBtn:'přeložit',hideTranslation:'skrýt překlad',fcTap:'Klikni pro zobrazení překladu',fcRateQ:'Jak dobře sis vzpomněl/a?',fcDoneTitle:'Hotovo na dnes!',fcDoneDesc:n=>`Prošel jsi ${n} karet. Vrať se zítra.`,fcEmptyTitle:'Žádné karty k procvičení',fcEmptyDesc:'Přidej slovíčka v záložce Slovíčka.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Opakování',sortNew:'↕ Nejnovější',fcDirNormal:'⇄ Cizí → Mateřský',fcDirReverse:'⇄ Mateřský → Cizí',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Poskytovatel',sProviderLabel:'Poskytovatel',sOllamaOption:'Ollama (lokální)',sCustomOption:'Vlastní / Custom (OpenAI-kompatibilní)',sModelLabel:'Model',sCustomModelLabel:'Model (název)',sApiKeyLabel:'API klíč',sOllamaHint:'Ollama musí mít povoleno CORS pro tuto doménu.',sCustomUrlHint:'OpenAI-compatible endpoint (bez /chat/completions). API klíč výše je volitelný.',sGenerateAt:h=>`Vygeneruj na ${h}`,sTutorTitle:'Chování tutora',sLangLabel:'Jazyk',sLevelLabel:'Úroveň studenta',sLevelBeginner:'Začátečník (A1–A2)',sLevelIntermediate:'Mírně pokročilý (B1–B2)',sLevelAdvanced:'Pokročilý (C1–C2)',sFeedbackLabel:'Styl zpětné vazby',sFeedbackGentle:'Jemný (povzbuzující)',sFeedbackBalanced:'Vyvážený',sFeedbackStrict:'Přísný (každá chyba)',sUiLangLabel:'Jazyk rozhraní',sFontSizeLabel:'Velikost písma',sFontSizeSmall:'Malé (13px)',sFontSizeMedium:'Střední (15px)',sFontSizeLarge:'Velké (17px)',sFontSizeXl:'Extra velké (20px)',sDataTitle:'Data & záloha',sDataDesc:'Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.',sExportApiKeyWarning:'Záloha obsahuje tvůj API klíč. Uchovej soubor na bezpečném místě a nesdílej ho s nikým. Pokračovat?',sSaveBtn:'Uložit',sExportBtn:'Export zálohy',sImportBtn:'Import zálohy',sClearBtn:'Smazat vše',sAddToHome:'přidej do plochy',sHelpLink:'Nápověda',quizEmptyTitle:'Připraven na kvíz?',quizEmptyDesc:'Přidej slovíčka v záložce Slovíčka a stiskni tlačítko ↺ pro spuštění kvízu.'},
-  en:{appTitle:'Language Tutor',settingsTitle:'Settings',emptyTitle:'Ready to practice!',emptyDesc:'Type anything and the tutor will respond with feedback.',inputPH:l=>`Type a message in ${l}…`,fbPositive:'Correct',fbCorrections:'Corrections',fbSuggestions:'Tips',navChat:'Chat',navVocab:'Vocab',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Settings',vocabHdr:'Vocabulary',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lesson',modeChatDesc:'Free conversation — tutor corrects mistakes and suggests improvements',modeLessonDesc:'Tutor actively practises your vocabulary list',saveToast:'Saved ✓',clearConfirm:'Delete everything including API keys and vocabulary?',errNoKey:'API key not set. Go to Settings.',errNetwork:'Network error or CORS issue.',errGeneric:'LLM error:',apiKeySet:'API key set',noApiKey:'API key not set',translationLabel:'Translation',translateBtn:'translate',hideTranslation:'hide',fcTap:'Tap to reveal translation',fcRateQ:'How well did you remember?',fcDoneTitle:'All done for today!',fcDoneDesc:n=>`Reviewed ${n} cards. Come back tomorrow.`,fcEmptyTitle:'No cards to review',fcEmptyDesc:'Add words in the Vocabulary tab.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Due',sortNew:'↕ Newest',fcDirNormal:'⇄ Foreign → Native',fcDirReverse:'⇄ Native → Foreign',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Provider',sProviderLabel:'Provider',sOllamaOption:'Ollama (local)',sCustomOption:'Custom (OpenAI-compatible)',sModelLabel:'Model',sCustomModelLabel:'Model (name)',sApiKeyLabel:'API key',sOllamaHint:'Ollama must have CORS enabled for this domain.',sCustomUrlHint:'OpenAI-compatible endpoint (without /chat/completions). API key above is optional.',sGenerateAt:h=>`Generate at ${h}`,sTutorTitle:'Tutor behaviour',sLangLabel:'Language',sLevelLabel:'Student level',sLevelBeginner:'Beginner (A1–A2)',sLevelIntermediate:'Intermediate (B1–B2)',sLevelAdvanced:'Advanced (C1–C2)',sFeedbackLabel:'Feedback style',sFeedbackGentle:'Gentle (encouraging)',sFeedbackBalanced:'Balanced',sFeedbackStrict:'Strict (every mistake)',sUiLangLabel:'Interface language',sFontSizeLabel:'Font size',sFontSizeSmall:'Small (13px)',sFontSizeMedium:'Medium (15px)',sFontSizeLarge:'Large (17px)',sFontSizeXl:'Extra large (20px)',sDataTitle:'Data & backup',sDataDesc:'Export includes configuration, all vocabulary (all languages) and SM-2 data.',sExportApiKeyWarning:'The backup contains your API key. Keep the file in a safe place and do not share it with anyone. Continue?',sSaveBtn:'Save',sExportBtn:'Export backup',sImportBtn:'Import backup',sClearBtn:'Delete all',sAddToHome:'add to home screen',sHelpLink:'Help',quizEmptyTitle:'Ready to quiz?',quizEmptyDesc:'Add vocabulary in the Vocab tab, then press ↺ to start a quiz.'}
+  cs:{appTitle:'Language Tutor',settingsTitle:'Nastavení',emptyTitle:'Připrav se na procvičování!',emptyDesc:'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',inputPH:l=>`Napiš zprávu v jazyce ${l}…`,fbPositive:'Správně',fbCorrections:'Opravy',fbSuggestions:'Tipy',navChat:'Chat',navVocab:'Slovíčka',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Nastavení',vocabHdr:'Slovní zásoba',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lekce',modeChatDesc:'Volný rozhovor — tutor opravuje chyby a navrhuje zlepšení',modeLessonDesc:'Tutor aktivně procvičuje tvá slovíčka ze seznamu',saveToast:'Uloženo ✓',clearConfirm:'Smazat vše včetně API klíčů a slovní zásoby?',errNoKey:'API klíč není nastaven. Přejdi do Nastavení.',errNetwork:'Chyba sítě nebo CORS.',errGeneric:'Chyba LLM:',apiKeySet:'API klíč nastaven',noApiKey:'API klíč není nastaven',translationLabel:'Překlad',translateBtn:'přeložit',hideTranslation:'skrýt překlad',fcTap:'Klikni pro zobrazení překladu',fcRateQ:'Jak dobře sis vzpomněl/a?',fcDoneTitle:'Hotovo na dnes!',fcDoneDesc:n=>`Prošel jsi ${n} karet. Vrať se zítra.`,fcEmptyTitle:'Žádné karty k procvičení',fcEmptyDesc:'Přidej slovíčka v záložce Slovíčka.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Opakování',sortNew:'↕ Nejnovější',fcDirNormal:'⇄ Cizí → Mateřský',fcDirReverse:'⇄ Mateřský → Cizí',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Poskytovatel',sProviderLabel:'Poskytovatel',sOllamaOption:'Ollama (lokální)',sCustomOption:'Vlastní / Custom (OpenAI-kompatibilní)',sModelLabel:'Model',sCustomModelLabel:'Model (název)',sApiKeyLabel:'API klíč',sOllamaHint:'Ollama musí mít povoleno CORS pro tuto doménu.',sCustomUrlHint:'OpenAI-compatible endpoint (bez /chat/completions). API klíč výše je volitelný.',sGenerateAt:h=>`Vygeneruj na ${h}`,sTutorTitle:'Chování tutora',sLangLabel:'Jazyk',sLevelLabel:'Úroveň studenta',sLevelBeginner:'Začátečník (A1–A2)',sLevelIntermediate:'Mírně pokročilý (B1–B2)',sLevelAdvanced:'Pokročilý (C1–C2)',sFeedbackLabel:'Styl zpětné vazby',sFeedbackGentle:'Jemný (povzbuzující)',sFeedbackBalanced:'Vyvážený',sFeedbackStrict:'Přísný (každá chyba)',sUiLangLabel:'Jazyk rozhraní',sFontSizeLabel:'Velikost písma',sFontSizeSmall:'Malé (13px)',sFontSizeMedium:'Střední (15px)',sFontSizeLarge:'Velké (17px)',sFontSizeXl:'Extra velké (20px)',sDataTitle:'Data & záloha',sDataDesc:'Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.',sExportApiKeyWarning:'Záloha obsahuje tvůj API klíč. Uchovej soubor na bezpečném místě a nesdílej ho s nikým. Pokračovat?',sSaveBtn:'Uložit',sExportBtn:'Export zálohy',sImportBtn:'Import zálohy',sClearBtn:'Smazat vše',sAddToHome:'přidej do plochy',sHelpLink:'Nápověda',quizEmptyTitle:'Připraven na kvíz?',quizEmptyDesc:'Přidej slovíčka v záložce Slovíčka a stiskni tlačítko ↺ pro spuštění kvízu.',fcRate0:'Zapomněl/a',fcRate3:'Těžce',fcRate4:'Dobře',fcRate5:'Perfektně',fcAgain:'Znovu',badgeNew:'Nové',badgeToday:'Dnes',badgeTomorrow:'Zítra',vocabSearchPH:'Hledat…',deleteLearnedBtn:'🗑 Naučená',bulkModeOn:'☑ Vybrat',bulkModeOff:'✕ Výběr',bulkCountFn:n=>`${n} vybráno`,bulkSelectAll:'Vybrat vše',bulkDeleteBtn:'Smazat',bulkCancelBtn:'Zrušit',vocabEmptyNoMatch:'Žádné shody',vocabEmptyBlank:'Zatím prázdné',vocabEmptyNoMatchHint:'Zkus jiné hledání',vocabEmptyAddHint:'Přidej první slovíčko tlačítkem +',vocabCountSuffix:'slov',vocabCountWarning:'V Lesson módu se odesílá až 50 slovíček s každým dotazem — vyšší cena',modalAddTitle:'Přidat slovo',modalEditTitle:'Upravit slovo',modalWordLabel:'Slovo / fráze *',modalTransLabel:'Překlad *',modalNoteLabel:'Poznámka',modalTagsLabel:'Tagy',modalSaveBtn:'Uložit',modalCancelBtn:'Zrušit',modalDeleteBtn:'Smazat',modalSm2Title:'Statistiky opakování',sm2NextReview:'Příští opakování',sm2Interval:'Interval',sm2Reps:'Počet opakování',sm2Difficulty:'Obtížnost',sm2Day1:'1 den',sm2DaysFn:n=>`${n} dní`,sm2Hard:'Těžké',sm2Medium:'Střední',sm2Easy:'Snadné',importTitle:'Import slovní zásoby',importDesc:'CSV nebo TXT: každý řádek = <code>slovo,překlad,poznámka(volitelné)</code><br>Nebo vlož JSON ze zálohy.',importContentLabel:'Obsah souboru',importLangLabel:'Cílový jazyk',importColLabel:'Pořadí sloupců',importColNormal:'Cizí jazyk, Překlad (výchozí)',importColReverse:'Překlad, Cizí jazyk',importBtn:'Importovat',importCancelBtn:'Zrušit',importFromFile:'📂 Ze souboru',importPreviewBackup:'Detekováno: záloha (JSON). Importuje všechny jazyky.',importPreviewLinesFn:n=>`Detekováno ${n} řádků (CSV/TXT).`,backupImportTitle:'Import zálohy',backupImportDesc:'Vlož JSON zálohu nebo ji načti ze souboru.',backupImportLabel:'JSON záloha',backupImportBtn:'Importovat',backupCancelBtn:'Zrušit',backupFromFile:'📂 Ze souboru',genTitle:'✨ Generovat slovíčka',genTopicLabel:'Téma *',genCountLabel:'Počet slov',genLevelLabel:'Úroveň',genApiNoteWithKey:'Slovíčka vygeneruje nakonfigurovaný LLM.',genApiNoteNoKey:'API klíč není nastaven – zkopíruje prompt do schránky pro použití ve vlastním AI nástroji (ChatGPT, Claude.ai…).',genBtn:'Generovat',genCopyBtn:'📋 Kopírovat prompt',genCancelBtn:'Zrušit',genLoading:'Generuji…',genTopicRequired:'Zadej téma.',genPreviewHint:'Zaškrtni slovíčka, která chceš importovat:',genImportSelectedBtn:'Importovat vybrané',genBackBtn:'← Zpět',alertInvalidJson:'Neplatný JSON',alertBackupRestored:'Záloha obnovena.',alertImportDoneFn:(a,s)=>`Import dokončen: ${a} přidáno, ${s} přeskočeno (duplicity).`,alertPromptCopied:'Prompt zkopírován!\n\nVlož ho do svého AI nástroje, výsledné CSV pak importuj tlačítkem ⬆ Import.',errLlmFn:msg=>'Chyba: '+msg,errWordRequired:'Slovo a překlad jsou povinné.',confirmDeleteWord:'Smazat toto slovo?',alertNoLearned:'Žádná naučená slovíčka (interval opakování ≥ 21 dní).',confirmDeleteLearnedFn:n=>`Smazat ${n} naučených slovíček (interval ≥ 21 dní)?`,alertNoSelection:'Nejsou vybrána žádná slovíčka.',confirmDeleteSelectedFn:n=>`Smazat ${n} vybraných slovíček?`,errParseLlm:'Nepodařilo se zparsovat odpověď LLM.',errLlmNoWords:'LLM nevrátil žádná slovíčka.',quizAnswerPH:'Tvoje odpověď…',pwaBannerText:'📲 Přidat Language Tutor na plochu',pwaInstallBtn:'Přidat',addWordTitle:'Přidat slovo'},
+  en:{appTitle:'Language Tutor',settingsTitle:'Settings',emptyTitle:'Ready to practice!',emptyDesc:'Type anything and the tutor will respond with feedback.',inputPH:l=>`Type a message in ${l}…`,fbPositive:'Correct',fbCorrections:'Corrections',fbSuggestions:'Tips',navChat:'Chat',navVocab:'Vocab',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Settings',vocabHdr:'Vocabulary',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lesson',modeChatDesc:'Free conversation — tutor corrects mistakes and suggests improvements',modeLessonDesc:'Tutor actively practises your vocabulary list',saveToast:'Saved ✓',clearConfirm:'Delete everything including API keys and vocabulary?',errNoKey:'API key not set. Go to Settings.',errNetwork:'Network error or CORS issue.',errGeneric:'LLM error:',apiKeySet:'API key set',noApiKey:'API key not set',translationLabel:'Translation',translateBtn:'translate',hideTranslation:'hide',fcTap:'Tap to reveal translation',fcRateQ:'How well did you remember?',fcDoneTitle:'All done for today!',fcDoneDesc:n=>`Reviewed ${n} cards. Come back tomorrow.`,fcEmptyTitle:'No cards to review',fcEmptyDesc:'Add words in the Vocabulary tab.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Due',sortNew:'↕ Newest',fcDirNormal:'⇄ Foreign → Native',fcDirReverse:'⇄ Native → Foreign',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Provider',sProviderLabel:'Provider',sOllamaOption:'Ollama (local)',sCustomOption:'Custom (OpenAI-compatible)',sModelLabel:'Model',sCustomModelLabel:'Model (name)',sApiKeyLabel:'API key',sOllamaHint:'Ollama must have CORS enabled for this domain.',sCustomUrlHint:'OpenAI-compatible endpoint (without /chat/completions). API key above is optional.',sGenerateAt:h=>`Generate at ${h}`,sTutorTitle:'Tutor behaviour',sLangLabel:'Language',sLevelLabel:'Student level',sLevelBeginner:'Beginner (A1–A2)',sLevelIntermediate:'Intermediate (B1–B2)',sLevelAdvanced:'Advanced (C1–C2)',sFeedbackLabel:'Feedback style',sFeedbackGentle:'Gentle (encouraging)',sFeedbackBalanced:'Balanced',sFeedbackStrict:'Strict (every mistake)',sUiLangLabel:'Interface language',sFontSizeLabel:'Font size',sFontSizeSmall:'Small (13px)',sFontSizeMedium:'Medium (15px)',sFontSizeLarge:'Large (17px)',sFontSizeXl:'Extra large (20px)',sDataTitle:'Data & backup',sDataDesc:'Export includes configuration, all vocabulary (all languages) and SM-2 data.',sExportApiKeyWarning:'The backup contains your API key. Keep the file in a safe place and do not share it with anyone. Continue?',sSaveBtn:'Save',sExportBtn:'Export backup',sImportBtn:'Import backup',sClearBtn:'Delete all',sAddToHome:'add to home screen',sHelpLink:'Help',quizEmptyTitle:'Ready to quiz?',quizEmptyDesc:'Add vocabulary in the Vocab tab, then press ↺ to start a quiz.',fcRate0:'Forgot',fcRate3:'Hard',fcRate4:'Good',fcRate5:'Perfect',fcAgain:'Again',badgeNew:'New',badgeToday:'Today',badgeTomorrow:'Tomorrow',vocabSearchPH:'Search…',deleteLearnedBtn:'🗑 Learned',bulkModeOn:'☑ Select',bulkModeOff:'✕ Cancel',bulkCountFn:n=>`${n} selected`,bulkSelectAll:'Select all',bulkDeleteBtn:'Delete',bulkCancelBtn:'Cancel',vocabEmptyNoMatch:'No matches',vocabEmptyBlank:'Empty so far',vocabEmptyNoMatchHint:'Try a different search',vocabEmptyAddHint:'Add your first word with the + button',vocabCountSuffix:'words',vocabCountWarning:'In Lesson mode, up to 50 words are sent with each query — higher cost',modalAddTitle:'Add word',modalEditTitle:'Edit word',modalWordLabel:'Word / phrase *',modalTransLabel:'Translation *',modalNoteLabel:'Note',modalTagsLabel:'Tags',modalSaveBtn:'Save',modalCancelBtn:'Cancel',modalDeleteBtn:'Delete',modalSm2Title:'Review statistics',sm2NextReview:'Next review',sm2Interval:'Interval',sm2Reps:'Repetitions',sm2Difficulty:'Difficulty',sm2Day1:'1 day',sm2DaysFn:n=>`${n} days`,sm2Hard:'Hard',sm2Medium:'Medium',sm2Easy:'Easy',importTitle:'Import vocabulary',importDesc:'CSV or TXT: each row = <code>word,translation,note(optional)</code><br>Or paste JSON from a backup.',importContentLabel:'File content',importLangLabel:'Target language',importColLabel:'Column order',importColNormal:'Foreign language, Translation (default)',importColReverse:'Translation, Foreign language',importBtn:'Import',importCancelBtn:'Cancel',importFromFile:'📂 From file',importPreviewBackup:'Detected: backup (JSON). Will import all languages.',importPreviewLinesFn:n=>`Detected ${n} rows (CSV/TXT).`,backupImportTitle:'Import backup',backupImportDesc:'Paste JSON backup or load from file.',backupImportLabel:'JSON backup',backupImportBtn:'Import',backupCancelBtn:'Cancel',backupFromFile:'📂 From file',genTitle:'✨ Generate vocabulary',genTopicLabel:'Topic *',genCountLabel:'Word count',genLevelLabel:'Level',genApiNoteWithKey:'Vocabulary will be generated by the configured LLM.',genApiNoteNoKey:'API key not set – will copy prompt to clipboard for use in your own AI tool (ChatGPT, Claude.ai…).',genBtn:'Generate',genCopyBtn:'📋 Copy prompt',genCancelBtn:'Cancel',genLoading:'Generating…',genTopicRequired:'Enter a topic.',genPreviewHint:'Check the words you want to import:',genImportSelectedBtn:'Import selected',genBackBtn:'← Back',alertInvalidJson:'Invalid JSON',alertBackupRestored:'Backup restored.',alertImportDoneFn:(a,s)=>`Import complete: ${a} added, ${s} skipped (duplicates).`,alertPromptCopied:'Prompt copied!\n\nPaste it into your AI tool, then import the resulting CSV using the ⬆ Import button.',errLlmFn:msg=>'Error: '+msg,errWordRequired:'Word and translation are required.',confirmDeleteWord:'Delete this word?',alertNoLearned:'No learned words (repetition interval ≥ 21 days).',confirmDeleteLearnedFn:n=>`Delete ${n} learned words (interval ≥ 21 days)?`,alertNoSelection:'No words selected.',confirmDeleteSelectedFn:n=>`Delete ${n} selected words?`,errParseLlm:'Failed to parse LLM response.',errLlmNoWords:'LLM returned no words.',quizAnswerPH:'Your answer…',pwaBannerText:'📲 Add Language Tutor to home screen',pwaInstallBtn:'Add',addWordTitle:'Add word'}
 };
 let t=I18N.cs;
 
@@ -671,6 +671,59 @@ function applyI18n(){
   document.getElementById('s-clear-btn').textContent=t.sClearBtn;
   document.getElementById('s-add-to-home').textContent=t.sAddToHome;
   document.getElementById('s-help-link').textContent=t.sHelpLink;
+  // vocab toolbar
+  document.getElementById('vocab-search').placeholder=t.vocabSearchPH;
+  document.getElementById('delete-learned-btn').textContent=t.deleteLearnedBtn;
+  document.getElementById('bulk-mode-btn').textContent=bulkSelectMode?t.bulkModeOff:t.bulkModeOn;
+  document.getElementById('bulk-count').textContent=t.bulkCountFn(selectedIds.size);
+  document.getElementById('bulk-select-all-btn').textContent=t.bulkSelectAll;
+  document.getElementById('bulk-delete-btn').textContent=t.bulkDeleteBtn;
+  document.getElementById('bulk-cancel-btn').textContent=t.bulkCancelBtn;
+  // word modal
+  document.getElementById('modal-word-label').textContent=t.modalWordLabel;
+  document.getElementById('modal-trans-label').textContent=t.modalTransLabel;
+  document.getElementById('modal-note-label').textContent=t.modalNoteLabel;
+  document.getElementById('modal-tags-label').textContent=t.modalTagsLabel;
+  document.getElementById('modal-sm2-title').textContent=t.modalSm2Title;
+  document.getElementById('modal-save-btn').textContent=t.modalSaveBtn;
+  document.getElementById('modal-cancel-btn').textContent=t.modalCancelBtn;
+  document.getElementById('modal-delete-btn').textContent=t.modalDeleteBtn;
+  // import modal
+  document.getElementById('import-title').textContent=t.importTitle;
+  document.getElementById('import-desc').innerHTML=t.importDesc;
+  document.getElementById('import-content-label').textContent=t.importContentLabel;
+  document.getElementById('import-lang-label').textContent=t.importLangLabel;
+  document.getElementById('import-col-label').textContent=t.importColLabel;
+  document.querySelector('#import-col-order option[value="normal"]').textContent=t.importColNormal;
+  document.querySelector('#import-col-order option[value="reverse"]').textContent=t.importColReverse;
+  document.getElementById('import-confirm-btn').textContent=t.importBtn;
+  document.getElementById('import-cancel-btn').textContent=t.importCancelBtn;
+  document.getElementById('import-file-btn').textContent=t.importFromFile;
+  // backup import modal
+  document.getElementById('backup-import-title').textContent=t.backupImportTitle;
+  document.getElementById('backup-import-desc').textContent=t.backupImportDesc;
+  document.getElementById('backup-import-label').textContent=t.backupImportLabel;
+  document.getElementById('backup-import-btn').textContent=t.backupImportBtn;
+  document.getElementById('backup-cancel-btn').textContent=t.backupCancelBtn;
+  document.getElementById('backup-file-btn').textContent=t.backupFromFile;
+  // generate modal
+  document.getElementById('gen-title').textContent=t.genTitle;
+  document.getElementById('gen-topic-label').textContent=t.genTopicLabel;
+  document.getElementById('gen-count-label').textContent=t.genCountLabel;
+  document.getElementById('gen-level-label').textContent=t.genLevelLabel;
+  document.querySelector('#gen-level option[value="beginner"]').textContent=t.sLevelBeginner;
+  document.querySelector('#gen-level option[value="intermediate"]').textContent=t.sLevelIntermediate;
+  document.querySelector('#gen-level option[value="advanced"]').textContent=t.sLevelAdvanced;
+  document.getElementById('gen-cancel-btn').textContent=t.genCancelBtn;
+  document.getElementById('gen-preview-hint').textContent=t.genPreviewHint;
+  document.getElementById('gen-import-selected-btn').textContent=t.genImportSelectedBtn;
+  document.getElementById('gen-back-btn').textContent=t.genBackBtn;
+  // quiz
+  document.getElementById('quiz-input').placeholder=t.quizAnswerPH;
+  // pwa banner
+  document.getElementById('pwa-banner-text').textContent=t.pwaBannerText;
+  document.getElementById('pwa-install-btn').textContent=t.pwaInstallBtn;
+  document.getElementById('add-word-btn').title=t.addWordTitle;
 }
 function updateInputPlaceholder(){const m=LANG_META[currentLang];document.getElementById('msg-input').placeholder=t.inputPH(m?m.name:currentLang);}
 function updateEmptyState(){const m=LANG_META[currentLang];if(m)document.getElementById('empty-flag').textContent=m.flag;}
@@ -758,7 +811,7 @@ function loadBackupFile(e){
 function confirmBackupImport(){
   const raw=document.getElementById('backup-import-text').value.trim();
   if(!raw)return;
-  try{const data=JSON.parse(raw);closeBackupModal();applyBackup(data);}catch{alert('Neplatný JSON');}
+  try{const data=JSON.parse(raw);closeBackupModal();applyBackup(data);}catch{alert(t.alertInvalidJson);}
 }
 function applyBackup(data){
   if(data.cfg)Object.assign(cfg,data.cfg);
@@ -768,7 +821,7 @@ function applyBackup(data){
   localStorage.setItem('lt-levels',JSON.stringify(langLevels));
   t=I18N[cfg.uiLang]||I18N.cs;
   applyI18n();populateSettingsUI();updateProviderBadge();
-  alert('Záloha obnovena.');
+  alert(t.alertBackupRestored);
 }
 function clearData(){if(!confirm(t.clearConfirm))return;localStorage.clear();location.reload();}
 
@@ -796,18 +849,18 @@ function renderVocabList(){
   const list=document.getElementById('vocab-list');
   const total=getVocab(vocabLang).length;
   const countEl=document.getElementById('vocab-count');
-  const countTxt=q?`${arr.length} / ${total} slov`:`${total} slov`;
-  countEl.innerHTML=total>40?`${countTxt} <span style="color:var(--warn)" title="V Lesson módu se odesílá až 50 slovíček s každým dotazem — vyšší cena">⚠</span>`:countTxt;
-  if(!arr.length){list.innerHTML=`<div class="vocab-empty"><div style="font-size:2.67rem">📚</div><h2>${q?'Žádné shody':'Zatím prázdné'}</h2><p>${q?'Zkus jiné hledání':'Přidej první slovíčko tlačítkem +'}</p></div>`;return;}
+  const countTxt=q?`${arr.length} / ${total} ${t.vocabCountSuffix}`:`${total} ${t.vocabCountSuffix}`;
+  countEl.innerHTML=total>40?`${countTxt} <span style="color:var(--warn)" title="${t.vocabCountWarning}">⚠</span>`:countTxt;
+  if(!arr.length){list.innerHTML=`<div class="vocab-empty"><div style="font-size:2.67rem">📚</div><h2>${q?t.vocabEmptyNoMatch:t.vocabEmptyBlank}</h2><p>${q?t.vocabEmptyNoMatchHint:t.vocabEmptyAddHint}</p></div>`;return;}
   list.innerHTML='';
   const now=Date.now();
   arr.forEach(w=>{
     const due=w.sm2?.due||0;
     const reps=w.sm2?.reps||0;
     let badge='',cls='';
-    if(reps===0){badge='Nové';cls='due-now';}
-    else if(due<=now){badge='Dnes';cls='due-now';}
-    else if(due-now<86400000){badge='Zítra';cls='due-soon';}
+    if(reps===0){badge=t.badgeNew;cls='due-now';}
+    else if(due<=now){badge=t.badgeToday;cls='due-now';}
+    else if(due-now<86400000){badge=t.badgeTomorrow;cls='due-soon';}
     else{const d=Math.round((due-now)/86400000);badge=`${d}d`;cls='due-ok';}
     const sel=bulkSelectMode&&selectedIds.has(w.id);
     const el=document.createElement('div');el.className='vocab-item'+(sel?' selected':'');
@@ -826,7 +879,7 @@ function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace
 
 function openWordModal(word){
   editingWordId=word?word.id:null;
-  document.getElementById('modal-title').textContent=word?'Upravit slovo':'Přidat slovo';
+  document.getElementById('modal-title').textContent=word?t.modalEditTitle:t.modalAddTitle;
   document.getElementById('modal-word').value=word?word.word:'';
   document.getElementById('modal-trans').value=word?word.translation:'';
   document.getElementById('modal-notes').value=word?word.notes||'':'';
@@ -835,12 +888,12 @@ function openWordModal(word){
   const infoEl=document.getElementById('modal-sm2-info');
   if(word?.sm2){
     const sm2=word.sm2;
-    const due=sm2.due?new Date(sm2.due).toLocaleDateString('cs-CZ',{day:'numeric',month:'long',year:'numeric'}):'–';
+    const due=sm2.due?new Date(sm2.due).toLocaleDateString(cfg.uiLang==='en'?'en-US':'cs-CZ',{day:'numeric',month:'long',year:'numeric'}):'–';
     const rows=[
-      ['Příští opakování',due],
-      ['Interval',sm2.interval===1?'1 den':`${sm2.interval} dní`],
-      ['Počet opakování',`${sm2.reps}×`],
-      ['Obtížnost',sm2.ef==null?'–':sm2.ef<=1.5?'Těžké':sm2.ef<=2.0?'Střední':'Snadné'],
+      [t.sm2NextReview,due],
+      [t.sm2Interval,sm2.interval===1?t.sm2Day1:t.sm2DaysFn(sm2.interval)],
+      [t.sm2Reps,`${sm2.reps}×`],
+      [t.sm2Difficulty,sm2.ef==null?'–':sm2.ef<=1.5?t.sm2Hard:sm2.ef<=2.0?t.sm2Medium:t.sm2Easy],
     ];
     document.getElementById('modal-sm2-rows').innerHTML=rows.map(([k,v])=>`<span style="color:var(--muted)">${k}</span><span style="color:var(--fg);font-weight:500">${v}</span>`).join('');
     infoEl.style.display='block';
@@ -855,7 +908,7 @@ function closeWordModalOutside(e){if(e.target===document.getElementById('word-mo
 function saveWord(){
   const word=document.getElementById('modal-word').value.trim();
   const trans=document.getElementById('modal-trans').value.trim();
-  if(!word||!trans){alert('Slovo a překlad jsou povinné.');return;}
+  if(!word||!trans){alert(t.errWordRequired);return;}
   const notes=document.getElementById('modal-notes').value.trim();
   const tags=document.getElementById('modal-tags').value.split(',').map(s=>s.trim()).filter(Boolean);
   const arr=getVocab(vocabLang);
@@ -870,15 +923,15 @@ function saveWord(){
 }
 function deleteWord(){
   if(!editingWordId)return;
-  if(!confirm('Smazat toto slovo?'))return;
+  if(!confirm(t.confirmDeleteWord))return;
   const arr=getVocab(vocabLang).filter(w=>w.id!==editingWordId);
   setVocab(vocabLang,arr);closeWordModal();renderVocabList();
 }
 function deleteLearnedWords(){
   const arr=getVocab(vocabLang);
   const learned=arr.filter(w=>w.sm2&&w.sm2.reps>=1&&w.sm2.interval>=21);
-  if(!learned.length){alert('Žádná naučená slovíčka (interval opakování ≥ 21 dní).');return;}
-  if(!confirm(`Smazat ${learned.length} naučených slovíček (interval ≥ 21 dní)?`))return;
+  if(!learned.length){alert(t.alertNoLearned);return;}
+  if(!confirm(t.confirmDeleteLearnedFn(learned.length)))return;
   setVocab(vocabLang,arr.filter(w=>!(w.sm2&&w.sm2.reps>=1&&w.sm2.interval>=21)));
   renderVocabList();
 }
@@ -886,13 +939,13 @@ function toggleBulkMode(){
   bulkSelectMode=!bulkSelectMode;
   selectedIds.clear();
   document.getElementById('bulk-bar').style.display=bulkSelectMode?'flex':'none';
-  document.getElementById('bulk-mode-btn').textContent=bulkSelectMode?'✕ Výběr':'☑ Vybrat';
-  document.getElementById('bulk-count').textContent='0 vybráno';
+  document.getElementById('bulk-mode-btn').textContent=bulkSelectMode?t.bulkModeOff:t.bulkModeOn;
+  document.getElementById('bulk-count').textContent=t.bulkCountFn(0);
   renderVocabList();
 }
 function toggleItemSelect(id){
   if(selectedIds.has(id))selectedIds.delete(id);else selectedIds.add(id);
-  document.getElementById('bulk-count').textContent=`${selectedIds.size} vybráno`;
+  document.getElementById('bulk-count').textContent=t.bulkCountFn(selectedIds.size);
   renderVocabList();
 }
 function bulkSelectAll(){
@@ -900,12 +953,12 @@ function bulkSelectAll(){
   let arr=getVocab(vocabLang);
   if(q)arr=arr.filter(w=>w.word.toLowerCase().includes(q)||w.translation.toLowerCase().includes(q)||(w.tags||[]).some(tg=>tg.toLowerCase().includes(q)));
   arr.forEach(w=>selectedIds.add(w.id));
-  document.getElementById('bulk-count').textContent=`${selectedIds.size} vybráno`;
+  document.getElementById('bulk-count').textContent=t.bulkCountFn(selectedIds.size);
   renderVocabList();
 }
 function deleteSelectedWords(){
-  if(!selectedIds.size){alert('Nejsou vybrána žádná slovíčka.');return;}
-  if(!confirm(`Smazat ${selectedIds.size} vybraných slovíček?`))return;
+  if(!selectedIds.size){alert(t.alertNoSelection);return;}
+  if(!confirm(t.confirmDeleteSelectedFn(selectedIds.size)))return;
   setVocab(vocabLang,getVocab(vocabLang).filter(w=>!selectedIds.has(w.id)));
   toggleBulkMode();
 }
@@ -930,9 +983,9 @@ document.getElementById('import-text').addEventListener('input',previewImport);
 function previewImport(){
   const raw=document.getElementById('import-text').value.trim();
   if(!raw){document.getElementById('import-preview').textContent='';return;}
-  try{const d=JSON.parse(raw);if(d.version&&d.vocab){document.getElementById('import-preview').textContent='Detekováno: záloha (JSON). Importuje všechny jazyky.';return;}}catch{}
+  try{const d=JSON.parse(raw);if(d.version&&d.vocab){document.getElementById('import-preview').textContent=t.importPreviewBackup;return;}}catch{}
   const lines=raw.split('\n').filter(l=>l.trim()&&!l.startsWith('#'));
-  document.getElementById('import-preview').textContent=`Detekováno ${lines.length} řádků (CSV/TXT).`;
+  document.getElementById('import-preview').textContent=t.importPreviewLinesFn(lines.length);
 }
 function confirmImport(){
   const raw=document.getElementById('import-text').value.trim();
@@ -959,7 +1012,7 @@ function confirmImport(){
   });
   setVocab(lang,arr);
   closeImportModal();renderVocabList();
-  alert(`Import dokončen: ${added} přidáno, ${skipped} přeskočeno (duplicity).`);
+  alert(t.alertImportDoneFn(added,skipped));
 }
 function exportVocab(){
   const arr=getVocab(vocabLang);
@@ -975,10 +1028,8 @@ function hasApiAccess(){
 function openGenerateModal(){
   document.getElementById('gen-topic').value='';
   const hasApi=hasApiAccess();
-  document.getElementById('gen-api-note').textContent=hasApi
-    ?'Slovíčka vygeneruje nakonfigurovaný LLM.'
-    :'API klíč není nastaven – zkopíruje prompt do schránky pro použití ve vlastním AI nástroji (ChatGPT, Claude.ai…).';
-  document.getElementById('gen-action-btn').textContent=hasApi?'Generovat':'📋 Kopírovat prompt';
+  document.getElementById('gen-api-note').textContent=hasApi?t.genApiNoteWithKey:t.genApiNoteNoKey;
+  document.getElementById('gen-action-btn').textContent=hasApi?t.genBtn:t.genCopyBtn;
   document.getElementById('gen-level').value=getLangLevel(vocabLang);
   showGenForm();
   document.getElementById('gen-modal').classList.add('open');
@@ -992,7 +1043,7 @@ function showGenForm(){
 }
 async function generateVocab(){
   const topic=document.getElementById('gen-topic').value.trim();
-  if(!topic){alert('Zadej téma.');return;}
+  if(!topic){alert(t.genTopicRequired);return;}
   const count=parseInt(document.getElementById('gen-count').value);
   const meta=LANG_META[vocabLang];
   const levelMap={beginner:'A1-A2',intermediate:'B1-B2',advanced:'C1-C2'};
@@ -1006,12 +1057,12 @@ async function generateVocab(){
     try{await navigator.clipboard.writeText(prompt);}
     catch{const ta=document.createElement('textarea');ta.value=prompt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
     closeGenModal();
-    alert('Prompt zkopírován!\n\nVlož ho do svého AI nástroje, výsledné CSV pak importuj tlačítkem ⬆ Import.');
+    alert(t.alertPromptCopied);
     return;
   }
   const btn=document.getElementById('gen-action-btn');
   const origText=btn.textContent;
-  btn.textContent='Generuji…';btn.disabled=true;
+  btn.textContent=t.genLoading;btn.disabled=true;
   const prompt=`Generate exactly ${count} ${meta.name} vocabulary words on the topic "${topic}" for a ${level} level learner. Translations should be in ${nativeLang}.
 Return ONLY a JSON array, no preamble, no markdown:
 [{"word":"<word in ${meta.name}>","translation":"<translation in ${nativeLang}>","notes":"<brief usage note or example, or empty string>"}]`;
@@ -1022,12 +1073,12 @@ Return ONLY a JSON array, no preamble, no markdown:
       const s=raw.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
       const m=s.match(/\[[\s\S]*\]/);
       arr=JSON.parse(m?m[0]:s);
-    }catch{throw new Error('Nepodařilo se zparsovat odpověď LLM.');}
-    if(!Array.isArray(arr)||!arr.length)throw new Error('LLM nevrátil žádná slovíčka.');
+    }catch{throw new Error(t.errParseLlm);}
+    if(!Array.isArray(arr)||!arr.length)throw new Error(t.errLlmNoWords);
     genWords=arr.filter(w=>w.word&&w.translation);
     renderGenPreview();
   }catch(err){
-    alert('Chyba: '+err.message);
+    alert(t.errLlmFn(err.message));
   }finally{
     btn.textContent=origText;btn.disabled=false;
   }
@@ -1057,7 +1108,7 @@ function confirmGenerateImport(){
   });
   setVocab(vocabLang,arr);
   closeGenModal();renderVocabList();
-  alert(`Import dokončen: ${added} přidáno, ${skipped} přeskočeno (duplicity).`);
+  alert(t.alertImportDoneFn(added,skipped));
 }
 
 // ── FC DIRECTION ──
@@ -1099,7 +1150,7 @@ function startFlashcards(lang){
 function renderFC(){
   const body=document.getElementById('fc-body');
   if(!fcQueue.length){body.innerHTML=`<div class="fc-done"><div class="big">🎉</div><h2>${t.fcDoneTitle}</h2><p>${t.fcEmptyDesc}</p><button class="btn btn-primary" onclick="navTo('vocab')">${t.navVocab}</button></div>`;return;}
-  if(fcIdx>=fcQueue.length){const n=fcQueue.length;body.innerHTML=`<div class="fc-done"><div class="big">🎉</div><h2>${t.fcDoneTitle}</h2><p>${t.fcDoneDesc(n)}</p><button class="btn btn-primary" onclick="startFlashcards(document.getElementById('fc-lang-select').value)">Znovu</button></div>`;return;}
+  if(fcIdx>=fcQueue.length){const n=fcQueue.length;body.innerHTML=`<div class="fc-done"><div class="big">🎉</div><h2>${t.fcDoneTitle}</h2><p>${t.fcDoneDesc(n)}</p><button class="btn btn-primary" onclick="startFlashcards(document.getElementById('fc-lang-select').value)">${t.fcAgain}</button></div>`;return;}
   const w=fcQueue[fcIdx];
   const _rev=fcDirection==='reverse';
   const _front=_rev?w.translation:w.word;
@@ -1117,10 +1168,10 @@ function renderFC(){
     <div class="fc-rating" id="fc-rating">
       <div style="font-size:0.87rem;color:var(--mut)">${t.fcRateQ}</div>
       <div class="fc-rating-row">
-        <button class="fc-btn fc-btn-0" onclick="rateFC(0)">❌<br>Zapomněl</button>
-        <button class="fc-btn fc-btn-3" onclick="rateFC(3)">😐<br>Těžce</button>
-        <button class="fc-btn fc-btn-4" onclick="rateFC(4)">🙂<br>Dobře</button>
-        <button class="fc-btn fc-btn-5" onclick="rateFC(5)">⭐<br>Perfektně</button>
+        <button class="fc-btn fc-btn-0" onclick="rateFC(0)">❌<br>${t.fcRate0}</button>
+        <button class="fc-btn fc-btn-3" onclick="rateFC(3)">😐<br>${t.fcRate3}</button>
+        <button class="fc-btn fc-btn-4" onclick="rateFC(4)">🙂<br>${t.fcRate4}</button>
+        <button class="fc-btn fc-btn-5" onclick="rateFC(5)">⭐<br>${t.fcRate5}</button>
       </div>
     </div>`;
 }
