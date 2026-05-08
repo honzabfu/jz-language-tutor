@@ -911,7 +911,7 @@ async function generateVocab(){
 Return ONLY a JSON array, no preamble, no markdown:
 [{"word":"<word in ${meta.name}>","translation":"<translation in ${nativeLang}>","notes":"<brief usage note or example, or empty string>"}]`;
   try{
-    const raw=await safeLLM([{role:'user',content:prompt}],'');
+    const raw=await safeLLM([{role:'user',content:prompt}],'',Math.max(1024,count*80));
     let arr;
     try{
       const s=raw.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
@@ -1187,32 +1187,32 @@ function renderFeedback(tab){const el=document.getElementById('fb-content');if(!
 // ══════════════════════════════════════════════
 function clean(s){s=(s||'').trim();s=s.replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();if(!s.startsWith('{')){const m=s.match(/\{[\s\S]*\}/);if(m)s=m[0];}return s;}
 
-async function safeLLM(msgs,sys){
-  if(cfg.provider==='anthropic')return callAnthropic(msgs,sys);
-  if(cfg.provider==='openai')return callOpenAI(msgs,sys);
-  if(cfg.provider==='gemini')return callGemini(msgs,sys);
+async function safeLLM(msgs,sys,maxTokens=1024){
+  if(cfg.provider==='anthropic')return callAnthropic(msgs,sys,maxTokens);
+  if(cfg.provider==='openai')return callOpenAI(msgs,sys,maxTokens);
+  if(cfg.provider==='gemini')return callGemini(msgs,sys,maxTokens);
   if(cfg.provider==='ollama')return callOllama(msgs,sys);
-  if(cfg.provider==='custom')return callCustom(msgs,sys);
+  if(cfg.provider==='custom')return callCustom(msgs,sys,maxTokens);
   throw new Error('Unknown provider');
 }
-async function callAnthropic(msgs,sys){
+async function callAnthropic(msgs,sys,maxTokens=1024){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const filteredMsgs=msgs.filter(m=>m.role==='user'||m.role==='assistant');
-  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:1024,system:sys||undefined,messages:filteredMsgs})});
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,system:sys||undefined,messages:filteredMsgs})});
   if(!res.ok)throw new Error(await res.text());
   return(await res.json()).content[0].text;
 }
-async function callOpenAI(msgs,sys){
+async function callOpenAI(msgs,sys,maxTokens=1024){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
-  const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${cfg.apiKey}`},body:JSON.stringify({model:cfg.model,max_tokens:1024,messages:m})});
+  const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${cfg.apiKey}`},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,messages:m})});
   if(!res.ok)throw new Error(await res.text());
   return(await res.json()).choices[0].message.content;
 }
-async function callGemini(msgs,sys){
+async function callGemini(msgs,sys,maxTokens=1024){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const gm=msgs.filter(x=>x.role==='user'||x.role==='assistant').map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
-  const body={contents:gm,generationConfig:{maxOutputTokens:1024}};
+  const body={contents:gm,generationConfig:{maxOutputTokens:maxTokens}};
   if(sys)body.system_instruction={parts:[{text:sys}]};
   const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:generateContent?key=${cfg.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   if(!res.ok)throw new Error(await res.text());
@@ -1225,13 +1225,13 @@ async function callOllama(msgs,sys){
   if(!res.ok)throw new Error(await res.text());
   return(await res.json()).message.content;
 }
-async function callCustom(msgs,sys){
+async function callCustom(msgs,sys,maxTokens=1024){
   const base=(cfg.customUrl||'').replace(/\/$/,'');
   if(!base||!cfg.customModel)throw new Error('NO_KEY');
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
   const headers={'Content-Type':'application/json'};
   if(cfg.apiKey)headers['Authorization']=`Bearer ${cfg.apiKey}`;
-  const res=await fetch(`${base}/chat/completions`,{method:'POST',headers,body:JSON.stringify({model:cfg.customModel,max_tokens:1024,messages:m})});
+  const res=await fetch(`${base}/chat/completions`,{method:'POST',headers,body:JSON.stringify({model:cfg.customModel,max_tokens:maxTokens,messages:m})});
   if(!res.ok)throw new Error(await res.text());
   return(await res.json()).choices[0].message.content;
 }
