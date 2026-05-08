@@ -6,12 +6,13 @@
 
 ## Česky
 
+Webová/mobilní aplikace pro podporu výuky jazyků s AI tutorem, flashcards (SM-2 algoritmus), kvízovým režimem a správou slovní zásoby.
+
 | | | |
 |---|---|---|
 | ![Chat](screenshots/cs-chat.png) | ![Slovíčka](screenshots/cs-vocab.png) | ![Generování slovíček](screenshots/cs-generate.png) |
 | ![Flashcards](screenshots/cs-flashcards.png) | ![Quiz](screenshots/cs-quiz.png) | ![Nastavení](screenshots/cs-settings.png) |
 
-Webová/mobilní aplikace pro podporu výuky jazyků s AI tutorem, flashcards (SM-2 algoritmus), kvízovým režimem a správou slovní zásoby.
 
 ### Proč tuto aplikaci?
 
@@ -234,12 +235,13 @@ Gemini 2.0 Flash a GPT-4o-mini jsou výrazně levnější alternativy. Ollama (l
 
 <a name="english"></a>
 
+A Web/Mobile language learning app with an AI tutor, flashcards (SM-2 algorithm), quiz mode, and vocabulary management.
+
 | | | |
 |---|---|---|
 | ![Chat](screenshots/en-chat.png) | ![Vocabulary](screenshots/en-vocab.png) | ![Generate vocabulary](screenshots/en-generate.png) |
 | ![Flashcards](screenshots/en-flashcards.png) | ![Quiz](screenshots/en-quiz.png) | ![Settings](screenshots/en-settings.png) |
 
-A Web/Mobile language learning app with an AI tutor, flashcards (SM-2 algorithm), quiz mode, and vocabulary management.
 
 ### Why this app?
 
