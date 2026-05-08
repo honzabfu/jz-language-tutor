@@ -408,7 +408,7 @@ const LANG_META={english:{name:'English',native:'English',flag:'🇬🇧'},spani
 const SORT_MODES=['alpha','due','new'];
 let sortIdx=0;
 
-let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',level:'beginner',feedbackStyle:'balanced',uiLang:'cs',lessonMode:false};
+let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',level:'beginner',feedbackStyle:'balanced',uiLang:navigator.language.startsWith('cs')?'cs':'en',lessonMode:false};
 let chatHistory=[];
 let quizHistory=[];
 let currentLang='spanish';
