@@ -91,6 +91,21 @@ Vypiš 50 nejčastějších anglických přídavných jmen.
 Formát: anglické slovo,český překlad,příklad věty
 ```
 
+### Kolik slovíček přidávat?
+
+Flashcards a správa slovní zásoby jsou zcela zdarma — žádná AI volání. Při používání **Chat** a **Quiz** módů ale platí:
+
+> **Upozornění:** V Lesson módu se celý seznam slovíček odesílá s každou zprávou. Čím více slovíček, tím vyšší spotřeba tokenů a cena. Doporučujeme mít aktivně procvičovaných **20–50 slovíček** a zbytek archivovat exportem.
+
+### Ukládání dat a více zařízení
+
+Veškerá data (slovíčka, nastavení, SM-2 progress) jsou uložena **výhradně v lokálním úložišti prohlížeče** (localStorage). Data se nepřenášejí mezi zařízeními ani prohlížeči automaticky.
+
+Při používání více zařízení (telefon + počítač apod.):
+
+1. Na původním zařízení: **Nastavení → Export zálohy** → stáhni JSON soubor.
+2. Na novém zařízení: **Nastavení → Import zálohy** → nahraj stejný JSON soubor.
+
 ### Záloha a obnova
 
 **Nastavení → Export zálohy** — exportuje jeden JSON soubor se vším: nastavením, všemi slovíčky (všechny jazyky) a SM-2 daty.
@@ -259,6 +274,21 @@ Format: German word,English translation
 List the 50 most common English adjectives.
 Format: word,translation,example sentence
 ```
+
+### How many words should I add?
+
+Flashcards and vocabulary management are completely free — no AI calls. For **Chat** and **Quiz** modes:
+
+> **Note:** In Lesson mode, your entire vocabulary list is sent with every message. More words = more tokens = higher cost. We recommend keeping **20–50 actively practiced words** and archiving the rest via export.
+
+### Data storage and multiple devices
+
+All data (vocabulary, settings, SM-2 progress) is stored **exclusively in the browser's local storage** (localStorage). Data is not synced between devices or browsers automatically.
+
+When using multiple devices (phone + computer etc.):
+
+1. On the original device: **Settings → Export backup** → download the JSON file.
+2. On the new device: **Settings → Import backup** → load the same JSON file.
 
 ### Backup & restore
 
