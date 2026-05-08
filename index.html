@@ -833,8 +833,11 @@ Level: ${levelMap[cfg.level]||'A1-A2'}.
 Words to test (use them, don't show translations): ${wordList}.
 Ask a question that tests one of these words naturally (e.g. fill-in-the-blank, translate, use in a sentence). 
 Respond ONLY with JSON: {"question":"<question text in ${meta.name} and/or ${cfg.uiLang==='cs'?'Czech':'English'}>","targetWord":"<the word being tested>"}`;
+  if(cfg.provider==='custom'&&(!cfg.customUrl||!cfg.customModel)){appendQuizMsg('tutor',t.errNoKey);return;}
   if(cfg.provider!=='ollama'&&cfg.provider!=='custom'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendQuizMsg('tutor',t.errNoKey);return;}
-  const raw=await safeLLM([{role:'user',content:prompt}],'');
+  let raw;
+  try{raw=await safeLLM([{role:'user',content:prompt}],'');}
+  catch(err){appendQuizMsg('tutor',err.message==='NO_KEY'?t.errNoKey:t.errGeneric+' '+err.message);return;}
   try{const p=JSON.parse(clean(raw));appendQuizMsg('tutor',p.question);quizHistory.push({role:'assistant-question',word:p.targetWord,content:p.question});}
   catch{appendQuizMsg('tutor',clean(raw));}
 }
@@ -856,7 +859,9 @@ Question asked: "${question}"
 Target word: "${targetWord}"
 Student answer: "${txt}"
 Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief feedback in ${cfg.uiLang==='cs'?'Czech':'English'}>","nextQuestion":"<next question testing a different word or same if failed>","nextTargetWord":"<word being tested next>"}`;
-  const raw=await safeLLM([{role:'user',content:evalPrompt}],'');
+  let raw;
+  try{raw=await safeLLM([{role:'user',content:evalPrompt}],'');}
+  catch(err){appendQuizMsg('tutor',err.message==='NO_KEY'?t.errNoKey:t.errGeneric+' '+err.message);document.getElementById('quiz-send-btn').disabled=false;return;}
   try{
     const p=JSON.parse(clean(raw));
     const icon=p.correct?'✅':'❌';
