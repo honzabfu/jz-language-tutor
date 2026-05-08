@@ -1,4 +1,4 @@
-# # jz-language-tutor
+# jz-language-tutor
 
 Standalone single-file language learning app with AI tutor, flashcards (SM-2), quiz mode, and vocabulary management.
 
