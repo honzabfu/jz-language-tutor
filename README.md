@@ -31,11 +31,12 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
 ### Jak začít
 
 1. Otevři aplikaci na **[honzabfu.github.io/jz-language-tutor](https://honzabfu.github.io/jz-language-tutor/)** — nebo stáhni `index.html` a otevři lokálně v prohlížeči.
-2. Získej API klíč:
-   - **Google Gemini** — [aistudio.google.com](https://aistudio.google.com) (zdarma)
+2. Získej API klíč (pro Chat a Quiz; Flashcards a správu slovíček klíč nepotřebuješ):
+   - **Google Gemini** — [aistudio.google.com](https://aistudio.google.com) — zdarma s limitem (15 requestů/min, 1 500/den)
    - **Anthropic Claude** — [console.anthropic.com](https://console.anthropic.com)
    - **OpenAI** — [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
-   - **Ollama** — lokální provoz bez klíče, zdarma
+   - **Ollama** — lokální provoz bez klíče, zcela zdarma
+   - **Vlastní provider** — libovolný OpenAI-compatible endpoint (viz níže)
 3. Přejdi do **Nastavení** → vyber poskytovatele a zadej API klíč.
 4. Přejdi do záložky **Slovíčka** → přidej první slovíčka.
 5. Procvičuj na záložce **Flashcards** nebo **Quiz**.
@@ -122,14 +123,39 @@ gracias,děkuji
 
 Podporován je i formát s tabulátorem jako oddělovačem. Duplicity jsou přeskočeny automaticky.
 
+### Co funguje bez API klíče
+
+| Funkce               | Bez klíče | S klíčem |
+|----------------------|-----------|----------|
+| Správa slovíčků      | ✅        | ✅       |
+| Flashcards (SM-2)    | ✅        | ✅       |
+| Import/export zálohy | ✅        | ✅       |
+| Chat tutor           | ❌        | ✅       |
+| Quiz mód             | ❌        | ✅       |
+
+> Výjimka: **Ollama** (lokální) a **vlastní provider** nevyžadují klíč — stačí URL.
+
 ### Poskytovatelé AI
 
-| Poskytovatel  | Zdroj API klíče             | Poznámky                                                      |
-|---------------|-----------------------------|---------------------------------------------------------------|
-| Anthropic     | console.anthropic.com       | Vyžaduje povolení `anthropic-dangerous-direct-browser-calls`  |
-| OpenAI        | platform.openai.com/api-keys| Standardní bearer token                                       |
-| Google Gemini | aistudio.google.com         | K dispozici bezplatný tier                                    |
-| Ollama        | —                           | Lokální, bez klíče; URL nastav v Nastavení                    |
+| Poskytovatel  | Zdroj API klíče              | Poznámky                                                      |
+|---------------|------------------------------|---------------------------------------------------------------|
+| Anthropic     | console.anthropic.com        | Vyžaduje povolení `anthropic-dangerous-direct-browser-calls`  |
+| OpenAI        | platform.openai.com/api-keys | Standardní bearer token                                       |
+| Google Gemini | aistudio.google.com          | **Zdarma** s limitem (15 req/min, 1 500/den); bez kreditů     |
+| Ollama        | —                            | Lokální, bez klíče; URL nastav v Nastavení                    |
+| Vlastní       | závisí na provideru          | Libovolný OpenAI-compatible endpoint                          |
+
+### Vlastní / Custom provider
+
+V Nastavení vyber **Vlastní (OpenAI-compatible)** a zadej:
+
+- **API URL** — základní URL endpointu (bez `/chat/completions`), např.:
+  - `https://openrouter.ai/api/v1` — [OpenRouter](https://openrouter.ai) (přístup k desítkám modelů)
+  - `https://api.groq.com/openai/v1` — [Groq](https://groq.com) (velmi rychlé inference, free tier)
+  - `http://localhost:1234/v1` — [LM Studio](https://lmstudio.ai) (lokální GUI pro modely)
+  - Jakýkoliv jiný OpenAI-compatible server
+- **Model** — název modelu přesně tak, jak ho endpoint očekává (např. `meta-llama/llama-3.3-70b-instruct`)
+- **API klíč** — pokud ho endpoint vyžaduje (volitelné)
 
 ### PWA (volitelné)
 
@@ -215,11 +241,12 @@ The primary purpose of this app is **practicing the vocabulary words you enter y
 ### Getting started
 
 1. Open the app at **[honzabfu.github.io/jz-language-tutor](https://honzabfu.github.io/jz-language-tutor/)** — or download `index.html` and open it locally in any browser.
-2. Get an API key:
-   - **Google Gemini** — [aistudio.google.com](https://aistudio.google.com) (free tier)
+2. Get an API key (required for Chat and Quiz only; Flashcards and vocabulary management work without one):
+   - **Google Gemini** — [aistudio.google.com](https://aistudio.google.com) — free with limits (15 req/min, 1 500/day)
    - **Anthropic Claude** — [console.anthropic.com](https://console.anthropic.com)
    - **OpenAI** — [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
-   - **Ollama** — runs locally, no key needed, free
+   - **Ollama** — runs locally, no key needed, completely free
+   - **Custom provider** — any OpenAI-compatible endpoint (see below)
 3. Go to **Settings** → select your provider and enter the API key.
 4. Go to the **Vocab** tab → add your first words.
 5. Practice in the **Flashcards** or **Quiz** tab.
@@ -306,14 +333,39 @@ gracias,thank you
 
 Tab-separated is also supported. Duplicates are skipped automatically.
 
+### What works without an API key
+
+| Feature              | No key | With key |
+|----------------------|--------|----------|
+| Vocabulary management| ✅     | ✅       |
+| Flashcards (SM-2)    | ✅     | ✅       |
+| Backup import/export | ✅     | ✅       |
+| Chat tutor           | ❌     | ✅       |
+| Quiz mode            | ❌     | ✅       |
+
+> Exception: **Ollama** (local) and **custom provider** don't require a key — just a URL.
+
 ### Providers
 
 | Provider      | API key source               | Notes                                                         |
 |---------------|------------------------------|---------------------------------------------------------------|
 | Anthropic     | console.anthropic.com        | Requires `anthropic-dangerous-direct-browser-calls` enabled   |
 | OpenAI        | platform.openai.com/api-keys | Standard bearer token                                         |
-| Google Gemini | aistudio.google.com          | Free tier available                                           |
+| Google Gemini | aistudio.google.com          | **Free** with limits (15 req/min, 1 500/day); no credits needed |
 | Ollama        | —                            | Local, no key needed; configure URL in Settings               |
+| Custom        | depends on provider          | Any OpenAI-compatible endpoint                                |
+
+### Custom provider
+
+In Settings select **Custom (OpenAI-compatible)** and fill in:
+
+- **API URL** — base URL of the endpoint (without `/chat/completions`), e.g.:
+  - `https://openrouter.ai/api/v1` — [OpenRouter](https://openrouter.ai) (access to dozens of models)
+  - `https://api.groq.com/openai/v1` — [Groq](https://groq.com) (very fast inference, free tier)
+  - `http://localhost:1234/v1` — [LM Studio](https://lmstudio.ai) (local GUI for models)
+  - Any other OpenAI-compatible server
+- **Model** — model name exactly as the endpoint expects (e.g. `meta-llama/llama-3.3-70b-instruct`)
+- **API key** — if required by the endpoint (optional)
 
 ### PWA (optional)
 
