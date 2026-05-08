@@ -39,6 +39,7 @@ select:focus{outline:2px solid var(--pri)}
 .msg.user{align-self:flex-end;align-items:flex-end}
 .msg.tutor{align-self:flex-start;align-items:flex-start}
 .bubble{padding:10px 13px;border-radius:var(--r);line-height:1.5;word-break:break-word}
+.bubble code{font-family:monospace;background:rgba(0,0,0,.07);padding:1px 4px;border-radius:3px;font-size:.92em}
 .msg.user .bubble{background:var(--pri);color:#fff;border-bottom-right-radius:4px}
 .msg.tutor .bubble{background:var(--sur);border:1px solid var(--bdr);border-bottom-left-radius:4px;box-shadow:var(--sh)}
 .msg-meta{font-size:11px;color:var(--mut)}
@@ -1205,12 +1206,21 @@ function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessag
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
 function scrollBottom(){const l=document.getElementById('msg-list');l.scrollTop=l.scrollHeight;}
 function setTyping(v){document.getElementById('typing-row').style.display=v?'flex':'none';if(v)scrollBottom();}
+function renderMarkdown(text){
+  return text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/_(.+?)_/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code>$1</code>')
+    .replace(/\n/g,'<br>');
+}
 function appendMsg(role,text,translation){
   document.getElementById('empty').style.display='none';
   const list=document.getElementById('msg-list');
   const typingRow=document.getElementById('typing-row');
   const wrap=document.createElement('div');wrap.className=`msg ${role}`;
-  const bubble=document.createElement('div');bubble.className='bubble';bubble.textContent=text;wrap.appendChild(bubble);
+  const bubble=document.createElement('div');bubble.className='bubble';bubble.innerHTML=renderMarkdown(text);wrap.appendChild(bubble);
   const meta=document.createElement('div');meta.className='msg-meta';meta.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});wrap.appendChild(meta);
   if(role==='tutor'&&translation){
     const td=document.createElement('div');td.className='translation';td.innerHTML=`<strong>${t.translationLabel}:</strong> ${translation}`;
@@ -1225,6 +1235,7 @@ function buildSystemPrompt(){
   const meta=LANG_META[currentLang];
   const lvMap={beginner:'A1-A2',intermediate:'B1-B2',advanced:'C1-C2'};
   const fbMap={gentle:'encouraging and gentle',balanced:'balanced',strict:'strict and exhaustive'};
+  const uiLangName=cfg.uiLang==='cs'?'Czech':'English';
   let vocabCtx='';
   if(cfg.lessonMode){
     const arr=getVocab(currentLang).slice(0,50);
@@ -1234,7 +1245,7 @@ function buildSystemPrompt(){
 Student level: ${lvMap[getLangLevel(currentLang)]||'A1-A2'}. Feedback style: ${fbMap[cfg.feedbackStyle]||'balanced'}.${vocabCtx}
 ${cfg.lessonMode?'LESSON MODE: Actively incorporate vocabulary from the list above into your responses and explanations.':''}
 Respond ONLY with valid JSON (no markdown, no preamble):
-{"reply":"<response in ${meta.name}>","translation":"<English translation>","feedback":{"positive":["..."],"corrections":["..."],"suggestions":["..."]}}`;
+{"reply":"<response in ${meta.name}>","translation":"<${uiLangName} translation>","feedback":{"positive":["..."],"corrections":["..."],"suggestions":["..."]}}`;
 }
 
 async function sendMessage(){
