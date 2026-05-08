@@ -814,7 +814,7 @@ Respond ONLY with JSON: {"question":"<question text in ${meta.name} and/or ${cfg
   if(cfg.provider!=='ollama'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendQuizMsg('tutor',t.errNoKey);return;}
   const raw=await safeLLM([{role:'user',content:prompt}],'');
   try{const p=JSON.parse(clean(raw));appendQuizMsg('tutor',p.question);quizHistory.push({role:'assistant-question',word:p.targetWord,content:p.question});}
-  catch{appendQuizMsg('tutor',raw);}
+  catch{appendQuizMsg('tutor',clean(raw));}
 }
 function quizKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();quizSend();}}
 async function quizSend(){
@@ -843,7 +843,7 @@ Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief fe
     if(p.nextQuestion){
       setTimeout(()=>{appendQuizMsg('tutor',p.nextQuestion);quizHistory.push({role:'assistant-question',word:p.nextTargetWord,content:p.nextQuestion});},600);
     }
-  }catch{appendQuizMsg('tutor',raw);}
+  }catch{appendQuizMsg('tutor',t.errGeneric+' '+clean(raw));}
   document.getElementById('quiz-send-btn').disabled=false;
 }
 function appendQuizMsg(role,text){
@@ -927,7 +927,7 @@ function renderFeedback(tab){const el=document.getElementById('fb-content');if(!
 // ══════════════════════════════════════════════
 // LLM PROVIDERS
 // ══════════════════════════════════════════════
-function clean(s){return(s||'').replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();}
+function clean(s){s=(s||'').trim();s=s.replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();if(!s.startsWith('{')){const m=s.match(/\{[\s\S]*\}/);if(m)s=m[0];}return s;}
 
 async function safeLLM(msgs,sys){
   if(cfg.provider==='anthropic')return callAnthropic(msgs,sys);
