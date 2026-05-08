@@ -244,6 +244,7 @@ select:focus{outline:2px solid var(--pri)}
     <button class="btn btn-ghost btn-sm" onclick="exportVocab()">⬇ Export</button>
     <button class="btn btn-ghost btn-sm" onclick="openGenerateModal()">✨ Generovat</button>
     <button class="btn btn-ghost btn-sm" id="sort-btn" onclick="cycleSort()">↕ Řadit</button>
+    <button class="btn btn-ghost btn-sm" onclick="deleteLearnedWords()">🗑 Naučená</button>
     <span id="vocab-count" style="font-size:12px;color:var(--mut);margin-left:auto"></span>
   </div>
   <div id="vocab-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
@@ -748,6 +749,14 @@ function deleteWord(){
   if(!confirm('Smazat toto slovo?'))return;
   const arr=getVocab(vocabLang).filter(w=>w.id!==editingWordId);
   setVocab(vocabLang,arr);closeWordModal();renderVocabList();
+}
+function deleteLearnedWords(){
+  const arr=getVocab(vocabLang);
+  const learned=arr.filter(w=>w.sm2&&w.sm2.reps>=1&&w.sm2.interval>=21);
+  if(!learned.length){alert('Žádná naučená slovíčka (interval opakování ≥ 21 dní).');return;}
+  if(!confirm(`Smazat ${learned.length} naučených slovíček (interval ≥ 21 dní)?`))return;
+  setVocab(vocabLang,arr.filter(w=>!(w.sm2&&w.sm2.reps>=1&&w.sm2.interval>=21)));
+  renderVocabList();
 }
 
 // ── IMPORT ──
