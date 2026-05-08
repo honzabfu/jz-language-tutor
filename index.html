@@ -94,6 +94,9 @@ select:focus{outline:2px solid var(--pri)}
 .due-now{background:#fee2e2;color:var(--err)}
 .due-soon{background:#fef9c3;color:#854d0e}
 .due-ok{background:#dcfce7;color:var(--ok)}
+.vocab-item.selected{background:var(--prit)}
+.vocab-item .cb{width:18px;height:18px;flex-shrink:0;accent-color:var(--pri);cursor:pointer;pointer-events:none}
+#bulk-bar{display:none;align-items:center;gap:8px;padding:10px 12px;background:var(--sur);border-top:2px solid var(--pri);flex-shrink:0}
 .vocab-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--mut);gap:8px;padding:32px;text-align:center}
 
 /* ADD/EDIT WORD MODAL */
@@ -245,9 +248,16 @@ select:focus{outline:2px solid var(--pri)}
     <button class="btn btn-ghost btn-sm" onclick="openGenerateModal()">✨ Generovat</button>
     <button class="btn btn-ghost btn-sm" id="sort-btn" onclick="cycleSort()">↕ Řadit</button>
     <button class="btn btn-ghost btn-sm" onclick="deleteLearnedWords()">🗑 Naučená</button>
+    <button class="btn btn-ghost btn-sm" id="bulk-mode-btn" onclick="toggleBulkMode()">☑ Vybrat</button>
     <span id="vocab-count" style="font-size:12px;color:var(--mut);margin-left:auto"></span>
   </div>
   <div id="vocab-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
+  <div id="bulk-bar">
+    <span id="bulk-count" style="font-size:13px;flex:1;color:var(--mut)">0 vybráno</span>
+    <button class="btn btn-ghost btn-sm" onclick="bulkSelectAll()">Vybrat vše</button>
+    <button class="btn btn-danger btn-sm" onclick="deleteSelectedWords()">Smazat</button>
+    <button class="btn btn-ghost btn-sm" onclick="toggleBulkMode()">Zrušit</button>
+  </div>
 </div>
 
 <!-- ═══════ FLASHCARD VIEW ═══════ -->
@@ -509,6 +519,8 @@ let fcIdx=0;
 let fcRevealed=false;
 let fcDirection='normal';
 let genWords=[];
+let bulkSelectMode=false;
+const selectedIds=new Set();
 
 // ── I18N ──
 const I18N={
@@ -707,9 +719,16 @@ function renderVocabList(){
     else if(due<=now){badge='Dnes';cls='due-now';}
     else if(due-now<86400000){badge='Zítra';cls='due-soon';}
     else{const d=Math.round((due-now)/86400000);badge=`${d}d`;cls='due-ok';}
-    const el=document.createElement('div');el.className='vocab-item';
-    el.innerHTML=`<div class="wi"><div class="word">${esc(w.word)}</div><div class="trans">${esc(w.translation)}${w.notes?` · <em>${esc(w.notes)}</em>`:''}</div></div><span class="sm2-badge ${cls}">${badge}</span>`;
-    el.addEventListener('click',()=>openWordModal(w));
+    const sel=bulkSelectMode&&selectedIds.has(w.id);
+    const el=document.createElement('div');el.className='vocab-item'+(sel?' selected':'');
+    const inner=`<div class="wi"><div class="word">${esc(w.word)}</div><div class="trans">${esc(w.translation)}${w.notes?` · <em>${esc(w.notes)}</em>`:''}</div></div><span class="sm2-badge ${cls}">${badge}</span>`;
+    if(bulkSelectMode){
+      el.innerHTML=`<input type="checkbox" class="cb"${sel?' checked':''}>${inner}`;
+      el.addEventListener('click',()=>toggleItemSelect(w.id));
+    }else{
+      el.innerHTML=inner;
+      el.addEventListener('click',()=>openWordModal(w));
+    }
     list.appendChild(el);
   });
 }
@@ -757,6 +776,33 @@ function deleteLearnedWords(){
   if(!confirm(`Smazat ${learned.length} naučených slovíček (interval ≥ 21 dní)?`))return;
   setVocab(vocabLang,arr.filter(w=>!(w.sm2&&w.sm2.reps>=1&&w.sm2.interval>=21)));
   renderVocabList();
+}
+function toggleBulkMode(){
+  bulkSelectMode=!bulkSelectMode;
+  selectedIds.clear();
+  document.getElementById('bulk-bar').style.display=bulkSelectMode?'flex':'none';
+  document.getElementById('bulk-mode-btn').textContent=bulkSelectMode?'✕ Výběr':'☑ Vybrat';
+  document.getElementById('bulk-count').textContent='0 vybráno';
+  renderVocabList();
+}
+function toggleItemSelect(id){
+  if(selectedIds.has(id))selectedIds.delete(id);else selectedIds.add(id);
+  document.getElementById('bulk-count').textContent=`${selectedIds.size} vybráno`;
+  renderVocabList();
+}
+function bulkSelectAll(){
+  const q=(document.getElementById('vocab-search').value||'').toLowerCase();
+  let arr=getVocab(vocabLang);
+  if(q)arr=arr.filter(w=>w.word.toLowerCase().includes(q)||w.translation.toLowerCase().includes(q)||(w.tags||[]).some(tg=>tg.toLowerCase().includes(q)));
+  arr.forEach(w=>selectedIds.add(w.id));
+  document.getElementById('bulk-count').textContent=`${selectedIds.size} vybráno`;
+  renderVocabList();
+}
+function deleteSelectedWords(){
+  if(!selectedIds.size){alert('Nejsou vybrána žádná slovíčka.');return;}
+  if(!confirm(`Smazat ${selectedIds.size} vybraných slovíček?`))return;
+  setVocab(vocabLang,getVocab(vocabLang).filter(w=>!selectedIds.has(w.id)));
+  toggleBulkMode();
 }
 
 // ── IMPORT ──
