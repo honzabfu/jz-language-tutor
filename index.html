@@ -19,17 +19,17 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 
 /* NAV BAR */
 #navbar{display:flex;background:var(--sur);border-top:1px solid var(--bdr);flex-shrink:0;padding-bottom:var(--sb)}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;background:none;border:none;cursor:pointer;color:var(--mut);font-size:10px;gap:3px;transition:color .15s}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;background:none;border:none;cursor:pointer;color:var(--mut);font-size:0.67rem;gap:3px;transition:color .15s}
 .nav-btn svg{width:22px;height:22px}
 .nav-btn.active{color:var(--pri)}
 
 /* HEADER */
 .hdr{background:var(--sur);border-bottom:1px solid var(--bdr);padding:10px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;box-shadow:var(--sh)}
-.hdr h1{font-size:16px;font-weight:700;flex:1}
+.hdr h1{font-size:1.07rem;font-weight:700;flex:1}
 .icon-btn{background:none;border:none;cursor:pointer;padding:6px;border-radius:var(--rs);color:var(--mut);display:flex;align-items:center;justify-content:center}
 .icon-btn:hover{background:var(--bg);color:var(--txt)}
 .icon-btn svg{width:20px;height:20px}
-select{border:1px solid var(--bdr);border-radius:var(--rs);padding:6px 8px;font-size:13px;background:var(--sur);color:var(--txt);cursor:pointer}
+select{border:1px solid var(--bdr);border-radius:var(--rs);padding:6px 8px;font-size:0.87rem;background:var(--sur);color:var(--txt);cursor:pointer}
 select:focus{outline:2px solid var(--pri)}
 
 /* MESSAGES */
@@ -42,13 +42,13 @@ select:focus{outline:2px solid var(--pri)}
 .bubble code{font-family:monospace;background:rgba(0,0,0,.07);padding:1px 4px;border-radius:3px;font-size:.92em}
 .msg.user .bubble{background:var(--pri);color:#fff;border-bottom-right-radius:4px}
 .msg.tutor .bubble{background:var(--sur);border:1px solid var(--bdr);border-bottom-left-radius:4px;box-shadow:var(--sh)}
-.msg-meta{font-size:11px;color:var(--mut)}
-.translation{font-size:12px;color:var(--mut);font-style:italic;margin-top:3px;padding:5px 9px;background:var(--bg);border-radius:var(--rs);border:1px solid var(--bdr);display:none}
-.translate-btn{background:none;border:none;font-size:11px;color:var(--pri);cursor:pointer;padding:2px 0}
+.msg-meta{font-size:0.73rem;color:var(--mut)}
+.translation{font-size:0.8rem;color:var(--mut);font-style:italic;margin-top:3px;padding:5px 9px;background:var(--bg);border-radius:var(--rs);border:1px solid var(--bdr);display:none}
+.translate-btn{background:none;border:none;font-size:0.73rem;color:var(--pri);cursor:pointer;padding:2px 0}
 #empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--mut);text-align:center;padding:32px}
-#empty .flag{font-size:48px}
-#empty h2{font-size:17px;font-weight:600;color:var(--txt)}
-#empty p{font-size:14px;line-height:1.5}
+#empty .flag{font-size:3.2rem}
+#empty h2{font-size:1.13rem;font-weight:600;color:var(--txt)}
+#empty p{font-size:0.93rem;line-height:1.5}
 .typing{align-self:flex-start;display:flex;align-items:center;gap:5px;padding:10px 13px;background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);border-bottom-left-radius:4px;box-shadow:var(--sh)}
 .dot{width:7px;height:7px;background:var(--mut);border-radius:50%;animation:bo .9s infinite}
 .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
@@ -59,40 +59,40 @@ select:focus{outline:2px solid var(--pri)}
 #feedback-bar{display:none;flex-shrink:0;border-top:1px solid var(--bdr);background:var(--sur)}
 #feedback-bar.visible{display:block}
 .fb-tabs{display:flex;border-bottom:1px solid var(--bdr)}
-.fb-tab{flex:1;padding:7px 4px;font-size:11px;font-weight:600;background:none;border:none;cursor:pointer;color:var(--mut);border-bottom:2px solid transparent}
+.fb-tab{flex:1;padding:7px 4px;font-size:0.73rem;font-weight:600;background:none;border:none;cursor:pointer;color:var(--mut);border-bottom:2px solid transparent}
 .fb-tab.active{color:var(--pri);border-bottom-color:var(--pri)}
-.fb-content{padding:8px 13px;font-size:13px;line-height:1.5;max-height:80px;overflow-y:auto}
+.fb-content{padding:8px 13px;font-size:0.87rem;line-height:1.5;max-height:80px;overflow-y:auto}
 .fb-content ul{padding-left:16px}
 .fb-content li{margin-bottom:2px}
 
 /* MODE TOGGLE */
 .mode-toggle{display:flex;background:#e2e8f0;border-radius:20px;padding:2px;gap:0}
-.mode-opt{font-size:11px;padding:3px 9px;border-radius:18px;font-weight:600;cursor:pointer;border:none;background:transparent;color:#64748b;white-space:nowrap;transition:background .15s,color .15s,box-shadow .15s;line-height:1.5}
+.mode-opt{font-size:0.73rem;padding:3px 9px;border-radius:18px;font-weight:600;cursor:pointer;border:none;background:transparent;color:#64748b;white-space:nowrap;transition:background .15s,color .15s,box-shadow .15s;line-height:1.5}
 .mode-opt.active{background:var(--sur);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .mode-opt.lesson.active{background:#fef9c3;color:#854d0e}
 
 /* INPUT */
 #input-area{background:var(--sur);border-top:1px solid var(--bdr);padding:8px 10px;padding-bottom:calc(8px + var(--sb));display:flex;gap:7px;align-items:flex-end;flex-shrink:0}
-#msg-input{flex:1;border:1px solid var(--bdr);border-radius:var(--r);padding:9px 12px;font-size:15px;font-family:inherit;resize:none;outline:none;max-height:110px;line-height:1.4;background:var(--bg);transition:border-color .2s}
+#msg-input{flex:1;border:1px solid var(--bdr);border-radius:var(--r);padding:9px 12px;font-size:1rem;font-family:inherit;resize:none;outline:none;max-height:110px;line-height:1.4;background:var(--bg);transition:border-color .2s}
 #msg-input:focus{border-color:var(--pri);background:var(--sur)}
 #send-btn{background:var(--pri);color:#fff;border:none;border-radius:var(--r);padding:10px 13px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s}
 #send-btn:hover{background:var(--prid)}
 #send-btn:disabled{opacity:.4;cursor:default}
 #send-btn svg{width:19px;height:19px}
-.provider-badge{font-size:11px;padding:3px 7px;border-radius:20px;background:var(--prit);color:var(--pri);font-weight:600;white-space:nowrap}
+.provider-badge{font-size:0.73rem;padding:3px 7px;border-radius:20px;background:var(--prit);color:var(--pri);font-weight:600;white-space:nowrap}
 .provider-badge.warn{background:#fffbeb;color:var(--warn)}
 
 /* ── VOCAB VIEW ── */
 #vocab-view{background:var(--bg)}
 .vocab-toolbar{display:flex;gap:7px;padding:10px 12px;background:var(--sur);border-bottom:1px solid var(--bdr);flex-wrap:wrap;align-items:center}
-.vocab-toolbar input[type=text]{flex:1;min-width:120px;border:1px solid var(--bdr);border-radius:var(--rs);padding:7px 10px;font-size:14px;font-family:inherit;background:var(--bg)}
+.vocab-toolbar input[type=text]{flex:1;min-width:120px;border:1px solid var(--bdr);border-radius:var(--rs);padding:7px 10px;font-size:0.93rem;font-family:inherit;background:var(--bg)}
 .vocab-toolbar input[type=text]:focus{outline:2px solid var(--pri)}
 #vocab-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .vocab-item{display:flex;align-items:center;gap:8px;padding:10px 13px;background:var(--sur);border-bottom:1px solid var(--bdr);animation:fi .15s ease}
 .vocab-item .wi{flex:1;min-width:0}
-.vocab-item .word{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.vocab-item .trans{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.vocab-item .sm2-badge{font-size:10px;padding:2px 6px;border-radius:10px;font-weight:600;flex-shrink:0}
+.vocab-item .word{font-weight:600;font-size:0.93rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vocab-item .trans{font-size:0.8rem;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vocab-item .sm2-badge{font-size:0.67rem;padding:2px 6px;border-radius:10px;font-weight:600;flex-shrink:0}
 .due-now{background:#fee2e2;color:var(--err)}
 .due-soon{background:#fef9c3;color:#854d0e}
 .due-ok{background:#dcfce7;color:var(--ok)}
@@ -106,66 +106,66 @@ select:focus{outline:2px solid var(--pri)}
 .overlay.open{display:flex}
 .sheet{background:var(--sur);border-radius:var(--r) var(--r) 0 0;padding:20px 16px;padding-bottom:calc(20px + var(--sb));width:100%;max-width:560px;max-height:80vh;overflow-y:auto;animation:su .2s ease}
 @keyframes su{from{transform:translateY(100%)}to{transform:none}}
-.sheet h2{font-size:16px;font-weight:700;margin-bottom:16px}
+.sheet h2{font-size:1.07rem;font-weight:700;margin-bottom:16px}
 .field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
-.field label{font-size:13px;font-weight:600}
-.field input,.field textarea,.field select{border:1px solid var(--bdr);border-radius:var(--rs);padding:8px 11px;font-size:14px;font-family:inherit;background:var(--bg);color:var(--txt);width:100%}
+.field label{font-size:0.87rem;font-weight:600}
+.field input,.field textarea,.field select{border:1px solid var(--bdr);border-radius:var(--rs);padding:8px 11px;font-size:0.93rem;font-family:inherit;background:var(--bg);color:var(--txt);width:100%}
 .field input:focus,.field textarea:focus,.field select:focus{outline:2px solid var(--pri);background:var(--sur)}
 .field textarea{resize:vertical;min-height:60px}
-.hint{font-size:12px;color:var(--mut)}
+.hint{font-size:0.8rem;color:var(--mut)}
 .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
-.btn{padding:8px 15px;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn{padding:8px 15px;border-radius:var(--rs);font-size:0.93rem;font-weight:600;cursor:pointer;border:none;transition:all .15s}
 .btn-primary{background:var(--pri);color:#fff}
 .btn-primary:hover{background:var(--prid)}
 .btn-ghost{background:transparent;border:1px solid var(--bdr);color:var(--txt)}
 .btn-ghost:hover{background:var(--bg)}
 .btn-danger{background:transparent;border:1px solid var(--err);color:var(--err)}
 .btn-danger:hover{background:#fef2f2}
-.btn-sm{padding:5px 10px;font-size:12px}
+.btn-sm{padding:5px 10px;font-size:0.8rem}
 
 /* ── FLASHCARD VIEW ── */
 #fc-view{background:var(--bg)}
 .fc-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:16px}
 .fc-card{width:100%;max-width:380px;background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);box-shadow:0 4px 16px rgba(0,0,0,.08);min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center;cursor:pointer;transition:transform .15s}
 .fc-card:active{transform:scale(.98)}
-.fc-word{font-size:26px;font-weight:700;color:var(--txt);margin-bottom:6px}
-.fc-notes{font-size:13px;color:var(--mut)}
-.fc-translation{font-size:20px;color:var(--pri);font-weight:600;margin-top:10px;display:none}
-.fc-hint{font-size:12px;color:var(--mut);margin-top:8px}
+.fc-word{font-size:1.73rem;font-weight:700;color:var(--txt);margin-bottom:6px}
+.fc-notes{font-size:0.87rem;color:var(--mut)}
+.fc-translation{font-size:1.33rem;color:var(--pri);font-weight:600;margin-top:10px;display:none}
+.fc-hint{font-size:0.8rem;color:var(--mut);margin-top:8px}
 .fc-rating{display:none;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:380px}
 .fc-rating-row{display:flex;gap:8px;width:100%;justify-content:center}
-.fc-btn{flex:1;max-width:90px;padding:10px 6px;border-radius:var(--rs);font-size:13px;font-weight:700;border:none;cursor:pointer;transition:all .15s}
+.fc-btn{flex:1;max-width:90px;padding:10px 6px;border-radius:var(--rs);font-size:0.87rem;font-weight:700;border:none;cursor:pointer;transition:all .15s}
 .fc-btn-0{background:#fee2e2;color:var(--err)}
 .fc-btn-3{background:#fef9c3;color:#854d0e}
 .fc-btn-4{background:#dbeafe;color:var(--prid)}
 .fc-btn-5{background:#dcfce7;color:var(--ok)}
-.fc-progress{font-size:13px;color:var(--mut)}
+.fc-progress{font-size:0.87rem;color:var(--mut)}
 .fc-done{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--mut);text-align:center;padding:32px}
-.fc-done .big{font-size:48px}
-.fc-done h2{font-size:18px;font-weight:600;color:var(--txt)}
+.fc-done .big{font-size:3.2rem}
+.fc-done h2{font-size:1.2rem;font-weight:600;color:var(--txt)}
 
 /* ── QUIZ VIEW ── */
 #quiz-view{background:var(--bg)}
 #quiz-msg-list{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
 #quiz-input-area{background:var(--sur);border-top:1px solid var(--bdr);padding:8px 10px;padding-bottom:calc(8px + var(--sb));display:flex;gap:7px;align-items:flex-end;flex-shrink:0}
-#quiz-input{flex:1;border:1px solid var(--bdr);border-radius:var(--r);padding:9px 12px;font-size:15px;font-family:inherit;resize:none;outline:none;max-height:80px;line-height:1.4;background:var(--bg);transition:border-color .2s}
+#quiz-input{flex:1;border:1px solid var(--bdr);border-radius:var(--r);padding:9px 12px;font-size:1rem;font-family:inherit;resize:none;outline:none;max-height:80px;line-height:1.4;background:var(--bg);transition:border-color .2s}
 #quiz-input:focus{border-color:var(--pri);background:var(--sur)}
 #quiz-send-btn{background:var(--pri);color:#fff;border:none;border-radius:var(--r);padding:10px 13px;cursor:pointer;display:flex;align-items:center;flex-shrink:0}
 #quiz-send-btn:disabled{opacity:.4;cursor:default}
 #quiz-send-btn svg{width:19px;height:19px}
 .quiz-empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--mut);text-align:center;padding:32px}
-.quiz-empty-state h2{font-size:17px;font-weight:600;color:var(--txt)}
-.quiz-empty-state p{font-size:14px;line-height:1.5}
+.quiz-empty-state h2{font-size:1.13rem;font-weight:600;color:var(--txt)}
+.quiz-empty-state p{font-size:0.93rem;line-height:1.5}
 
 /* ── SETTINGS VIEW ── */
 #settings-view{background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .settings-body{padding:16px;max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
 .card{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:14px}
-.card h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);margin-bottom:12px}
+.card h3{font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);margin-bottom:12px}
 .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
 .status-ok{background:var(--ok)}.status-empty{background:var(--mut)}
-.provider-status{font-size:12px;color:var(--mut);margin-top:4px}
-.save-toast{display:none;font-size:13px;color:var(--ok);font-weight:600;margin-left:8px}
+.provider-status{font-size:0.8rem;color:var(--mut);margin-top:4px}
+.save-toast{display:none;font-size:0.87rem;color:var(--ok);font-weight:600;margin-left:8px}
 .save-toast.visible{display:inline}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
 
@@ -174,19 +174,19 @@ select:focus{outline:2px solid var(--pri)}
 .gen-word-item:last-child{border-bottom:none}
 .gen-word-item input[type=checkbox]{margin-top:2px;flex-shrink:0;width:16px;height:16px;cursor:pointer}
 .gen-word-info{flex:1;min-width:0}
-.gen-word-info .gen-w{font-weight:600;font-size:14px}
-.gen-word-info .gen-t{font-size:12px;color:var(--mut)}
+.gen-word-info .gen-w{font-weight:600;font-size:0.93rem}
+.gen-word-info .gen-t{font-size:0.8rem;color:var(--mut)}
 /* ── FC DIRECTION ── */
-.fc-dir-btn{font-size:11px;padding:4px 9px;border-radius:20px;border:1px solid var(--bdr);background:var(--sur);color:var(--mut);cursor:pointer;white-space:nowrap;font-weight:600}
+.fc-dir-btn{font-size:0.73rem;padding:4px 9px;border-radius:20px;border:1px solid var(--bdr);background:var(--sur);color:var(--mut);cursor:pointer;white-space:nowrap;font-weight:600}
 .fc-dir-btn.rev{background:var(--prit);color:var(--pri);border-color:var(--pri)}
 
 /* ── PWA INSTALL BANNER ── */
-#pwa-banner{display:none;align-items:center;gap:10px;padding:9px 14px;background:var(--prit);border-top:1px solid #bfdbfe;flex-shrink:0;font-size:13px}
+#pwa-banner{display:none;align-items:center;gap:10px;padding:9px 14px;background:var(--prit);border-top:1px solid #bfdbfe;flex-shrink:0;font-size:0.87rem}
 #pwa-banner.visible{display:flex}
 #pwa-banner span{flex:1;color:var(--txt)}
-#pwa-banner .pwa-install-btn{background:var(--pri);color:#fff;border:none;border-radius:var(--rs);padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+#pwa-banner .pwa-install-btn{background:var(--pri);color:#fff;border:none;border-radius:var(--rs);padding:6px 12px;font-size:0.87rem;font-weight:600;cursor:pointer;white-space:nowrap}
 #pwa-banner .pwa-install-btn:hover{background:var(--prid)}
-#pwa-banner .pwa-dismiss-btn{background:none;border:none;cursor:pointer;color:var(--mut);font-size:18px;line-height:1;padding:2px 4px;flex-shrink:0}
+#pwa-banner .pwa-dismiss-btn{background:none;border:none;cursor:pointer;color:var(--mut);font-size:1.2rem;line-height:1;padding:2px 4px;flex-shrink:0}
 </style>
 
 </head>
@@ -213,7 +213,7 @@ select:focus{outline:2px solid var(--pri)}
       <select id="lang-select" onchange="onLangChange(this.value)"></select>
     </div>
   </div>
-  <div id="vocab-cost-warn" style="display:none;background:#fef9c3;color:#854d0e;font-size:12px;padding:6px 14px;border-bottom:1px solid #fde68a">⚠ Slovník obsahuje více než 40 slovíček — v Lesson módu se odesílají s každým dotazem, což zvyšuje cenu.</div>
+  <div id="vocab-cost-warn" style="display:none;background:#fef9c3;color:#854d0e;font-size:0.8rem;padding:6px 14px;border-bottom:1px solid #fde68a">⚠ Slovník obsahuje více než 40 slovíček — v Lesson módu se odesílají s každým dotazem, což zvyšuje cenu.</div>
   <div id="msg-list">
     <div id="empty">
       <div class="flag" id="empty-flag">🌍</div>
@@ -258,11 +258,11 @@ select:focus{outline:2px solid var(--pri)}
     <button class="btn btn-ghost btn-sm" id="sort-btn" onclick="cycleSort()">↕ Řadit</button>
     <button class="btn btn-ghost btn-sm" onclick="deleteLearnedWords()">🗑 Naučená</button>
     <button class="btn btn-ghost btn-sm" id="bulk-mode-btn" onclick="toggleBulkMode()">☑ Vybrat</button>
-    <span id="vocab-count" style="font-size:12px;color:var(--mut);margin-left:auto"></span>
+    <span id="vocab-count" style="font-size:0.8rem;color:var(--mut);margin-left:auto"></span>
   </div>
   <div id="vocab-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
   <div id="bulk-bar">
-    <span id="bulk-count" style="font-size:13px;flex:1;color:var(--mut)">0 vybráno</span>
+    <span id="bulk-count" style="font-size:0.87rem;flex:1;color:var(--mut)">0 vybráno</span>
     <button class="btn btn-ghost btn-sm" onclick="bulkSelectAll()">Vybrat vše</button>
     <button class="btn btn-danger btn-sm" onclick="deleteSelectedWords()">Smazat</button>
     <button class="btn btn-ghost btn-sm" onclick="toggleBulkMode()">Zrušit</button>
@@ -292,7 +292,7 @@ select:focus{outline:2px solid var(--pri)}
     <h1 id="quiz-hdr-title">Quiz</h1>
     <select id="quiz-lang-select" onchange="startQuiz()"></select>
   </div>
-  <div id="quiz-msg-list"><div id="quiz-empty" class="quiz-empty-state"><div style="font-size:40px">🎯</div><h2 id="quiz-empty-title"></h2><p id="quiz-empty-desc"></p></div><div id="quiz-typing-row" class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+  <div id="quiz-msg-list"><div id="quiz-empty" class="quiz-empty-state"><div style="font-size:2.67rem">🎯</div><h2 id="quiz-empty-title"></h2><p id="quiz-empty-desc"></p></div><div id="quiz-typing-row" class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
   <div id="quiz-input-area">
     <textarea id="quiz-input" rows="1" oninput="autoResize(this);document.getElementById('quiz-send-btn').disabled=!this.value.trim()" onkeydown="quizKey(event)" placeholder="Tvoje odpověď…"></textarea>
     <button id="quiz-send-btn" onclick="quizSend()" disabled>
@@ -376,7 +376,7 @@ select:focus{outline:2px solid var(--pri)}
     </div>
     <div class="card">
       <h3 id="s-data-title">Data & záloha</h3>
-      <p id="s-data-desc" style="font-size:13px;color:var(--mut);margin-bottom:12px">Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.</p>
+      <p id="s-data-desc" style="font-size:0.87rem;color:var(--mut);margin-bottom:12px">Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.</p>
       <div class="btn-row">
         <button id="s-save-btn" class="btn btn-primary" onclick="saveSettings()">Uložit</button>
         <button id="s-export-btn" class="btn btn-ghost" onclick="exportAll()">Export zálohy</button>
@@ -387,8 +387,8 @@ select:focus{outline:2px solid var(--pri)}
       </div>
       <span id="save-toast" class="save-toast"></span>
     </div>
-    <div style="text-align:center;font-size:12px;color:var(--mut);padding-bottom:4px">Language Tutor v0.2 · PWA: <span id="s-add-to-home">přidej do plochy</span> · <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" style="color:var(--mut)" id="s-help-link">Nápověda</a></div>
-    <div style="text-align:center;font-size:12px;color:var(--mut);padding-bottom:8px"><a href="https://jan-zak.cz" target="_blank" rel="noopener" style="color:var(--mut)">jan-zak.cz</a> — další užitečné aplikace</div>
+    <div style="text-align:center;font-size:0.8rem;color:var(--mut);padding-bottom:4px">Language Tutor v0.2 · PWA: <span id="s-add-to-home">přidej do plochy</span> · <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" style="color:var(--mut)" id="s-help-link">Nápověda</a></div>
+    <div style="text-align:center;font-size:0.8rem;color:var(--mut);padding-bottom:8px"><a href="https://jan-zak.cz" target="_blank" rel="noopener" style="color:var(--mut)">jan-zak.cz</a> — další užitečné aplikace</div>
   </div>
 </div>
 
@@ -434,7 +434,7 @@ select:focus{outline:2px solid var(--pri)}
     <div class="field"><label>Překlad *</label><input type="text" id="modal-trans" placeholder="ahoj"></div>
     <div class="field"><label>Poznámka</label><textarea id="modal-notes" placeholder="příklad použití, kontext…"></textarea></div>
     <div class="field"><label>Tagy</label><input type="text" id="modal-tags" placeholder="pozdravy, B1 (čárkou oddělené)"></div>
-    <div id="modal-sm2-info" style="display:none;background:var(--bg2);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--muted);display:none">
+    <div id="modal-sm2-info" style="display:none;background:var(--bg2);border-radius:10px;padding:10px 14px;font-size:0.87rem;color:var(--muted);display:none">
       <div style="font-weight:600;margin-bottom:6px;color:var(--fg)">Statistiky opakování</div>
       <div id="modal-sm2-rows" style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px"></div>
     </div>
@@ -451,8 +451,8 @@ select:focus{outline:2px solid var(--pri)}
 <div id="import-modal" class="overlay" onclick="closeImportOutside(event)">
   <div class="sheet">
     <h2 id="import-title">Import slovní zásoby</h2>
-    <p style="font-size:13px;color:var(--mut);margin-bottom:12px">CSV nebo TXT: každý řádek = <code>slovo,překlad,poznámka(volitelné)</code><br>Nebo vlož JSON ze zálohy.</p>
-    <div class="field"><label>Obsah souboru</label><textarea id="import-text" style="min-height:120px;font-family:monospace;font-size:12px" placeholder="hola,ahoj,pozdrav&#10;gracias,děkuji"></textarea></div>
+    <p style="font-size:0.87rem;color:var(--mut);margin-bottom:12px">CSV nebo TXT: každý řádek = <code>slovo,překlad,poznámka(volitelné)</code><br>Nebo vlož JSON ze zálohy.</p>
+    <div class="field"><label>Obsah souboru</label><textarea id="import-text" style="min-height:120px;font-family:monospace;font-size:0.8rem" placeholder="hola,ahoj,pozdrav&#10;gracias,děkuji"></textarea></div>
     <div class="field"><label>Cílový jazyk</label>
       <select id="import-lang-sel"></select>
     </div>
@@ -477,8 +477,8 @@ select:focus{outline:2px solid var(--pri)}
 <div id="backup-import-modal" class="overlay" onclick="closeBackupModalOutside(event)">
   <div class="sheet">
     <h2>Import zálohy</h2>
-    <p style="font-size:13px;color:var(--mut);margin-bottom:12px">Vlož JSON zálohu nebo ji načti ze souboru.</p>
-    <div class="field"><label>JSON záloha</label><textarea id="backup-import-text" style="min-height:120px;font-family:monospace;font-size:12px" placeholder='{"version":2,"cfg":{},"vocab":{}}'></textarea></div>
+    <p style="font-size:0.87rem;color:var(--mut);margin-bottom:12px">Vlož JSON zálohu nebo ji načti ze souboru.</p>
+    <div class="field"><label>JSON záloha</label><textarea id="backup-import-text" style="min-height:120px;font-family:monospace;font-size:0.8rem" placeholder='{"version":2,"cfg":{},"vocab":{}}'></textarea></div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="confirmBackupImport()">Importovat</button>
       <button class="btn btn-ghost" onclick="closeBackupModal()">Zrušit</button>
@@ -519,7 +519,7 @@ select:focus{outline:2px solid var(--pri)}
       </div>
     </div>
     <div id="gen-preview" style="display:none">
-      <p style="font-size:13px;color:var(--mut);margin-bottom:8px">Zaškrtni slovíčka, která chceš importovat:</p>
+      <p style="font-size:0.87rem;color:var(--mut);margin-bottom:8px">Zaškrtni slovíčka, která chceš importovat:</p>
       <div id="gen-word-list" style="max-height:260px;overflow-y:auto;border:1px solid var(--bdr);border-radius:var(--rs)"></div>
       <div class="btn-row" style="margin-top:12px">
         <button class="btn btn-primary" onclick="confirmGenerateImport()">Importovat vybrané</button>
@@ -797,7 +797,7 @@ function renderVocabList(){
   const countEl=document.getElementById('vocab-count');
   const countTxt=q?`${arr.length} / ${total} slov`:`${total} slov`;
   countEl.innerHTML=total>40?`${countTxt} <span style="color:var(--warn)" title="V Lesson módu se odesílá až 50 slovíček s každým dotazem — vyšší cena">⚠</span>`:countTxt;
-  if(!arr.length){list.innerHTML=`<div class="vocab-empty"><div style="font-size:40px">📚</div><h2>${q?'Žádné shody':'Zatím prázdné'}</h2><p>${q?'Zkus jiné hledání':'Přidej první slovíčko tlačítkem +'}</p></div>`;return;}
+  if(!arr.length){list.innerHTML=`<div class="vocab-empty"><div style="font-size:2.67rem">📚</div><h2>${q?'Žádné shody':'Zatím prázdné'}</h2><p>${q?'Zkus jiné hledání':'Přidej první slovíčko tlačítkem +'}</p></div>`;return;}
   list.innerHTML='';
   const now=Date.now();
   arr.forEach(w=>{
@@ -1104,7 +1104,7 @@ function renderFC(){
   const _front=_rev?w.translation:w.word;
   const _back=_rev?w.word:w.translation;
   const _frontNotes=!_rev&&w.notes?`<div class="fc-notes">${esc(w.notes)}</div>`:'';
-  const _backNotes=_rev&&w.notes?`<div class="fc-notes" style="margin-top:6px;font-size:13px">${esc(w.notes)}</div>`:'';
+  const _backNotes=_rev&&w.notes?`<div class="fc-notes" style="margin-top:6px;font-size:0.87rem">${esc(w.notes)}</div>`:'';
   body.innerHTML=`
     <div class="fc-progress">${t.fcProgress(fcIdx+1,fcQueue.length)}</div>
     <div class="fc-card" onclick="revealFC()">
@@ -1114,7 +1114,7 @@ function renderFC(){
       <div class="fc-hint" id="fc-hint">${t.fcTap}</div>
     </div>
     <div class="fc-rating" id="fc-rating">
-      <div style="font-size:13px;color:var(--mut)">${t.fcRateQ}</div>
+      <div style="font-size:0.87rem;color:var(--mut)">${t.fcRateQ}</div>
       <div class="fc-rating-row">
         <button class="fc-btn fc-btn-0" onclick="rateFC(0)">❌<br>Zapomněl</button>
         <button class="fc-btn fc-btn-3" onclick="rateFC(3)">😐<br>Těžce</button>
