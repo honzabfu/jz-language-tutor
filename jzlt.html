@@ -9,841 +9,961 @@
 <meta name="apple-mobile-web-app-title" content="LangTutor">
 <title>Language Tutor</title>
 <style>
-  :root {
-    --c-bg: #f8f9fa; --c-surface: #ffffff; --c-border: #e2e8f0;
-    --c-primary: #3b82f6; --c-primary-d: #2563eb; --c-primary-t: #eff6ff;
-    --c-text: #1e293b; --c-muted: #64748b; --c-success: #16a34a;
-    --c-warn: #d97706; --c-error: #dc2626;
-    --c-user-bg: #3b82f6; --c-tutor-bg: #ffffff;
-    --r: 12px; --r-sm: 8px; --shadow: 0 1px 3px rgba(0,0,0,.08);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--c-bg); color: var(--c-text); font-size: 15px; }
+:root{--bg:#f8f9fa;--sur:#fff;--bdr:#e2e8f0;--pri:#3b82f6;--prid:#2563eb;--prit:#eff6ff;--txt:#1e293b;--mut:#64748b;--ok:#16a34a;--warn:#d97706;--err:#dc2626;--r:12px;--rs:8px;--sh:0 1px 3px rgba(0,0,0,.08);--sb:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);font-size:15px}
+#app{display:flex;flex-direction:column;height:100%;height:100dvh}
+.view{display:none;flex-direction:column;flex:1;overflow:hidden}
+.view.active{display:flex}
 
-/* ── Layout ── */
-#app { display: flex; flex-direction: column; height: 100%; height: 100dvh; }
-.view { display: none; flex-direction: column; flex: 1; overflow: hidden; }
-.view.active { display: flex; }
+/* NAV BAR */
+#navbar{display:flex;background:var(–sur);border-top:1px solid var(–bdr);flex-shrink:0;padding-bottom:var(–sb)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;background:none;border:none;cursor:pointer;color:var(–mut);font-size:10px;gap:3px;transition:color .15s}
+.nav-btn svg{width:22px;height:22px}
+.nav-btn.active{color:var(–pri)}
 
-/* ── Header ── */
-.hdr { background: var(–c-surface); border-bottom: 1px solid var(–c-border); padding: 12px 16px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; box-shadow: var(–shadow); }
-.hdr h1 { font-size: 17px; font-weight: 700; flex: 1; }
-.hdr-actions { display: flex; gap: 8px; align-items: center; }
-.icon-btn { background: none; border: none; cursor: pointer; padding: 6px; border-radius: var(–r-sm); color: var(–c-muted); display: flex; align-items: center; justify-content: center; }
-.icon-btn:hover { background: var(–c-bg); color: var(–c-text); }
-.icon-btn svg { width: 20px; height: 20px; }
+/* HEADER */
+.hdr{background:var(–sur);border-bottom:1px solid var(–bdr);padding:10px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;box-shadow:var(–sh)}
+.hdr h1{font-size:16px;font-weight:700;flex:1}
+.icon-btn{background:none;border:none;cursor:pointer;padding:6px;border-radius:var(–rs);color:var(–mut);display:flex;align-items:center;justify-content:center}
+.icon-btn:hover{background:var(–bg);color:var(–txt)}
+.icon-btn svg{width:20px;height:20px}
+select{border:1px solid var(–bdr);border-radius:var(–rs);padding:6px 8px;font-size:13px;background:var(–sur);color:var(–txt);cursor:pointer}
+select:focus{outline:2px solid var(–pri)}
 
-/* ── Lang selector ── */
-select { border: 1px solid var(–c-border); border-radius: var(–r-sm); padding: 6px 10px; font-size: 14px; background: var(–c-surface); color: var(–c-text); cursor: pointer; }
-select:focus { outline: 2px solid var(–c-primary); }
+/* MESSAGES */
+#msg-list{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.msg{max-width:80%;display:flex;flex-direction:column;gap:3px;animation:fi .2s ease}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.msg.user{align-self:flex-end;align-items:flex-end}
+.msg.tutor{align-self:flex-start;align-items:flex-start}
+.bubble{padding:10px 13px;border-radius:var(–r);line-height:1.5;word-break:break-word}
+.msg.user .bubble{background:var(–pri);color:#fff;border-bottom-right-radius:4px}
+.msg.tutor .bubble{background:var(–sur);border:1px solid var(–bdr);border-bottom-left-radius:4px;box-shadow:var(–sh)}
+.msg-meta{font-size:11px;color:var(–mut)}
+.translation{font-size:12px;color:var(–mut);font-style:italic;margin-top:3px;padding:5px 9px;background:var(–bg);border-radius:var(–rs);border:1px solid var(–bdr);display:none}
+.translate-btn{background:none;border:none;font-size:11px;color:var(–pri);cursor:pointer;padding:2px 0}
+#empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(–mut);text-align:center;padding:32px}
+#empty .flag{font-size:48px}
+#empty h2{font-size:17px;font-weight:600;color:var(–txt)}
+#empty p{font-size:14px;line-height:1.5}
+.typing{align-self:flex-start;display:flex;align-items:center;gap:5px;padding:10px 13px;background:var(–sur);border:1px solid var(–bdr);border-radius:var(–r);border-bottom-left-radius:4px;box-shadow:var(–sh)}
+.dot{width:7px;height:7px;background:var(–mut);border-radius:50%;animation:bo .9s infinite}
+.dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+@keyframes bo{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+#typing-row{display:none}
 
-/* ── Messages ── */
-#msg-list { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; -webkit-overflow-scrolling: touch; }
-.msg { max-width: 78%; display: flex; flex-direction: column; gap: 3px; animation: fadeIn .2s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.msg.user { align-self: flex-end; align-items: flex-end; }
-.msg.tutor { align-self: flex-start; align-items: flex-start; }
-.bubble { padding: 10px 14px; border-radius: var(–r); line-height: 1.5; word-break: break-word; }
-.msg.user .bubble { background: var(–c-user-bg); color: #fff; border-bottom-right-radius: 4px; }
-.msg.tutor .bubble { background: var(–c-tutor-bg); border: 1px solid var(–c-border); border-bottom-left-radius: 4px; box-shadow: var(–shadow); }
-.msg-meta { font-size: 11px; color: var(–c-muted); }
-.translation { font-size: 12px; color: var(–c-muted); font-style: italic; margin-top: 4px; padding: 6px 10px; background: var(–c-bg); border-radius: var(–r-sm); border: 1px solid var(–c-border); }
-.translate-btn { background: none; border: none; font-size: 11px; color: var(–c-primary); cursor: pointer; padding: 2px 0; }
+/* FEEDBACK BAR */
+#feedback-bar{display:none;flex-shrink:0;border-top:1px solid var(–bdr);background:var(–sur)}
+#feedback-bar.visible{display:block}
+.fb-tabs{display:flex;border-bottom:1px solid var(–bdr)}
+.fb-tab{flex:1;padding:7px 4px;font-size:11px;font-weight:600;background:none;border:none;cursor:pointer;color:var(–mut);border-bottom:2px solid transparent}
+.fb-tab.active{color:var(–pri);border-bottom-color:var(–pri)}
+.fb-content{padding:8px 13px;font-size:13px;line-height:1.5;max-height:80px;overflow-y:auto}
+.fb-content ul{padding-left:16px}
+.fb-content li{margin-bottom:2px}
 
-/* ── Empty state ── */
-#empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(–c-muted); text-align: center; padding: 32px; }
-#empty .flag { font-size: 48px; }
-#empty h2 { font-size: 18px; font-weight: 600; color: var(–c-text); }
-#empty p { font-size: 14px; line-height: 1.5; }
+/* LESSON MODE BADGE */
+.mode-badge{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:600;cursor:pointer;border:none;white-space:nowrap}
+.mode-chat{background:#f1f5f9;color:var(–mut)}
+.mode-lesson{background:#fef9c3;color:#854d0e}
 
-/* ── Typing indicator ── */
-.typing { align-self: flex-start; display: flex; align-items: center; gap: 6px; padding: 10px 14px; background: var(–c-tutor-bg); border: 1px solid var(–c-border); border-radius: var(–r); border-bottom-left-radius: 4px; box-shadow: var(–shadow); }
-.dot { width: 7px; height: 7px; background: var(–c-muted); border-radius: 50%; animation: bounce .9s infinite; }
-.dot:nth-child(2) { animation-delay: .15s; }
-.dot:nth-child(3) { animation-delay: .3s; }
-@keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
-#typing-row { display: none; }
+/* INPUT */
+#input-area{background:var(–sur);border-top:1px solid var(–bdr);padding:8px 10px;padding-bottom:calc(8px + var(–sb));display:flex;gap:7px;align-items:flex-end;flex-shrink:0}
+#msg-input{flex:1;border:1px solid var(–bdr);border-radius:var(–r);padding:9px 12px;font-size:15px;font-family:inherit;resize:none;outline:none;max-height:110px;line-height:1.4;background:var(–bg);transition:border-color .2s}
+#msg-input:focus{border-color:var(–pri);background:var(–sur)}
+#send-btn{background:var(–pri);color:#fff;border:none;border-radius:var(–r);padding:10px 13px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s}
+#send-btn:hover{background:var(–prid)}
+#send-btn:disabled{opacity:.4;cursor:default}
+#send-btn svg{width:19px;height:19px}
+.provider-badge{font-size:11px;padding:3px 7px;border-radius:20px;background:var(–prit);color:var(–pri);font-weight:600;white-space:nowrap}
+.provider-badge.warn{background:#fffbeb;color:var(–warn)}
 
-/* ── Feedback banner ── */
-#feedback-bar { display: none; flex-shrink: 0; border-top: 1px solid var(–c-border); background: var(–c-surface); }
-#feedback-bar.visible { display: block; }
-.fb-tabs { display: flex; border-bottom: 1px solid var(–c-border); }
-.fb-tab { flex: 1; padding: 8px; font-size: 12px; font-weight: 600; background: none; border: none; cursor: pointer; color: var(–c-muted); border-bottom: 2px solid transparent; }
-.fb-tab.active { color: var(–c-primary); border-bottom-color: var(–c-primary); }
-.fb-content { padding: 10px 14px; font-size: 13px; line-height: 1.5; max-height: 90px; overflow-y: auto; color: var(–c-text); }
-.fb-content ul { padding-left: 16px; }
-.fb-content li { margin-bottom: 3px; }
+/* ── VOCAB VIEW ── */
+#vocab-view{background:var(–bg)}
+.vocab-toolbar{display:flex;gap:7px;padding:10px 12px;background:var(–sur);border-bottom:1px solid var(–bdr);flex-wrap:wrap;align-items:center}
+.vocab-toolbar input[type=text]{flex:1;min-width:120px;border:1px solid var(–bdr);border-radius:var(–rs);padding:7px 10px;font-size:14px;font-family:inherit;background:var(–bg)}
+.vocab-toolbar input[type=text]:focus{outline:2px solid var(–pri)}
+#vocab-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.vocab-item{display:flex;align-items:center;gap:8px;padding:10px 13px;background:var(–sur);border-bottom:1px solid var(–bdr);animation:fi .15s ease}
+.vocab-item .wi{flex:1;min-width:0}
+.vocab-item .word{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vocab-item .trans{font-size:12px;color:var(–mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vocab-item .sm2-badge{font-size:10px;padding:2px 6px;border-radius:10px;font-weight:600;flex-shrink:0}
+.due-now{background:#fee2e2;color:var(–err)}
+.due-soon{background:#fef9c3;color:#854d0e}
+.due-ok{background:#dcfce7;color:var(–ok)}
+.vocab-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(–mut);gap:8px;padding:32px;text-align:center}
 
-/* ── Input area ── */
-#input-area { background: var(–c-surface); border-top: 1px solid var(–c-border); padding: 10px 12px; padding-bottom: calc(10px + var(–safe-bottom)); display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0; }
-#msg-input { flex: 1; border: 1px solid var(–c-border); border-radius: var(–r); padding: 10px 14px; font-size: 15px; font-family: inherit; resize: none; outline: none; max-height: 120px; line-height: 1.4; background: var(–c-bg); transition: border-color .2s; }
-#msg-input:focus { border-color: var(–c-primary); background: var(–c-surface); }
-#send-btn { background: var(–c-primary); color: #fff; border: none; border-radius: var(–r); padding: 10px 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .2s; }
-#send-btn:hover { background: var(–c-primary-d); }
-#send-btn:disabled { opacity: .45; cursor: default; }
-#send-btn svg { width: 20px; height: 20px; }
+/* ADD/EDIT WORD MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.sheet{background:var(–sur);border-radius:var(–r) var(–r) 0 0;padding:20px 16px;padding-bottom:calc(20px + var(–sb));width:100%;max-width:560px;max-height:80vh;overflow-y:auto;animation:su .2s ease}
+@keyframes su{from{transform:translateY(100%)}to{transform:none}}
+.sheet h2{font-size:16px;font-weight:700;margin-bottom:16px}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field label{font-size:13px;font-weight:600}
+.field input,.field textarea,.field select{border:1px solid var(–bdr);border-radius:var(–rs);padding:8px 11px;font-size:14px;font-family:inherit;background:var(–bg);color:var(–txt);width:100%}
+.field input:focus,.field textarea:focus,.field select:focus{outline:2px solid var(–pri);background:var(–sur)}
+.field textarea{resize:vertical;min-height:60px}
+.hint{font-size:12px;color:var(–mut)}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.btn{padding:8px 15px;border-radius:var(–rs);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:var(–pri);color:#fff}
+.btn-primary:hover{background:var(–prid)}
+.btn-ghost{background:transparent;border:1px solid var(–bdr);color:var(–txt)}
+.btn-ghost:hover{background:var(–bg)}
+.btn-danger{background:transparent;border:1px solid var(–err);color:var(–err)}
+.btn-danger:hover{background:#fef2f2}
+.btn-sm{padding:5px 10px;font-size:12px}
 
-/* ── Settings view ── */
-#settings-view { background: var(–c-bg); overflow-y: auto; -webkit-overflow-scrolling: touch; }
-.settings-body { padding: 20px 16px; max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-.card { background: var(–c-surface); border: 1px solid var(–c-border); border-radius: var(–r); padding: 16px; }
-.card h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(–c-muted); margin-bottom: 14px; }
-.field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
-.field:last-child { margin-bottom: 0; }
-.field label { font-size: 13px; font-weight: 600; }
-.field input, .field select { border: 1px solid var(–c-border); border-radius: var(–r-sm); padding: 9px 12px; font-size: 14px; font-family: inherit; background: var(–c-bg); color: var(–c-text); width: 100%; }
-.field input:focus, .field select:focus { outline: 2px solid var(–c-primary); }
-.field .hint { font-size: 12px; color: var(–c-muted); }
-.field .hint a { color: var(–c-primary); }
-.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
-.status-ok { background: var(–c-success); }
-.status-empty { background: var(–c-muted); }
-.provider-status { font-size: 12px; color: var(–c-muted); margin-top: 4px; }
-.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
-.btn { padding: 9px 16px; border-radius: var(–r-sm); font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all .15s; }
-.btn-primary { background: var(–c-primary); color: #fff; }
-.btn-primary:hover { background: var(–c-primary-d); }
-.btn-ghost { background: transparent; border: 1px solid var(–c-border); color: var(–c-text); }
-.btn-ghost:hover { background: var(–c-bg); }
-.btn-danger { background: transparent; border: 1px solid var(–c-error); color: var(–c-error); }
-.btn-danger:hover { background: #fef2f2; }
-.save-toast { display: none; font-size: 13px; color: var(–c-success); font-weight: 600; }
-.save-toast.visible { display: inline; }
+/* ── FLASHCARD VIEW ── */
+#fc-view{background:var(–bg)}
+.fc-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:16px}
+.fc-card{width:100%;max-width:380px;background:var(–sur);border:1px solid var(–bdr);border-radius:var(–r);box-shadow:0 4px 16px rgba(0,0,0,.08);min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;text-align:center;cursor:pointer;transition:transform .15s}
+.fc-card:active{transform:scale(.98)}
+.fc-word{font-size:26px;font-weight:700;color:var(–txt);margin-bottom:6px}
+.fc-notes{font-size:13px;color:var(–mut)}
+.fc-translation{font-size:20px;color:var(–pri);font-weight:600;margin-top:10px;display:none}
+.fc-hint{font-size:12px;color:var(–mut);margin-top:8px}
+.fc-rating{display:none;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:380px}
+.fc-rating-row{display:flex;gap:8px;width:100%;justify-content:center}
+.fc-btn{flex:1;max-width:90px;padding:10px 6px;border-radius:var(–rs);font-size:13px;font-weight:700;border:none;cursor:pointer;transition:all .15s}
+.fc-btn-0{background:#fee2e2;color:var(–err)}
+.fc-btn-3{background:#fef9c3;color:#854d0e}
+.fc-btn-4{background:#dbeafe;color:var(–prid)}
+.fc-btn-5{background:#dcfce7;color:var(–ok)}
+.fc-progress{font-size:13px;color:var(–mut)}
+.fc-done{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(–mut);text-align:center;padding:32px}
+.fc-done .big{font-size:48px}
+.fc-done h2{font-size:18px;font-weight:600;color:var(–txt)}
 
-/* ── Provider badge in header ── */
-.provider-badge { font-size: 12px; padding: 3px 8px; border-radius: 20px; background: var(–c-primary-t); color: var(–c-primary); font-weight: 600; white-space: nowrap; }
-.provider-badge.warn { background: #fffbeb; color: var(–c-warn); }
+/* ── QUIZ VIEW ── */
+#quiz-view{background:var(–bg)}
+#quiz-msg-list{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+#quiz-input-area{background:var(–sur);border-top:1px solid var(–bdr);padding:8px 10px;padding-bottom:calc(8px + var(–sb));display:flex;gap:7px;align-items:flex-end;flex-shrink:0}
+#quiz-input{flex:1;border:1px solid var(–bdr);border-radius:var(–r);padding:9px 12px;font-size:15px;font-family:inherit;resize:none;outline:none;max-height:80px;line-height:1.4;background:var(–bg);transition:border-color .2s}
+#quiz-input:focus{border-color:var(–pri);background:var(–sur)}
+#quiz-send-btn{background:var(–pri);color:#fff;border:none;border-radius:var(–r);padding:10px 13px;cursor:pointer;display:flex;align-items:center;flex-shrink:0}
+#quiz-send-btn:disabled{opacity:.4;cursor:default}
+#quiz-send-btn svg{width:19px;height:19px}
 
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-thumb { background: var(–c-border); border-radius: 3px; }
+/* ── SETTINGS VIEW ── */
+#settings-view{background:var(–bg);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.settings-body{padding:16px;max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.card{background:var(–sur);border:1px solid var(–bdr);border-radius:var(–r);padding:14px}
+.card h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(–mut);margin-bottom:12px}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.status-ok{background:var(–ok)}.status-empty{background:var(–mut)}
+.provider-status{font-size:12px;color:var(–mut);margin-top:4px}
+.save-toast{display:none;font-size:13px;color:var(–ok);font-weight:600;margin-left:8px}
+.save-toast.visible{display:inline}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(–bdr);border-radius:3px}
 </style>
 
 </head>
 <body>
 <div id="app">
 
-  <!-- ═══════════════ CHAT VIEW ═══════════════ -->
+<!-- ═══════ CHAT VIEW ═══════ -->
 
-  <div id="chat-view" class="view active">
-    <div class="hdr">
-      <button class="icon-btn" onclick="clearChat()" title="">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.68"/></svg>
+<div id="chat-view" class="view active">
+  <div class="hdr">
+    <button class="icon-btn" onclick="clearChat()" title="Nový rozhovor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.68"/></svg>
+    </button>
+    <h1 id="hdr-title">Language Tutor</h1>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button id="mode-btn" class="mode-badge mode-chat" onclick="toggleLessonMode()">Chat</button>
+      <span id="provider-badge" class="provider-badge warn">–</span>
+      <select id="lang-select" onchange="onLangChange(this.value)">
+        <option value="spanish">🇪🇸 Spanish</option>
+        <option value="french">🇫🇷 French</option>
+        <option value="german">🇩🇪 German</option>
+        <option value="japanese">🇯🇵 Japanese</option>
+        <option value="italian">🇮🇹 Italian</option>
+        <option value="portuguese">🇵🇹 Portuguese</option>
+        <option value="chinese">🇨🇳 Chinese</option>
+        <option value="korean">🇰🇷 Korean</option>
+      </select>
+    </div>
+  </div>
+  <div id="msg-list">
+    <div id="empty">
+      <div class="flag" id="empty-flag">🌍</div>
+      <h2 id="empty-title">Připrav se na procvičování!</h2>
+      <p id="empty-desc">Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.</p>
+    </div>
+    <div id="typing-row" class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  </div>
+  <div id="feedback-bar">
+    <div class="fb-tabs">
+      <button class="fb-tab active" onclick="switchFbTab('positive',this)">✅ <span id="fb-lbl-positive">Správně</span></button>
+      <button class="fb-tab" onclick="switchFbTab('corrections',this)">✏️ <span id="fb-lbl-corrections">Opravy</span></button>
+      <button class="fb-tab" onclick="switchFbTab('suggestions',this)">💡 <span id="fb-lbl-suggestions">Tipy</span></button>
+    </div>
+    <div id="fb-content" class="fb-content"></div>
+  </div>
+  <div id="input-area">
+    <textarea id="msg-input" rows="1" oninput="autoResize(this);document.getElementById('send-btn').disabled=!this.value.trim()" onkeydown="onKey(event)"></textarea>
+    <button id="send-btn" onclick="sendMessage()" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════ VOCAB VIEW ═══════ -->
+
+<div id="vocab-view" class="view">
+  <div class="hdr">
+    <h1 id="vocab-hdr-title">Slovní zásoba</h1>
+    <div style="display:flex;gap:6px;align-items:center">
+      <select id="vocab-lang-select" onchange="onVocabLangChange(this.value)">
+        <option value="spanish">🇪🇸 Spanish</option>
+        <option value="french">🇫🇷 French</option>
+        <option value="german">🇩🇪 German</option>
+        <option value="japanese">🇯🇵 Japanese</option>
+        <option value="italian">🇮🇹 Italian</option>
+        <option value="portuguese">🇵🇹 Portuguese</option>
+        <option value="chinese">🇨🇳 Chinese</option>
+        <option value="korean">🇰🇷 Korean</option>
+      </select>
+      <button class="icon-btn" onclick="openWordModal(null)" title="Přidat slovo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
-      <h1 id="hdr-title">Language Tutor</h1>
-      <div class="hdr-actions">
-        <span id="provider-badge" class="provider-badge warn">–</span>
-        <select id="lang-select" onchange="onLangChange(this.value)">
-          <option value="spanish">🇪🇸 Spanish</option>
-          <option value="french">🇫🇷 French</option>
-          <option value="german">🇩🇪 German</option>
-          <option value="japanese">🇯🇵 Japanese</option>
-          <option value="italian">🇮🇹 Italian</option>
-          <option value="portuguese">🇵🇹 Portuguese</option>
-          <option value="chinese">🇨🇳 Chinese</option>
-          <option value="korean">🇰🇷 Korean</option>
+    </div>
+  </div>
+  <div class="vocab-toolbar">
+    <input type="text" id="vocab-search" placeholder="Hledat…" oninput="renderVocabList()">
+    <button class="btn btn-ghost btn-sm" onclick="importVocab()">⬆ Import</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportVocab()">⬇ Export</button>
+    <button class="btn btn-ghost btn-sm" id="sort-btn" onclick="cycleSort()">↕ Řadit</button>
+    <span id="vocab-count" style="font-size:12px;color:var(--mut);margin-left:auto"></span>
+  </div>
+  <div id="vocab-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
+</div>
+
+<!-- ═══════ FLASHCARD VIEW ═══════ -->
+
+<div id="fc-view" class="view">
+  <div class="hdr">
+    <h1 id="fc-hdr-title">Flashcards</h1>
+    <select id="fc-lang-select" onchange="startFlashcards(this.value)">
+      <option value="spanish">🇪🇸 Spanish</option>
+      <option value="french">🇫🇷 French</option>
+      <option value="german">🇩🇪 German</option>
+      <option value="japanese">🇯🇵 Japanese</option>
+      <option value="italian">🇮🇹 Italian</option>
+      <option value="portuguese">🇵🇹 Portuguese</option>
+      <option value="chinese">🇨🇳 Chinese</option>
+      <option value="korean">🇰🇷 Korean</option>
+    </select>
+  </div>
+  <div id="fc-body" class="fc-body"></div>
+</div>
+
+<!-- ═══════ QUIZ VIEW ═══════ -->
+
+<div id="quiz-view" class="view">
+  <div class="hdr">
+    <button class="icon-btn" onclick="startQuiz()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.68"/></svg>
+    </button>
+    <h1 id="quiz-hdr-title">Quiz</h1>
+    <select id="quiz-lang-select" onchange="startQuiz()">
+      <option value="spanish">🇪🇸 Spanish</option>
+      <option value="french">🇫🇷 French</option>
+      <option value="german">🇩🇪 German</option>
+      <option value="japanese">🇯🇵 Japanese</option>
+      <option value="italian">🇮🇹 Italian</option>
+      <option value="portuguese">🇵🇹 Portuguese</option>
+      <option value="chinese">🇨🇳 Chinese</option>
+      <option value="korean">🇰🇷 Korean</option>
+    </select>
+  </div>
+  <div id="quiz-msg-list"></div>
+  <div id="quiz-input-area">
+    <textarea id="quiz-input" rows="1" oninput="autoResize(this);document.getElementById('quiz-send-btn').disabled=!this.value.trim()" onkeydown="quizKey(event)" placeholder="Tvoje odpověď…"></textarea>
+    <button id="quiz-send-btn" onclick="quizSend()" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════ SETTINGS VIEW ═══════ -->
+
+<div id="settings-view" class="view">
+  <div class="hdr">
+    <h1 id="settings-title">Nastavení</h1>
+  </div>
+  <div class="settings-body">
+    <div class="card">
+      <h3 id="s-provider-title">LLM Poskytovatel</h3>
+      <div class="field"><label>Poskytovatel</label>
+        <select id="cfg-provider" onchange="onProviderChange(this.value)">
+          <option value="anthropic">Anthropic (Claude)</option>
+          <option value="openai">OpenAI (GPT)</option>
+          <option value="gemini">Google (Gemini)</option>
+          <option value="ollama">Ollama (lokální)</option>
         </select>
-        <button class="icon-btn" onclick="showView('settings')" title="">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </button>
+      </div>
+      <div class="field"><label>Model</label><select id="cfg-model"></select></div>
+      <div class="field" id="field-apikey"><label>API klíč</label>
+        <input type="password" id="cfg-apikey" placeholder="sk-…" autocomplete="off" oninput="updateApiKeyStatus()">
+        <div class="hint" id="apikey-hint"></div>
+        <div class="provider-status" id="apikey-status"></div>
+      </div>
+      <div class="field" id="field-ollama-url" style="display:none"><label>Ollama URL</label>
+        <input type="text" id="cfg-ollama-url" placeholder="http://localhost:11434">
+        <div class="hint">Ollama musí mít povoleno CORS pro tuto doménu.</div>
       </div>
     </div>
-
-```
-<div id="msg-list">
-  <div id="empty">
-    <div class="flag" id="empty-flag">🌍</div>
-    <h2 id="empty-title">Připrav se na procvičování!</h2>
-    <p id="empty-desc">Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.</p>
-  </div>
-  <div id="typing-row" class="typing">
-    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div class="card">
+      <h3>Chování tutora</h3>
+      <div class="field"><label>Úroveň studenta</label>
+        <select id="cfg-level">
+          <option value="beginner">Začátečník (A1–A2)</option>
+          <option value="intermediate">Mírně pokročilý (B1–B2)</option>
+          <option value="advanced">Pokročilý (C1–C2)</option>
+        </select>
+      </div>
+      <div class="field"><label>Styl zpětné vazby</label>
+        <select id="cfg-feedback-style">
+          <option value="gentle">Jemný (povzbuzující)</option>
+          <option value="balanced">Vyvážený</option>
+          <option value="strict">Přísný (každá chyba)</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <h3>UI</h3>
+      <div class="field"><label>Jazyk rozhraní</label>
+        <select id="cfg-ui-lang" onchange="onUiLangChange(this.value)">
+          <option value="cs">Čeština</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Data & záloha</h3>
+      <p style="font-size:13px;color:var(--mut);margin-bottom:12px">Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.</p>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="saveSettings()">Uložit</button>
+        <button class="btn btn-ghost" onclick="exportAll()">Export zálohy</button>
+        <button class="btn btn-ghost" onclick="importAll()">Import zálohy</button>
+      </div>
+      <div style="margin-top:10px" class="btn-row">
+        <button class="btn btn-danger" onclick="clearData()">Smazat vše</button>
+      </div>
+      <span id="save-toast" class="save-toast"></span>
+    </div>
+    <div style="text-align:center;font-size:12px;color:var(--mut);padding-bottom:4px">Language Tutor v0.2 · PWA: přidej do plochy</div>
   </div>
 </div>
 
-<div id="feedback-bar">
-  <div class="fb-tabs">
-    <button class="fb-tab active" onclick="switchFbTab('positive', this)" id="fb-tab-positive">✅ <span id="fb-lbl-positive">Správně</span></button>
-    <button class="fb-tab" onclick="switchFbTab('corrections', this)" id="fb-tab-corrections">✏️ <span id="fb-lbl-corrections">Opravy</span></button>
-    <button class="fb-tab" onclick="switchFbTab('suggestions', this)" id="fb-tab-suggestions">💡 <span id="fb-lbl-suggestions">Tipy</span></button>
-  </div>
-  <div id="fb-content" class="fb-content"></div>
-</div>
+<!-- ═══════ NAVBAR ═══════ -->
 
-<div id="input-area">
-  <textarea id="msg-input" rows="1" placeholder="" onkeydown="onKey(event)" oninput="autoResize(this)"></textarea>
-  <button id="send-btn" onclick="sendMessage()" disabled>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+<div id="navbar">
+  <button class="nav-btn active" id="nav-chat" onclick="navTo('chat')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span id="nav-lbl-chat">Chat</span>
+  </button>
+  <button class="nav-btn" id="nav-vocab" onclick="navTo('vocab')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    <span id="nav-lbl-vocab">Slovíčka</span>
+  </button>
+  <button class="nav-btn" id="nav-fc" onclick="navTo('fc')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+    <span id="nav-lbl-fc">Flashcards</span>
+  </button>
+  <button class="nav-btn" id="nav-quiz" onclick="navTo('quiz')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span id="nav-lbl-quiz">Quiz</span>
+  </button>
+  <button class="nav-btn" id="nav-settings" onclick="navTo('settings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span id="nav-lbl-settings">Nastavení</span>
   </button>
 </div>
-```
 
-  </div>
+<!-- ═══════ WORD MODAL ═══════ -->
 
-  <!-- ═══════════════ SETTINGS VIEW ═══════════════ -->
-
-  <div id="settings-view" class="view">
-    <div class="hdr">
-      <button class="icon-btn" onclick="showView('chat')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <h1 id="settings-title">Nastavení</h1>
-    </div>
-    <div class="settings-body">
-
-```
-  <!-- LLM Provider -->
-  <div class="card">
-    <h3 id="s-provider-title">LLM Poskytovatel</h3>
-    <div class="field">
-      <label id="s-provider-label">Poskytovatel</label>
-      <select id="cfg-provider" onchange="onProviderChange(this.value)">
-        <option value="anthropic">Anthropic (Claude)</option>
-        <option value="openai">OpenAI (GPT)</option>
-        <option value="gemini">Google (Gemini)</option>
-        <option value="ollama">Ollama (lokální)</option>
-      </select>
-    </div>
-    <div class="field" id="field-model">
-      <label id="s-model-label">Model</label>
-      <select id="cfg-model"></select>
-    </div>
-    <div class="field" id="field-apikey">
-      <label id="s-apikey-label">API klíč</label>
-      <input type="password" id="cfg-apikey" placeholder="sk-..." autocomplete="off">
-      <div class="hint" id="apikey-hint"></div>
-      <div class="provider-status" id="apikey-status"></div>
-    </div>
-    <div class="field" id="field-ollama-url" style="display:none">
-      <label>Ollama URL</label>
-      <input type="text" id="cfg-ollama-url" placeholder="http://localhost:11434">
-      <div class="hint">Ollama musí mít povoleno CORS pro tuto doménu.</div>
-    </div>
-  </div>
-
-  <!-- Tutor behaviour -->
-  <div class="card">
-    <h3 id="s-tutor-title">Chování tutora</h3>
-    <div class="field">
-      <label id="s-level-label">Úroveň studenta</label>
-      <select id="cfg-level">
-        <option value="beginner" id="opt-beginner">Začátečník (A1–A2)</option>
-        <option value="intermediate" id="opt-intermediate">Mírně pokročilý (B1–B2)</option>
-        <option value="advanced" id="opt-advanced">Pokročilý (C1–C2)</option>
-      </select>
-    </div>
-    <div class="field">
-      <label id="s-feedback-label">Styl zpětné vazby</label>
-      <select id="cfg-feedback-style">
-        <option value="gentle" id="opt-gentle">Jemný (povzbuzující)</option>
-        <option value="balanced" id="opt-balanced">Vyvážený</option>
-        <option value="strict" id="opt-strict">Přísný (každá chyba)</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- UI -->
-  <div class="card">
-    <h3>UI</h3>
-    <div class="field">
-      <label id="s-lang-label">Jazyk rozhraní</label>
-      <select id="cfg-ui-lang" onchange="onUiLangChange(this.value)">
-        <option value="cs">Čeština</option>
-        <option value="en">English</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Data -->
-  <div class="card">
-    <h3 id="s-data-title">Data</h3>
+<div id="word-modal" class="overlay" onclick="closeWordModalOutside(event)">
+  <div class="sheet">
+    <h2 id="modal-title">Přidat slovo</h2>
+    <div class="field"><label>Slovo / fráze *</label><input type="text" id="modal-word" placeholder="hola"></div>
+    <div class="field"><label>Překlad *</label><input type="text" id="modal-trans" placeholder="ahoj"></div>
+    <div class="field"><label>Poznámka</label><textarea id="modal-notes" placeholder="příklad použití, kontext…"></textarea></div>
+    <div class="field"><label>Tagy</label><input type="text" id="modal-tags" placeholder="pozdravy, B1 (čárkou oddělené)"></div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="saveSettings()"><span id="s-save-btn">Uložit nastavení</span></button>
-      <button class="btn btn-ghost" onclick="exportSettings()"><span id="s-export-btn">Export JSON</span></button>
-      <button class="btn btn-ghost" onclick="importSettings()"><span id="s-import-btn">Import JSON</span></button>
+      <button class="btn btn-primary" onclick="saveWord()">Uložit</button>
+      <button class="btn btn-ghost" onclick="closeWordModal()">Zrušit</button>
+      <button class="btn btn-danger" id="modal-delete-btn" onclick="deleteWord()" style="display:none">Smazat</button>
     </div>
-    <div style="margin-top:12px" class="btn-row">
-      <button class="btn btn-danger" onclick="clearData()"><span id="s-clear-btn">Smazat vše</span></button>
-    </div>
-    <span id="save-toast" class="save-toast"></span>
-  </div>
-
-  <!-- Version -->
-  <div style="text-align:center;font-size:12px;color:var(--c-muted);padding-bottom:8px">
-    Language Tutor v0.1 · <span id="s-pwa-hint">Pro PWA: přidej do plochy</span>
   </div>
 </div>
-```
 
+<!-- ═══════ IMPORT MODAL ═══════ -->
+
+<div id="import-modal" class="overlay" onclick="closeImportOutside(event)">
+  <div class="sheet">
+    <h2 id="import-title">Import slovní zásoby</h2>
+    <p style="font-size:13px;color:var(--mut);margin-bottom:12px">CSV nebo TXT: každý řádek = <code>slovo,překlad,poznámka(volitelné)</code><br>Nebo vlož JSON ze zálohy.</p>
+    <div class="field"><label>Obsah souboru</label><textarea id="import-text" style="min-height:120px;font-family:monospace;font-size:12px" placeholder="hola,ahoj,pozdrav&#10;gracias,děkuji"></textarea></div>
+    <div class="field"><label>Cílový jazyk</label>
+      <select id="import-lang-sel">
+        <option value="spanish">🇪🇸 Spanish</option>
+        <option value="french">🇫🇷 French</option>
+        <option value="german">🇩🇪 German</option>
+        <option value="japanese">🇯🇵 Japanese</option>
+        <option value="italian">🇮🇹 Italian</option>
+        <option value="portuguese">🇵🇹 Portuguese</option>
+        <option value="chinese">🇨🇳 Chinese</option>
+        <option value="korean">🇰🇷 Korean</option>
+      </select>
+    </div>
+    <div class="hint" id="import-preview" style="margin-bottom:10px"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="confirmImport()">Importovat</button>
+      <button class="btn btn-ghost" onclick="closeImportModal()">Zrušit</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('file-input').click()">📂 Ze souboru</button>
+    </div>
   </div>
-
-</div><!-- #app -->
+</div>
+<input type="file" id="file-input" accept=".csv,.txt,.json" style="display:none" onchange="loadFile(event)">
 
 <script>
 // ══════════════════════════════════════════════
-// I18N
+// CONSTANTS & STATE
 // ══════════════════════════════════════════════
-const I18N = {
-  cs: {
-    appTitle: 'Language Tutor', settingsTitle: 'Nastavení',
-    emptyTitle: 'Připrav se na procvičování!',
-    emptyDesc: 'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',
-    inputPlaceholder: lang => `Napiš zprávu v jazyce ${lang}…`,
-    typing: 'Tutor přemýšlí…',
-    sProviderTitle: 'LLM Poskytovatel', sProviderLabel: 'Poskytovatel',
-    sModelLabel: 'Model', sApiKeyLabel: 'API klíč',
-    sTutorTitle: 'Chování tutora', sLevelLabel: 'Úroveň studenta',
-    sFeedbackLabel: 'Styl zpětné vazby', sLangLabel: 'Jazyk rozhraní',
-    sDataTitle: 'Data', sSaveBtn: 'Uložit nastavení',
-    sExportBtn: 'Export JSON', sImportBtn: 'Import JSON', sClearBtn: 'Smazat vše',
-    saveToast: 'Uloženo ✓', clearConfirm: 'Opravdu smazat vše (včetně API klíčů)?',
-    importPrompt: 'Vlož JSON konfiguraci:',
-    noApiKey: 'API klíč není nastaven',
-    apiKeySet: 'API klíč nastaven', providerReady: 'Připraven',
-    fbPositive: 'Správně', fbCorrections: 'Opravy', fbSuggestions: 'Tipy',
-    pwaHint: 'Pro PWA: přidej do plochy',
-    apiHints: {
-      anthropic: 'Vygeneruj na console.anthropic.com',
-      openai: 'Vygeneruj na platform.openai.com/api-keys',
-      gemini: 'Vygeneruj na aistudio.google.com',
-      ollama: ''
-    },
-    levels: ['Začátečník (A1–A2)', 'Mírně pokročilý (B1–B2)', 'Pokročilý (C1–C2)'],
-    fbStyles: ['Jemný (povzbuzující)', 'Vyvážený', 'Přísný (každá chyba)'],
-    translateBtn: 'přeložit', hideTranslation: 'skrýt překlad',
-    translationLabel: 'Překlad (EN)',
-    errNoKey: 'API klíč není nastaven. Přejdi do Nastavení.',
-    errNetwork: 'Chyba sítě nebo CORS. Zkontroluj URL a klíč.',
-    errGeneric: 'Chyba při komunikaci s LLM:',
-    clearTooltip: 'Nový rozhovor', settingsTooltip: 'Nastavení',
-  },
-  en: {
-    appTitle: 'Language Tutor', settingsTitle: 'Settings',
-    emptyTitle: 'Ready to practice!',
-    emptyDesc: 'Type anything and the tutor will respond with explanations and feedback.',
-    inputPlaceholder: lang => `Type a message in ${lang}…`,
-    typing: 'Tutor is thinking…',
-    sProviderTitle: 'LLM Provider', sProviderLabel: 'Provider',
-    sModelLabel: 'Model', sApiKeyLabel: 'API key',
-    sTutorTitle: 'Tutor Behaviour', sLevelLabel: 'Student level',
-    sFeedbackLabel: 'Feedback style', sLangLabel: 'Interface language',
-    sDataTitle: 'Data', sSaveBtn: 'Save settings',
-    sExportBtn: 'Export JSON', sImportBtn: 'Import JSON', sClearBtn: 'Clear all',
-    saveToast: 'Saved ✓', clearConfirm: 'Really delete everything (incl. API keys)?',
-    importPrompt: 'Paste JSON configuration:',
-    noApiKey: 'API key not set',
-    apiKeySet: 'API key set', providerReady: 'Ready',
-    fbPositive: 'Correct', fbCorrections: 'Corrections', fbSuggestions: 'Tips',
-    pwaHint: 'For PWA: add to home screen',
-    apiHints: {
-      anthropic: 'Generate at console.anthropic.com',
-      openai: 'Generate at platform.openai.com/api-keys',
-      gemini: 'Generate at aistudio.google.com',
-      ollama: ''
-    },
-    levels: ['Beginner (A1–A2)', 'Intermediate (B1–B2)', 'Advanced (C1–C2)'],
-    fbStyles: ['Gentle (encouraging)', 'Balanced', 'Strict (every error)'],
-    translateBtn: 'translate', hideTranslation: 'hide translation',
-    translationLabel: 'Translation (EN)',
-    errNoKey: 'API key not set. Go to Settings.',
-    errNetwork: 'Network error or CORS issue. Check URL and key.',
-    errGeneric: 'LLM error:',
-    clearTooltip: 'New conversation', settingsTooltip: 'Settings',
-  }
-};
+const MODELS={anthropic:['claude-sonnet-4-5','claude-opus-4-5','claude-haiku-4-5-20251001'],openai:['gpt-4o','gpt-4o-mini','gpt-4-turbo','gpt-3.5-turbo'],gemini:['gemini-2.0-flash','gemini-1.5-pro','gemini-1.5-flash'],ollama:['llama3','llama3:8b','mistral','phi3','gemma2']};
+const LANG_META={spanish:{name:'Spanish',native:'Español',flag:'🇪🇸'},french:{name:'French',native:'Français',flag:'🇫🇷'},german:{name:'German',native:'Deutsch',flag:'🇩🇪'},japanese:{name:'Japanese',native:'日本語',flag:'🇯🇵'},italian:{name:'Italian',native:'Italiano',flag:'🇮🇹'},portuguese:{name:'Portuguese',native:'Português',flag:'🇵🇹'},chinese:{name:'Chinese',native:'中文',flag:'🇨🇳'},korean:{name:'Korean',native:'한국어',flag:'🇰🇷'}};
+const SORT_MODES=['alpha','due','new'];
+let sortIdx=0;
 
-// ══════════════════════════════════════════════
-// MODEL CATALOGUE
-// ══════════════════════════════════════════════
-const MODELS = {
-  anthropic: ['claude-sonnet-4-5', 'claude-opus-4-5', 'claude-haiku-4-5-20251001'],
-  openai:    ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
-  gemini:    ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-2.0-flash'],
-  ollama:    ['llama3', 'llama3:8b', 'mistral', 'phi3', 'gemma2']
-};
+let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',level:'beginner',feedbackStyle:'balanced',uiLang:'cs',lessonMode:false};
+let chatHistory=[];
+let quizHistory=[];
+let currentLang='spanish';
+let vocabLang='spanish';
+let currentFbData=null;
+let activeFbTab='positive';
+let editingWordId=null;
+let fcQueue=[];
+let fcIdx=0;
+let fcRevealed=false;
 
-const LANG_META = {
-  spanish:    { name: 'Spanish',    native: 'Español',   flag: '🇪🇸' },
-  french:     { name: 'French',     native: 'Français',  flag: '🇫🇷' },
-  german:     { name: 'German',     native: 'Deutsch',   flag: '🇩🇪' },
-  japanese:   { name: 'Japanese',   native: '日本語',     flag: '🇯🇵' },
-  italian:    { name: 'Italian',    native: 'Italiano',  flag: '🇮🇹' },
-  portuguese: { name: 'Portuguese', native: 'Português', flag: '🇵🇹' },
-  chinese:    { name: 'Chinese',    native: '中文',       flag: '🇨🇳' },
-  korean:     { name: 'Korean',     native: '한국어',     flag: '🇰🇷' }
+// ── I18N ──
+const I18N={
+  cs:{appTitle:'Language Tutor',settingsTitle:'Nastavení',emptyTitle:'Připrav se na procvičování!',emptyDesc:'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',inputPH:l=>`Napiš zprávu v jazyce ${l}…`,fbPositive:'Správně',fbCorrections:'Opravy',fbSuggestions:'Tipy',navChat:'Chat',navVocab:'Slovíčka',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Nastavení',vocabHdr:'Slovní zásoba',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lekce',saveToast:'Uloženo ✓',clearConfirm:'Smazat vše včetně API klíčů a slovní zásoby?',errNoKey:'API klíč není nastaven. Přejdi do Nastavení.',errNetwork:'Chyba sítě nebo CORS.',errGeneric:'Chyba LLM:',apiKeySet:'API klíč nastaven',noApiKey:'API klíč není nastaven',translationLabel:'Překlad',translateBtn:'přeložit',hideTranslation:'skrýt překlad',fcTap:'Klikni pro zobrazení překladu',fcRateQ:'Jak dobře sis vzpomněl/a?',fcDoneTitle:'Hotovo na dnes!',fcDoneDesc:n=>`Prošel jsi ${n} karet. Vrať se zítra.`,fcEmptyTitle:'Žádné karty k procvičení',fcEmptyDesc:'Přidej slovíčka v záložce Slovíčka.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Splatnost',sortNew:'↕ Nejnovější',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:''}},
+  en:{appTitle:'Language Tutor',settingsTitle:'Settings',emptyTitle:'Ready to practice!',emptyDesc:'Type anything and the tutor will respond with feedback.',inputPH:l=>`Type a message in ${l}…`,fbPositive:'Correct',fbCorrections:'Corrections',fbSuggestions:'Tips',navChat:'Chat',navVocab:'Vocab',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Settings',vocabHdr:'Vocabulary',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lesson',saveToast:'Saved ✓',clearConfirm:'Delete everything including API keys and vocabulary?',errNoKey:'API key not set. Go to Settings.',errNetwork:'Network error or CORS issue.',errGeneric:'LLM error:',apiKeySet:'API key set',noApiKey:'API key not set',translationLabel:'Translation',translateBtn:'translate',hideTranslation:'hide',fcTap:'Tap to reveal translation',fcRateQ:'How well did you remember?',fcDoneTitle:'All done for today!',fcDoneDesc:n=>`Reviewed ${n} cards. Come back tomorrow.`,fcEmptyTitle:'No cards to review',fcEmptyDesc:'Add words in the Vocabulary tab.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Due',sortNew:'↕ Newest',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:''}}
 };
-
-// ══════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════
-let cfg = {
-  provider: 'anthropic', model: MODELS.anthropic[0],
-  apiKey: '', ollamaUrl: 'http://localhost:11434',
-  level: 'beginner', feedbackStyle: 'balanced', uiLang: 'cs'
-};
-let history = [];   // [{role:'user'|'assistant', content}]
-let currentLang = 'spanish';
-let currentFbData = null;
-let activeFbTab = 'positive';
-let t = I18N.cs;
+let t=I18N.cs;
 
 // ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
-(function init() {
-  const saved = localStorage.getItem('lt-cfg');
-  if (saved) try { Object.assign(cfg, JSON.parse(saved)); } catch {}
-  const savedLang = localStorage.getItem('lt-lang');
-  if (savedLang && LANG_META[savedLang]) currentLang = savedLang;
-
-  t = I18N[cfg.uiLang] || I18N.cs;
+(function init(){
+  try{Object.assign(cfg,JSON.parse(localStorage.getItem('lt-cfg')||'{}'));}catch{}
+  const sl=localStorage.getItem('lt-lang');
+  if(sl&&LANG_META[sl])currentLang=sl;
+  vocabLang=currentLang;
+  t=I18N[cfg.uiLang]||I18N.cs;
   applyI18n();
   populateSettingsUI();
   updateProviderBadge();
-  document.getElementById('lang-select').value = currentLang;
+  updateModeBadge();
+  document.getElementById('lang-select').value=currentLang;
+  document.getElementById('vocab-lang-select').value=vocabLang;
+  document.getElementById('fc-lang-select').value=currentLang;
+  document.getElementById('quiz-lang-select').value=currentLang;
+  document.getElementById('import-lang-sel').value=currentLang;
   updateEmptyState();
   updateInputPlaceholder();
-  document.getElementById('msg-input').addEventListener('input', () => {
-    document.getElementById('send-btn').disabled = !document.getElementById('msg-input').value.trim();
-  });
 })();
 
 // ══════════════════════════════════════════════
-// I18N APPLICATION
+// NAV
 // ══════════════════════════════════════════════
-function applyI18n() {
-  document.getElementById('hdr-title').textContent = t.appTitle;
-  document.getElementById('settings-title').textContent = t.settingsTitle;
-  document.getElementById('empty-title').textContent = t.emptyTitle;
-  document.getElementById('empty-desc').textContent = t.emptyDesc;
-  document.getElementById('s-provider-title').textContent = t.sProviderTitle;
-  document.getElementById('s-provider-label').textContent = t.sProviderLabel;
-  document.getElementById('s-model-label').textContent = t.sModelLabel;
-  document.getElementById('s-apikey-label').textContent = t.sApiKeyLabel;
-  document.getElementById('s-tutor-title').textContent = t.sTutorTitle;
-  document.getElementById('s-level-label').textContent = t.sLevelLabel;
-  document.getElementById('s-feedback-label').textContent = t.sFeedbackLabel;
-  document.getElementById('s-lang-label').textContent = t.sLangLabel;
-  document.getElementById('s-data-title').textContent = t.sDataTitle;
-  document.getElementById('s-save-btn').textContent = t.sSaveBtn;
-  document.getElementById('s-export-btn').textContent = t.sExportBtn;
-  document.getElementById('s-import-btn').textContent = t.sImportBtn;
-  document.getElementById('s-clear-btn').textContent = t.sClearBtn;
-  document.getElementById('s-pwa-hint').textContent = t.pwaHint;
-  const fbl = ['positive','corrections','suggestions'];
-  const fblKeys = ['fbPositive','fbCorrections','fbSuggestions'];
-  fbl.forEach((k,i) => { const el = document.getElementById(`fb-lbl-${k}`); if(el) el.textContent = t[fblKeys[i]]; });
+function navTo(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(name+'-view').classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('nav-'+name).classList.add('active');
+  if(name==='vocab'){renderVocabList();}
+  if(name==='fc'){document.getElementById('fc-lang-select').value=currentLang;startFlashcards(currentLang);}
+  if(name==='quiz'){document.getElementById('quiz-lang-select').value=currentLang;startQuiz();}
+  if(name==='settings'){updateApiKeyStatus();}
+  if(name==='chat'){updateProviderBadge();updateInputPlaceholder();}
+}
+
+// ══════════════════════════════════════════════
+// I18N
+// ══════════════════════════════════════════════
+function applyI18n(){
+  document.getElementById('hdr-title').textContent=t.appTitle;
+  document.getElementById('settings-title').textContent=t.settingsTitle;
+  document.getElementById('empty-title').textContent=t.emptyTitle;
+  document.getElementById('empty-desc').textContent=t.emptyDesc;
+  document.getElementById('fb-lbl-positive').textContent=t.fbPositive;
+  document.getElementById('fb-lbl-corrections').textContent=t.fbCorrections;
+  document.getElementById('fb-lbl-suggestions').textContent=t.fbSuggestions;
+  document.getElementById('nav-lbl-chat').textContent=t.navChat;
+  document.getElementById('nav-lbl-vocab').textContent=t.navVocab;
+  document.getElementById('nav-lbl-fc').textContent=t.navFc;
+  document.getElementById('nav-lbl-quiz').textContent=t.navQuiz;
+  document.getElementById('nav-lbl-settings').textContent=t.navSettings;
+  document.getElementById('vocab-hdr-title').textContent=t.vocabHdr;
+  document.getElementById('fc-hdr-title').textContent=t.fcHdr;
+  document.getElementById('quiz-hdr-title').textContent=t.quizHdr;
+  document.getElementById('sort-btn').textContent=t[['sortAlpha','sortDue','sortNew'][sortIdx]];
+  updateModeBadge();
   updateInputPlaceholder();
   updateApiKeyHint();
-  updateApiKeyStatus();
-  // level/feedback options
-  const levelOpts = ['beginner','intermediate','advanced'];
-  levelOpts.forEach((v,i) => { const el = document.querySelector(`#cfg-level option[value="${v}"]`); if(el) el.textContent = t.levels[i]; });
-  const fbOpts = ['gentle','balanced','strict'];
-  fbOpts.forEach((v,i) => { const el = document.querySelector(`#cfg-feedback-style option[value="${v}"]`); if(el) el.textContent = t.fbStyles[i]; });
 }
-
-function updateInputPlaceholder() {
-  const meta = LANG_META[currentLang];
-  document.getElementById('msg-input').placeholder = t.inputPlaceholder(meta ? meta.name : currentLang);
-}
-
-function updateEmptyState() {
-  const meta = LANG_META[currentLang];
-  if (!meta) return;
-  document.getElementById('empty-flag').textContent = meta.flag;
-}
+function updateInputPlaceholder(){const m=LANG_META[currentLang];document.getElementById('msg-input').placeholder=t.inputPH(m?m.name:currentLang);}
+function updateEmptyState(){const m=LANG_META[currentLang];if(m)document.getElementById('empty-flag').textContent=m.flag;}
 
 // ══════════════════════════════════════════════
-// VIEW SWITCHING
+// SETTINGS
 // ══════════════════════════════════════════════
-function showView(name) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById(name + '-view').classList.add('active');
-  if (name === 'chat') { updateProviderBadge(); updateInputPlaceholder(); }
-}
-
-// ══════════════════════════════════════════════
-// SETTINGS UI
-// ══════════════════════════════════════════════
-function populateSettingsUI() {
-  document.getElementById('cfg-provider').value = cfg.provider;
-  document.getElementById('cfg-ui-lang').value = cfg.uiLang;
-  document.getElementById('cfg-level').value = cfg.level;
-  document.getElementById('cfg-feedback-style').value = cfg.feedbackStyle;
-  document.getElementById('cfg-apikey').value = cfg.apiKey || '';
-  document.getElementById('cfg-ollama-url').value = cfg.ollamaUrl;
+function populateSettingsUI(){
+  document.getElementById('cfg-provider').value=cfg.provider;
+  document.getElementById('cfg-ui-lang').value=cfg.uiLang;
+  document.getElementById('cfg-level').value=cfg.level;
+  document.getElementById('cfg-feedback-style').value=cfg.feedbackStyle;
+  document.getElementById('cfg-apikey').value=cfg.apiKey||'';
+  document.getElementById('cfg-ollama-url').value=cfg.ollamaUrl;
   rebuildModelList(cfg.provider);
-  document.getElementById('cfg-model').value = cfg.model;
+  document.getElementById('cfg-model').value=cfg.model;
   toggleOllamaUrl(cfg.provider);
   updateApiKeyHint();
   updateApiKeyStatus();
 }
-
-function onProviderChange(prov) {
-  cfg.provider = prov;
-  rebuildModelList(prov);
-  toggleOllamaUrl(prov);
-  updateApiKeyHint();
+function onProviderChange(p){cfg.provider=p;rebuildModelList(p);toggleOllamaUrl(p);updateApiKeyHint();updateApiKeyStatus();}
+function rebuildModelList(p){const s=document.getElementById('cfg-model');s.innerHTML='';(MODELS[p]||[]).forEach(m=>{const o=document.createElement('option');o.value=o.textContent=m;s.appendChild(o);});if((MODELS[p]||[]).includes(cfg.model))s.value=cfg.model;}
+function toggleOllamaUrl(p){document.getElementById('field-apikey').style.display=p==='ollama'?'none':'';document.getElementById('field-ollama-url').style.display=p==='ollama'?'':'none';}
+function updateApiKeyHint(){const el=document.getElementById('apikey-hint');const h=t.apiHints[cfg.provider]||'';el.textContent=h?`Vygeneruj na ${h}`:''}
+function updateApiKeyStatus(){const el=document.getElementById('apikey-status');if(cfg.provider==='ollama'){el.textContent='';return;}const k=document.getElementById('cfg-apikey')?.value||cfg.apiKey||'';el.innerHTML=k.length>8?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:`<span class="status-dot status-empty"></span>${t.noApiKey}`;}
+function onUiLangChange(l){cfg.uiLang=l;t=I18N[l]||I18N.cs;applyI18n();}
+function saveSettings(){
+  cfg.provider=document.getElementById('cfg-provider').value;
+  cfg.model=document.getElementById('cfg-model').value;
+  cfg.apiKey=document.getElementById('cfg-apikey').value.trim();
+  cfg.ollamaUrl=document.getElementById('cfg-ollama-url').value.trim();
+  cfg.level=document.getElementById('cfg-level').value;
+  cfg.feedbackStyle=document.getElementById('cfg-feedback-style').value;
+  cfg.uiLang=document.getElementById('cfg-ui-lang').value;
+  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  updateProviderBadge();
+  const toast=document.getElementById('save-toast');
+  toast.textContent=t.saveToast;toast.classList.add('visible');
+  setTimeout(()=>toast.classList.remove('visible'),2000);
   updateApiKeyStatus();
 }
+function updateProviderBadge(){const el=document.getElementById('provider-badge');const lb={anthropic:'Claude',openai:'GPT',gemini:'Gemini',ollama:'Ollama'};const ok=cfg.provider==='ollama'||(cfg.apiKey&&cfg.apiKey.length>8);el.textContent=lb[cfg.provider]||cfg.provider;el.className='provider-badge'+(ok?'':' warn');}
 
-function rebuildModelList(prov) {
-  const sel = document.getElementById('cfg-model');
-  sel.innerHTML = '';
-  (MODELS[prov] || []).forEach(m => {
-    const o = document.createElement('option');
-    o.value = o.textContent = m;
-    sel.appendChild(o);
+// ── Export / Import full backup ──
+function exportAll(){
+  const data={version:2,cfg,vocab:{},exported:new Date().toISOString()};
+  Object.keys(LANG_META).forEach(l=>{const v=getVocab(l);if(v.length)data.vocab[l]=v;});
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`langtutor-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();
+}
+function importAll(){
+  const raw=prompt('Vlož JSON zálohu (nebo použij tlačítko ze souboru):');
+  if(!raw)return;
+  try{applyBackup(JSON.parse(raw));}catch{alert('Neplatný JSON');}
+}
+function applyBackup(data){
+  if(data.cfg)Object.assign(cfg,data.cfg);
+  if(data.vocab)Object.keys(data.vocab).forEach(l=>setVocab(l,data.vocab[l]));
+  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  t=I18N[cfg.uiLang]||I18N.cs;
+  applyI18n();populateSettingsUI();updateProviderBadge();
+  alert('Záloha obnovena.');
+}
+function clearData(){if(!confirm(t.clearConfirm))return;localStorage.clear();location.reload();}
+
+// ══════════════════════════════════════════════
+// VOCAB STORAGE
+// ══════════════════════════════════════════════
+function getVocab(lang){try{return JSON.parse(localStorage.getItem('lt-vocab-'+lang)||'[]');}catch{return[];}}
+function setVocab(lang,arr){localStorage.setItem('lt-vocab-'+(lang||vocabLang),JSON.stringify(arr));}
+function newSM2(){return{interval:1,ef:2.5,due:Date.now(),reps:0};}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+
+// ══════════════════════════════════════════════
+// VOCAB VIEW
+// ══════════════════════════════════════════════
+function onVocabLangChange(l){vocabLang=l;renderVocabList();}
+function cycleSort(){sortIdx=(sortIdx+1)%SORT_MODES.length;document.getElementById('sort-btn').textContent=t[['sortAlpha','sortDue','sortNew'][sortIdx]];renderVocabList();}
+function renderVocabList(){
+  const q=(document.getElementById('vocab-search').value||'').toLowerCase();
+  let arr=getVocab(vocabLang);
+  if(q)arr=arr.filter(w=>w.word.toLowerCase().includes(q)||w.translation.toLowerCase().includes(q)||(w.tags||[]).some(tg=>tg.toLowerCase().includes(q)));
+  const mode=SORT_MODES[sortIdx];
+  if(mode==='alpha')arr.sort((a,b)=>a.word.localeCompare(b.word));
+  else if(mode==='due')arr.sort((a,b)=>(a.sm2?.due||0)-(b.sm2?.due||0));
+  else arr.sort((a,b)=>b.id.localeCompare(a.id));
+  const list=document.getElementById('vocab-list');
+  document.getElementById('vocab-count').textContent=`${arr.length} slov`;
+  if(!arr.length){list.innerHTML=`<div class="vocab-empty"><div style="font-size:40px">📚</div><h2>${q?'Žádné shody':'Zatím prázdné'}</h2><p>${q?'Zkus jiné hledání':'Přidej první slovíčko tlačítkem +'}</p></div>`;return;}
+  list.innerHTML='';
+  const now=Date.now();
+  arr.forEach(w=>{
+    const due=w.sm2?.due||0;
+    const reps=w.sm2?.reps||0;
+    let badge='',cls='';
+    if(reps===0){badge='Nové';cls='due-now';}
+    else if(due<=now){badge='Dnes';cls='due-now';}
+    else if(due-now<86400000){badge='Zítra';cls='due-soon';}
+    else{const d=Math.round((due-now)/86400000);badge=`${d}d`;cls='due-ok';}
+    const el=document.createElement('div');el.className='vocab-item';
+    el.innerHTML=`<div class="wi"><div class="word">${esc(w.word)}</div><div class="trans">${esc(w.translation)}${w.notes?` · <em>${esc(w.notes)}</em>`:''}</div></div><span class="sm2-badge ${cls}">${badge}</span>`;
+    el.addEventListener('click',()=>openWordModal(w));
+    list.appendChild(el);
   });
-  // restore saved model if still valid
-  if ((MODELS[prov] || []).includes(cfg.model)) sel.value = cfg.model;
 }
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-function toggleOllamaUrl(prov) {
-  document.getElementById('field-apikey').style.display = prov === 'ollama' ? 'none' : '';
-  document.getElementById('field-ollama-url').style.display = prov === 'ollama' ? '' : 'none';
+function openWordModal(word){
+  editingWordId=word?word.id:null;
+  document.getElementById('modal-title').textContent=word?'Upravit slovo':'Přidat slovo';
+  document.getElementById('modal-word').value=word?word.word:'';
+  document.getElementById('modal-trans').value=word?word.translation:'';
+  document.getElementById('modal-notes').value=word?word.notes||'':'';
+  document.getElementById('modal-tags').value=word?(word.tags||[]).join(', '):'';
+  document.getElementById('modal-delete-btn').style.display=word?'':'none';
+  document.getElementById('word-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('modal-word').focus(),100);
 }
-
-function updateApiKeyHint() {
-  const el = document.getElementById('apikey-hint');
-  const hint = t.apiHints[cfg.provider] || '';
-  el.innerHTML = hint ? `<a href="#" onclick="return false">${hint}</a>` : '';
-}
-
-function updateApiKeyStatus() {
-  const el = document.getElementById('apikey-status');
-  if (cfg.provider === 'ollama') { el.textContent = ''; return; }
-  const key = document.getElementById('cfg-apikey')?.value || cfg.apiKey || '';
-  if (key.length > 8) {
-    el.innerHTML = `<span class="status-dot status-ok"></span>${t.apiKeySet}`;
-  } else {
-    el.innerHTML = `<span class="status-dot status-empty"></span>${t.noApiKey}`;
+function closeWordModal(){document.getElementById('word-modal').classList.remove('open');editingWordId=null;}
+function closeWordModalOutside(e){if(e.target===document.getElementById('word-modal'))closeWordModal();}
+function saveWord(){
+  const word=document.getElementById('modal-word').value.trim();
+  const trans=document.getElementById('modal-trans').value.trim();
+  if(!word||!trans){alert('Slovo a překlad jsou povinné.');return;}
+  const notes=document.getElementById('modal-notes').value.trim();
+  const tags=document.getElementById('modal-tags').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const arr=getVocab(vocabLang);
+  if(editingWordId){
+    const idx=arr.findIndex(w=>w.id===editingWordId);
+    if(idx>=0){arr[idx]={...arr[idx],word,translation:trans,notes,tags};}
+  }else{
+    arr.push({id:uid(),word,translation:trans,notes,tags,sm2:newSM2()});
   }
+  setVocab(vocabLang,arr);
+  closeWordModal();renderVocabList();
+}
+function deleteWord(){
+  if(!editingWordId)return;
+  if(!confirm('Smazat toto slovo?'))return;
+  const arr=getVocab(vocabLang).filter(w=>w.id!==editingWordId);
+  setVocab(vocabLang,arr);closeWordModal();renderVocabList();
 }
 
-function onUiLangChange(lang) {
-  cfg.uiLang = lang;
-  t = I18N[lang] || I18N.cs;
-  applyI18n();
+// ── IMPORT ──
+function importVocab(){
+  document.getElementById('import-lang-sel').value=vocabLang;
+  document.getElementById('import-text').value='';
+  document.getElementById('import-preview').textContent='';
+  document.getElementById('import-modal').classList.add('open');
 }
-
-function saveSettings() {
-  cfg.provider = document.getElementById('cfg-provider').value;
-  cfg.model = document.getElementById('cfg-model').value;
-  cfg.apiKey = document.getElementById('cfg-apikey').value.trim();
-  cfg.ollamaUrl = document.getElementById('cfg-ollama-url').value.trim();
-  cfg.level = document.getElementById('cfg-level').value;
-  cfg.feedbackStyle = document.getElementById('cfg-feedback-style').value;
-  cfg.uiLang = document.getElementById('cfg-ui-lang').value;
-  localStorage.setItem('lt-cfg', JSON.stringify(cfg));
-  updateProviderBadge();
-  const toast = document.getElementById('save-toast');
-  toast.textContent = t.saveToast;
-  toast.classList.add('visible');
-  setTimeout(() => toast.classList.remove('visible'), 2000);
-  updateApiKeyStatus();
+function closeImportModal(){document.getElementById('import-modal').classList.remove('open');}
+function closeImportOutside(e){if(e.target===document.getElementById('import-modal'))closeImportModal();}
+function loadFile(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{document.getElementById('import-text').value=ev.target.result;previewImport();};
+  r.readAsText(f);
+  e.target.value='';
 }
-
-function exportSettings() {
-  const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'langtutor-config.json';
-  a.click();
+document.getElementById('import-text').addEventListener('input',previewImport);
+function previewImport(){
+  const raw=document.getElementById('import-text').value.trim();
+  if(!raw){document.getElementById('import-preview').textContent='';return;}
+  try{const d=JSON.parse(raw);if(d.version&&d.vocab){document.getElementById('import-preview').textContent='Detekováno: záloha (JSON). Importuje všechny jazyky.';return;}}catch{}
+  const lines=raw.split('\n').filter(l=>l.trim()&&!l.startsWith('#'));
+  document.getElementById('import-preview').textContent=`Detekováno ${lines.length} řádků (CSV/TXT).`;
 }
-
-function importSettings() {
-  const raw = prompt(t.importPrompt);
-  if (!raw) return;
-  try {
-    const imported = JSON.parse(raw);
-    Object.assign(cfg, imported);
-    localStorage.setItem('lt-cfg', JSON.stringify(cfg));
-    t = I18N[cfg.uiLang] || I18N.cs;
-    applyI18n();
-    populateSettingsUI();
-    updateProviderBadge();
-  } catch (e) { alert('Invalid JSON'); }
+function confirmImport(){
+  const raw=document.getElementById('import-text').value.trim();
+  if(!raw)return;
+  try{const d=JSON.parse(raw);if(d.version&&d.vocab){applyBackup(d);closeImportModal();return;}}catch{}
+  // CSV/TXT
+  const lang=document.getElementById('import-lang-sel').value;
+  const lines=raw.split('\n').filter(l=>l.trim()&&!l.startsWith('#'));
+  const arr=getVocab(lang);
+  const existing=new Set(arr.map(w=>w.word.toLowerCase()));
+  let added=0,skipped=0;
+  lines.forEach(line=>{
+    const parts=line.split(',');
+    if(parts.length<2){// try tab
+      const tp=line.split('\t');if(tp.length<2)return;
+      parts.length=0;parts.push(...tp);
+    }
+    const word=(parts[0]||'').trim();const trans=(parts[1]||'').trim();
+    if(!word||!trans)return;
+    if(existing.has(word.toLowerCase())){skipped++;return;}
+    arr.push({id:uid(),word,translation:trans,notes:(parts[2]||'').trim(),tags:[],sm2:newSM2()});
+    existing.add(word.toLowerCase());added++;
+  });
+  setVocab(lang,arr);
+  closeImportModal();renderVocabList();
+  alert(`Import dokončen: ${added} přidáno, ${skipped} přeskočeno (duplicity).`);
 }
-
-function clearData() {
-  if (!confirm(t.clearConfirm)) return;
-  localStorage.removeItem('lt-cfg');
-  localStorage.removeItem('lt-lang');
-  cfg = { provider: 'anthropic', model: MODELS.anthropic[0], apiKey: '', ollamaUrl: 'http://localhost:11434', level: 'beginner', feedbackStyle: 'balanced', uiLang: 'cs' };
-  t = I18N.cs;
-  applyI18n();
-  populateSettingsUI();
-  updateProviderBadge();
-  clearChat();
-}
-
-// ══════════════════════════════════════════════
-// PROVIDER BADGE
-// ══════════════════════════════════════════════
-function updateProviderBadge() {
-  const el = document.getElementById('provider-badge');
-  const labels = { anthropic: 'Claude', openai: 'GPT', gemini: 'Gemini', ollama: 'Ollama' };
-  const hasKey = cfg.provider === 'ollama' || (cfg.apiKey && cfg.apiKey.length > 8);
-  el.textContent = labels[cfg.provider] || cfg.provider;
-  el.className = 'provider-badge' + (hasKey ? '' : ' warn');
+function exportVocab(){
+  const arr=getVocab(vocabLang);
+  const lines=arr.map(w=>[w.word,w.translation,w.notes||''].join(','));
+  const blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`vocab-${vocabLang}-${new Date().toISOString().slice(0,10)}.csv`;a.click();
 }
 
 // ══════════════════════════════════════════════
-// LANG CHANGE
+// SM-2 ALGORITHM
 // ══════════════════════════════════════════════
-function onLangChange(lang) {
-  currentLang = lang;
-  localStorage.setItem('lt-lang', lang);
-  updateEmptyState();
-  updateInputPlaceholder();
-  clearChat();
+function sm2Update(sm,q){
+  // q: 0=zapomněl, 3=těžce, 4=dobře, 5=perfektně
+  let{interval,ef,reps}=sm;
+  if(q<3){reps=0;interval=1;}
+  else{
+    if(reps===0)interval=1;
+    else if(reps===1)interval=6;
+    else interval=Math.round(interval*ef);
+    reps++;
+  }
+  ef=Math.max(1.3,ef+(0.1-(5-q)*(0.08+(5-q)*0.02)));
+  return{interval,ef,reps,due:Date.now()+interval*86400000};
+}
+
+// ══════════════════════════════════════════════
+// FLASHCARD VIEW
+// ══════════════════════════════════════════════
+function startFlashcards(lang){
+  fcQueue=getVocab(lang).filter(w=>!w.sm2||w.sm2.due<=Date.now()||w.sm2.reps===0);
+  // shuffle
+  for(let i=fcQueue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[fcQueue[i],fcQueue[j]]=[fcQueue[j],fcQueue[i]];}
+  fcIdx=0;fcRevealed=false;
+  renderFC();
+}
+function renderFC(){
+  const body=document.getElementById('fc-body');
+  if(!fcQueue.length){body.innerHTML=`<div class="fc-done"><div class="big">🎉</div><h2>${t.fcDoneTitle}</h2><p>${t.fcEmptyDesc}</p><button class="btn btn-primary" onclick="navTo('vocab')">${t.navVocab}</button></div>`;return;}
+  if(fcIdx>=fcQueue.length){const n=fcQueue.length;body.innerHTML=`<div class="fc-done"><div class="big">🎉</div><h2>${t.fcDoneTitle}</h2><p>${t.fcDoneDesc(n)}</p><button class="btn btn-primary" onclick="startFlashcards(document.getElementById('fc-lang-select').value)">Znovu</button></div>`;return;}
+  const w=fcQueue[fcIdx];
+  body.innerHTML=`
+    <div class="fc-progress">${t.fcProgress(fcIdx+1,fcQueue.length)}</div>
+    <div class="fc-card" onclick="revealFC()">
+      <div class="fc-word">${esc(w.word)}</div>
+      ${w.notes?`<div class="fc-notes">${esc(w.notes)}</div>`:''}
+      <div class="fc-translation" id="fc-trans">${esc(w.translation)}</div>
+      <div class="fc-hint" id="fc-hint">${t.fcTap}</div>
+    </div>
+    <div class="fc-rating" id="fc-rating">
+      <div style="font-size:13px;color:var(--mut)">${t.fcRateQ}</div>
+      <div class="fc-rating-row">
+        <button class="fc-btn fc-btn-0" onclick="rateFC(0)">❌<br>Zapomněl</button>
+        <button class="fc-btn fc-btn-3" onclick="rateFC(3)">😐<br>Těžce</button>
+        <button class="fc-btn fc-btn-4" onclick="rateFC(4)">🙂<br>Dobře</button>
+        <button class="fc-btn fc-btn-5" onclick="rateFC(5)">⭐<br>Perfektně</button>
+      </div>
+    </div>`;
+}
+function revealFC(){
+  if(fcRevealed)return;
+  fcRevealed=true;
+  document.getElementById('fc-trans').style.display='block';
+  document.getElementById('fc-hint').style.display='none';
+  document.getElementById('fc-rating').style.display='flex';
+}
+function rateFC(q){
+  const w=fcQueue[fcIdx];
+  const arr=getVocab(document.getElementById('fc-lang-select').value);
+  const idx=arr.findIndex(x=>x.id===w.id);
+  if(idx>=0){arr[idx].sm2=sm2Update(arr[idx].sm2||newSM2(),q);setVocab(document.getElementById('fc-lang-select').value,arr);}
+  fcIdx++;fcRevealed=false;renderFC();
+}
+
+// ══════════════════════════════════════════════
+// QUIZ VIEW
+// ══════════════════════════════════════════════
+function startQuiz(){
+  quizHistory=[];
+  document.getElementById('quiz-msg-list').innerHTML='';
+  const lang=document.getElementById('quiz-lang-select').value;
+  const arr=getVocab(lang);
+  if(!arr.length){appendQuizMsg('tutor','Nejsou žádná slovíčka k procvičení. Přidej je v záložce Slovíčka.');return;}
+  const sample=arr.sort(()=>Math.random()-.5).slice(0,10);
+  const wordList=sample.map(w=>w.word).join(', ');
+  const sysContext=`Vocabulary to test: ${wordList}`;
+  quizHistory=[{role:'system-note',content:sysContext}];
+  // kick off with tutor question
+  quizAsk(lang,sample);
+}
+async function quizAsk(lang,sample){
+  const meta=LANG_META[lang];
+  const levelMap={beginner:'A1-A2',intermediate:'B1-B2',advanced:'C1-C2'};
+  const wordList=sample.map(w=>`${w.word} (${w.translation})`).join('; ');
+  const prompt=`You are a language quiz tutor testing the student on ${meta.name}. 
+Level: ${levelMap[cfg.level]||'A1-A2'}. 
+Words to test (use them, don't show translations): ${wordList}.
+Ask a question that tests one of these words naturally (e.g. fill-in-the-blank, translate, use in a sentence). 
+Respond ONLY with JSON: {"question":"<question text in ${meta.name} and/or Czech/English>","targetWord":"<the word being tested>"}`;
+  if(cfg.provider!=='ollama'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendQuizMsg('tutor',t.errNoKey);return;}
+  const raw=await safeLLM([{role:'user',content:prompt}],'');
+  try{const p=JSON.parse(clean(raw));appendQuizMsg('tutor',p.question);quizHistory.push({role:'assistant-question',word:p.targetWord,content:p.question});}
+  catch{appendQuizMsg('tutor',raw);}
+}
+function quizKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();quizSend();}}
+async function quizSend(){
+  const inp=document.getElementById('quiz-input');
+  const txt=inp.value.trim();if(!txt)return;
+  inp.value='';autoResize(inp);
+  document.getElementById('quiz-send-btn').disabled=true;
+  appendQuizMsg('user',txt);
+  quizHistory.push({role:'user',content:txt});
+  const lang=document.getElementById('quiz-lang-select').value;
+  const meta=LANG_META[lang];
+  const last=quizHistory.filter(h=>h.role==='assistant-question').slice(-1)[0];
+  const targetWord=last?.word||'';
+  const question=last?.content||'';
+  const evalPrompt=`You are a language quiz evaluator for ${meta.name}.
+Question asked: "${question}"
+Target word: "${targetWord}"
+Student answer: "${txt}"
+Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief feedback in the UI language>","nextQuestion":"<next question testing a different word or same if failed>","nextTargetWord":"<word being tested next>"}`;
+  const raw=await safeLLM([{role:'user',content:evalPrompt}],'');
+  try{
+    const p=JSON.parse(clean(raw));
+    const icon=p.correct?'✅':'❌';
+    appendQuizMsg('tutor',`${icon} ${p.feedback}`);
+    quizHistory.push({role:'assistant-feedback',content:p.feedback});
+    if(p.nextQuestion){
+      setTimeout(()=>{appendQuizMsg('tutor',p.nextQuestion);quizHistory.push({role:'assistant-question',word:p.nextTargetWord,content:p.nextQuestion});},600);
+    }
+  }catch{appendQuizMsg('tutor',raw);}
+  document.getElementById('quiz-send-btn').disabled=false;
+}
+function appendQuizMsg(role,text){
+  const list=document.getElementById('quiz-msg-list');
+  const wrap=document.createElement('div');wrap.className=`msg ${role}`;
+  const b=document.createElement('div');b.className='bubble';b.textContent=text;
+  wrap.appendChild(b);list.appendChild(wrap);list.scrollTop=list.scrollHeight;
 }
 
 // ══════════════════════════════════════════════
 // CHAT
 // ══════════════════════════════════════════════
-function clearChat() {
-  history = [];
-  currentFbData = null;
-  const list = document.getElementById('msg-list');
-  // keep #empty and #typing-row
-  [...list.children].forEach(el => {
-    if (el.id !== 'empty' && el.id !== 'typing-row') el.remove();
-  });
-  document.getElementById('empty').style.display = '';
-  document.getElementById('feedback-bar').classList.remove('visible');
-  document.getElementById('typing-row').style.display = 'none';
-}
-
-function onKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-}
-
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-}
-
-function scrollBottom() {
-  const list = document.getElementById('msg-list');
-  list.scrollTop = list.scrollHeight;
-}
-
-function appendMsg(role, text, translation) {
-  document.getElementById('empty').style.display = 'none';
-  const list = document.getElementById('msg-list');
-  const typingRow = document.getElementById('typing-row');
-
-  const wrap = document.createElement('div');
-  wrap.className = `msg ${role}`;
-
-  const bubble = document.createElement('div');
-  bubble.className = 'bubble';
-  bubble.textContent = text;
-  wrap.appendChild(bubble);
-
-  const meta = document.createElement('div');
-  meta.className = 'msg-meta';
-  meta.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  wrap.appendChild(meta);
-
-  if (role === 'tutor' && translation) {
-    const transDiv = document.createElement('div');
-    transDiv.className = 'translation';
-    transDiv.style.display = 'none';
-    transDiv.innerHTML = `<strong>${t.translationLabel}:</strong> ${translation}`;
-
-    const btn = document.createElement('button');
-    btn.className = 'translate-btn';
-    btn.textContent = t.translateBtn;
-    btn.onclick = () => {
-      const visible = transDiv.style.display !== 'none';
-      transDiv.style.display = visible ? 'none' : '';
-      btn.textContent = visible ? t.translateBtn : t.hideTranslation;
-    };
-    wrap.appendChild(btn);
-    wrap.appendChild(transDiv);
+function toggleLessonMode(){cfg.lessonMode=!cfg.lessonMode;updateModeBadge();}
+function updateModeBadge(){const btn=document.getElementById('mode-btn');btn.textContent=cfg.lessonMode?t.modeLesson:t.modeChat;btn.className='mode-badge '+(cfg.lessonMode?'mode-lesson':'mode-chat');}
+function clearChat(){chatHistory=[];currentFbData=null;const list=document.getElementById('msg-list');[...list.children].forEach(el=>{if(el.id!=='empty'&&el.id!=='typing-row')el.remove();});document.getElementById('empty').style.display='';document.getElementById('feedback-bar').classList.remove('visible');document.getElementById('typing-row').style.display='none';}
+function onLangChange(l){currentLang=l;localStorage.setItem('lt-lang',l);document.getElementById('vocab-lang-select').value=l;vocabLang=l;updateEmptyState();updateInputPlaceholder();clearChat();}
+function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+function scrollBottom(){const l=document.getElementById('msg-list');l.scrollTop=l.scrollHeight;}
+function setTyping(v){document.getElementById('typing-row').style.display=v?'flex':'none';if(v)scrollBottom();}
+function appendMsg(role,text,translation){
+  document.getElementById('empty').style.display='none';
+  const list=document.getElementById('msg-list');
+  const typingRow=document.getElementById('typing-row');
+  const wrap=document.createElement('div');wrap.className=`msg ${role}`;
+  const bubble=document.createElement('div');bubble.className='bubble';bubble.textContent=text;wrap.appendChild(bubble);
+  const meta=document.createElement('div');meta.className='msg-meta';meta.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});wrap.appendChild(meta);
+  if(role==='tutor'&&translation){
+    const td=document.createElement('div');td.className='translation';td.innerHTML=`<strong>${t.translationLabel}:</strong> ${translation}`;
+    const btn=document.createElement('button');btn.className='translate-btn';btn.textContent=t.translateBtn;
+    btn.onclick=()=>{const v=td.style.display!=='none'&&td.style.display!=='';td.style.display=v?'none':'block';btn.textContent=v?t.translateBtn:t.hideTranslation;};
+    wrap.appendChild(btn);wrap.appendChild(td);
   }
-
-  list.insertBefore(wrap, typingRow);
-  scrollBottom();
+  list.insertBefore(wrap,typingRow);scrollBottom();
 }
 
-function setTyping(visible) {
-  document.getElementById('typing-row').style.display = visible ? 'flex' : 'none';
-  if (visible) scrollBottom();
+function buildSystemPrompt(){
+  const meta=LANG_META[currentLang];
+  const lvMap={beginner:'A1-A2',intermediate:'B1-B2',advanced:'C1-C2'};
+  const fbMap={gentle:'encouraging and gentle',balanced:'balanced',strict:'strict and exhaustive'};
+  let vocabCtx='';
+  if(cfg.lessonMode){
+    const arr=getVocab(currentLang).slice(0,50);
+    if(arr.length)vocabCtx=`\n\nActive vocabulary list (use these words naturally in your responses):\n${arr.map(w=>`${w.word} = ${w.translation}`).join('\n')}`;
+  }
+  return `You are a friendly language tutor helping practice ${meta.name} (${meta.native}).
+Student level: ${lvMap[cfg.level]||'A1-A2'}. Feedback style: ${fbMap[cfg.feedbackStyle]||'balanced'}.${vocabCtx}
+${cfg.lessonMode?'LESSON MODE: Actively incorporate vocabulary from the list above into your responses and explanations.':''}
+Respond ONLY with valid JSON (no markdown, no preamble):
+{"reply":"<response in ${meta.name}>","translation":"<English translation>","feedback":{"positive":["..."],"corrections":["..."],"suggestions":["..."]}}`;
 }
+
+async function sendMessage(){
+  const input=document.getElementById('msg-input');
+  const text=input.value.trim();if(!text)return;
+  if(cfg.provider!=='ollama'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendMsg('tutor',t.errNoKey,null);return;}
+  input.value='';input.style.height='auto';document.getElementById('send-btn').disabled=true;
+  appendMsg('user',text,null);
+  chatHistory.push({role:'user',content:text});
+  setTyping(true);
+  try{
+    const raw=await safeLLM(chatHistory,buildSystemPrompt());
+    setTyping(false);
+    let parsed;
+    try{parsed=JSON.parse(clean(raw));}catch{parsed={reply:raw,translation:null,feedback:{positive:[],corrections:[],suggestions:[]}};}
+    appendMsg('tutor',parsed.reply,parsed.translation);
+    chatHistory.push({role:'assistant',content:parsed.reply});
+    if(chatHistory.length>24)chatHistory=chatHistory.slice(-24);
+    currentFbData=parsed.feedback;renderFeedback(activeFbTab);
+    document.getElementById('feedback-bar').classList.add('visible');
+  }catch(err){
+    setTyping(false);
+    const msg=err.message==='NO_KEY'?t.errNoKey:err.message?.includes('fetch')?t.errNetwork:`${t.errGeneric} ${err.message}`;
+    appendMsg('tutor',msg,null);
+  }
+}
+
+function switchFbTab(tab,btn){activeFbTab=tab;document.querySelectorAll('.fb-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderFeedback(tab);}
+function renderFeedback(tab){const el=document.getElementById('fb-content');if(!currentFbData){el.textContent='';return;}const items=currentFbData[tab]||[];el.innerHTML=items.length?`<ul>${items.map(i=>`<li>${i}</li>`).join('')}</ul>`:'<em style="color:var(--mut)">–</em>';}
 
 // ══════════════════════════════════════════════
 // LLM PROVIDERS
 // ══════════════════════════════════════════════
-function buildSystemPrompt() {
-  const meta = LANG_META[currentLang];
-  const levelMap = { beginner: 'A1-A2', intermediate: 'B1-B2', advanced: 'C1-C2' };
-  const fbMap = { gentle: 'encouraging and gentle', balanced: 'balanced', strict: 'strict and exhaustive' };
-  return `You are a friendly language tutor helping the user practice ${meta.name} (${meta.native}).
-Student level: ${levelMap[cfg.level] || 'A1-A2'}.
-Feedback style: ${fbMap[cfg.feedbackStyle] || 'balanced'}.
+function clean(s){return(s||'').replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();}
 
-Always respond ONLY with a valid JSON object (no markdown, no preamble):
-{
-  "reply": "<your response in ${meta.name}>",
-  "translation": "<English translation of reply>",
-  "feedback": {
-    "positive": ["<what student did well>"],
-    "corrections": ["<corrections if any>"],
-    "suggestions": ["<tips for improvement>"]
-  }
-}`;
-}
-
-async function callLLM(userText) {
-  const sys = buildSystemPrompt();
-  const msgs = [...history, { role: 'user', content: userText }];
-
-  if (cfg.provider === 'anthropic') return callAnthropic(sys, msgs);
-  if (cfg.provider === 'openai')    return callOpenAI(sys, msgs);
-  if (cfg.provider === 'gemini')    return callGemini(sys, msgs);
-  if (cfg.provider === 'ollama')    return callOllama(sys, msgs);
+async function safeLLM(msgs,sys){
+  if(cfg.provider==='anthropic')return callAnthropic(msgs,sys);
+  if(cfg.provider==='openai')return callOpenAI(msgs,sys);
+  if(cfg.provider==='gemini')return callGemini(msgs,sys);
+  if(cfg.provider==='ollama')return callOllama(msgs,sys);
   throw new Error('Unknown provider');
 }
-
-async function callAnthropic(sys, msgs) {
-  if (!cfg.apiKey) throw new Error('NO_KEY');
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': cfg.apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-calls': 'true'
-    },
-    body: JSON.stringify({ model: cfg.model, max_tokens: 1024, system: sys, messages: msgs })
-  });
-  if (!res.ok) throw new Error(await res.text());
-  const d = await res.json();
-  return d.content[0].text;
+async function callAnthropic(msgs,sys){
+  if(!cfg.apiKey)throw new Error('NO_KEY');
+  const filteredMsgs=msgs.filter(m=>m.role==='user'||m.role==='assistant');
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:1024,system:sys||undefined,messages:filteredMsgs})});
+  if(!res.ok)throw new Error(await res.text());
+  return(await res.json()).content[0].text;
 }
-
-async function callOpenAI(sys, msgs) {
-  if (!cfg.apiKey) throw new Error('NO_KEY');
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cfg.apiKey}` },
-    body: JSON.stringify({
-      model: cfg.model, max_tokens: 1024,
-      messages: [{ role: 'system', content: sys }, ...msgs]
-    })
-  });
-  if (!res.ok) throw new Error(await res.text());
-  const d = await res.json();
-  return d.choices[0].message.content;
+async function callOpenAI(msgs,sys){
+  if(!cfg.apiKey)throw new Error('NO_KEY');
+  const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
+  const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${cfg.apiKey}`},body:JSON.stringify({model:cfg.model,max_tokens:1024,messages:m})});
+  if(!res.ok)throw new Error(await res.text());
+  return(await res.json()).choices[0].message.content;
 }
-
-async function callGemini(sys, msgs) {
-  if (!cfg.apiKey) throw new Error('NO_KEY');
-  const geminiMsgs = msgs.map(m => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: m.content }]
-  }));
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:generateContent?key=${cfg.apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: sys }] },
-      contents: geminiMsgs,
-      generationConfig: { maxOutputTokens: 1024 }
-    })
-  });
-  if (!res.ok) throw new Error(await res.text());
-  const d = await res.json();
-  return d.candidates[0].content.parts[0].text;
+async function callGemini(msgs,sys){
+  if(!cfg.apiKey)throw new Error('NO_KEY');
+  const gm=msgs.filter(x=>x.role==='user'||x.role==='assistant').map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
+  const body={contents:gm,generationConfig:{maxOutputTokens:1024}};
+  if(sys)body.system_instruction={parts:[{text:sys}]};
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:generateContent?key=${cfg.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!res.ok)throw new Error(await res.text());
+  return(await res.json()).candidates[0].content.parts[0].text;
 }
-
-async function callOllama(sys, msgs) {
-  const base = cfg.ollamaUrl.replace(/\/$/, '');
-  const res = await fetch(`${base}/api/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: cfg.model, stream: false,
-      messages: [{ role: 'system', content: sys }, ...msgs]
-    })
-  });
-  if (!res.ok) throw new Error(await res.text());
-  const d = await res.json();
-  return d.message.content;
-}
-
-// ══════════════════════════════════════════════
-// SEND
-// ══════════════════════════════════════════════
-async function sendMessage() {
-  const input = document.getElementById('msg-input');
-  const text = input.value.trim();
-  if (!text) return;
-
-  if (cfg.provider !== 'ollama' && (!cfg.apiKey || cfg.apiKey.length < 8)) {
-    appendMsg('tutor', t.errNoKey, null);
-    return;
-  }
-
-  input.value = '';
-  input.style.height = 'auto';
-  document.getElementById('send-btn').disabled = true;
-
-  appendMsg('user', text, null);
-  history.push({ role: 'user', content: text });
-  setTyping(true);
-
-  try {
-    const raw = await callLLM(text);
-    setTyping(false);
-
-    let parsed;
-    try {
-      const clean = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
-      parsed = JSON.parse(clean);
-    } catch {
-      // LLM returned plain text — show as-is
-      parsed = { reply: raw, translation: null, feedback: { positive: [], corrections: [], suggestions: [] } };
-    }
-
-    appendMsg('tutor', parsed.reply, parsed.translation);
-    history.push({ role: 'assistant', content: parsed.reply });
-    if (history.length > 20) history = history.slice(-20); // keep context bounded
-
-    currentFbData = parsed.feedback;
-    renderFeedback(activeFbTab);
-    document.getElementById('feedback-bar').classList.add('visible');
-
-  } catch (err) {
-    setTyping(false);
-    const msg = err.message === 'NO_KEY'
-      ? t.errNoKey
-      : (err.message?.includes('fetch') ? t.errNetwork : `${t.errGeneric} ${err.message}`);
-    appendMsg('tutor', msg, null);
-  }
-}
-
-// ══════════════════════════════════════════════
-// FEEDBACK TABS
-// ══════════════════════════════════════════════
-function switchFbTab(tab, btn) {
-  activeFbTab = tab;
-  document.querySelectorAll('.fb-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderFeedback(tab);
-}
-
-function renderFeedback(tab) {
-  const el = document.getElementById('fb-content');
-  if (!currentFbData) { el.textContent = ''; return; }
-  const items = currentFbData[tab] || [];
-  if (!items.length) { el.innerHTML = '<em style="color:var(--c-muted)">–</em>'; return; }
-  el.innerHTML = `<ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>`;
+async function callOllama(msgs,sys){
+  const base=(cfg.ollamaUrl||'http://localhost:11434').replace(/\/$/,'');
+  const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
+  const res=await fetch(`${base}/api/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,stream:false,messages:m})});
+  if(!res.ok)throw new Error(await res.text());
+  return(await res.json()).message.content;
 }
 </script>
 
