@@ -53,7 +53,7 @@ select:focus{outline:2px solid var(--pri)}
 .dot{width:7px;height:7px;background:var(--mut);border-radius:50%;animation:bo .9s infinite}
 .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
 @keyframes bo{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
-#typing-row{display:none}
+#typing-row,#quiz-typing-row{display:none}
 
 /* FEEDBACK BAR */
 #feedback-bar{display:none;flex-shrink:0;border-top:1px solid var(--bdr);background:var(--sur)}
@@ -289,7 +289,7 @@ select:focus{outline:2px solid var(--pri)}
     <h1 id="quiz-hdr-title">Quiz</h1>
     <select id="quiz-lang-select" onchange="startQuiz()"></select>
   </div>
-  <div id="quiz-msg-list"></div>
+  <div id="quiz-msg-list"><div id="quiz-typing-row" class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
   <div id="quiz-input-area">
     <textarea id="quiz-input" rows="1" oninput="autoResize(this);document.getElementById('quiz-send-btn').disabled=!this.value.trim()" onkeydown="quizKey(event)" placeholder="Tvoje odpověď…"></textarea>
     <button id="quiz-send-btn" onclick="quizSend()" disabled>
@@ -1156,6 +1156,7 @@ async function quizSend(){
   document.getElementById('quiz-send-btn').disabled=true;
   appendQuizMsg('user',txt);
   quizHistory.push({role:'user',content:txt});
+  setQuizTyping(true);
   const lang=document.getElementById('quiz-lang-select').value;
   const meta=LANG_META[lang];
   const last=quizHistory.filter(h=>h.role==='assistant-question').slice(-1)[0];
@@ -1168,7 +1169,8 @@ Student answer: "${txt}"
 Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief feedback in ${cfg.uiLang==='cs'?'Czech':'English'}>","nextQuestion":"<next question testing a different word or same if failed>","nextTargetWord":"<word being tested next>"}`;
   let raw;
   try{raw=await safeLLM([{role:'user',content:evalPrompt}],'');}
-  catch(err){appendQuizMsg('tutor',err.message==='NO_KEY'?t.errNoKey:t.errGeneric+' '+err.message);document.getElementById('quiz-send-btn').disabled=false;return;}
+  catch(err){setQuizTyping(false);appendQuizMsg('tutor',err.message==='NO_KEY'?t.errNoKey:t.errGeneric+' '+err.message);document.getElementById('quiz-send-btn').disabled=false;return;}
+  setQuizTyping(false);
   try{
     const p=JSON.parse(clean(raw));
     const icon=p.correct?'✅':'❌';
@@ -1180,11 +1182,13 @@ Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief fe
   }catch{appendQuizMsg('tutor',t.errGeneric+' '+clean(raw));}
   document.getElementById('quiz-send-btn').disabled=false;
 }
+function setQuizTyping(v){const r=document.getElementById('quiz-typing-row');r.style.display=v?'flex':'none';if(v){const l=document.getElementById('quiz-msg-list');l.scrollTop=l.scrollHeight;}}
 function appendQuizMsg(role,text){
   const list=document.getElementById('quiz-msg-list');
+  const typingRow=document.getElementById('quiz-typing-row');
   const wrap=document.createElement('div');wrap.className=`msg ${role}`;
   const b=document.createElement('div');b.className='bubble';b.textContent=text;
-  wrap.appendChild(b);list.appendChild(wrap);list.scrollTop=list.scrollHeight;
+  wrap.appendChild(b);list.insertBefore(wrap,typingRow);list.scrollTop=list.scrollHeight;
 }
 
 // ══════════════════════════════════════════════
