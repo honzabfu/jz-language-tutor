@@ -180,16 +180,7 @@ select:focus{outline:2px solid var(--pri)}
       </a>
       <button id="mode-btn" class="mode-badge mode-chat" onclick="toggleLessonMode()">Chat</button>
       <span id="provider-badge" class="provider-badge warn">–</span>
-      <select id="lang-select" onchange="onLangChange(this.value)">
-        <option value="spanish">🇪🇸 Spanish</option>
-        <option value="french">🇫🇷 French</option>
-        <option value="german">🇩🇪 German</option>
-        <option value="japanese">🇯🇵 Japanese</option>
-        <option value="italian">🇮🇹 Italian</option>
-        <option value="portuguese">🇵🇹 Portuguese</option>
-        <option value="chinese">🇨🇳 Chinese</option>
-        <option value="korean">🇰🇷 Korean</option>
-      </select>
+      <select id="lang-select" onchange="onLangChange(this.value)"></select>
     </div>
   </div>
   <div id="msg-list">
@@ -222,16 +213,7 @@ select:focus{outline:2px solid var(--pri)}
   <div class="hdr">
     <h1 id="vocab-hdr-title">Slovní zásoba</h1>
     <div style="display:flex;gap:6px;align-items:center">
-      <select id="vocab-lang-select" onchange="onVocabLangChange(this.value)">
-        <option value="spanish">🇪🇸 Spanish</option>
-        <option value="french">🇫🇷 French</option>
-        <option value="german">🇩🇪 German</option>
-        <option value="japanese">🇯🇵 Japanese</option>
-        <option value="italian">🇮🇹 Italian</option>
-        <option value="portuguese">🇵🇹 Portuguese</option>
-        <option value="chinese">🇨🇳 Chinese</option>
-        <option value="korean">🇰🇷 Korean</option>
-      </select>
+      <select id="vocab-lang-select" onchange="onVocabLangChange(this.value)"></select>
       <button class="icon-btn" onclick="openWordModal(null)" title="Přidat slovo">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
@@ -252,16 +234,7 @@ select:focus{outline:2px solid var(--pri)}
 <div id="fc-view" class="view">
   <div class="hdr">
     <h1 id="fc-hdr-title">Flashcards</h1>
-    <select id="fc-lang-select" onchange="startFlashcards(this.value)">
-      <option value="spanish">🇪🇸 Spanish</option>
-      <option value="french">🇫🇷 French</option>
-      <option value="german">🇩🇪 German</option>
-      <option value="japanese">🇯🇵 Japanese</option>
-      <option value="italian">🇮🇹 Italian</option>
-      <option value="portuguese">🇵🇹 Portuguese</option>
-      <option value="chinese">🇨🇳 Chinese</option>
-      <option value="korean">🇰🇷 Korean</option>
-    </select>
+    <select id="fc-lang-select" onchange="startFlashcards(this.value)"></select>
   </div>
   <div id="fc-body" class="fc-body"></div>
 </div>
@@ -274,16 +247,7 @@ select:focus{outline:2px solid var(--pri)}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.68"/></svg>
     </button>
     <h1 id="quiz-hdr-title">Quiz</h1>
-    <select id="quiz-lang-select" onchange="startQuiz()">
-      <option value="spanish">🇪🇸 Spanish</option>
-      <option value="french">🇫🇷 French</option>
-      <option value="german">🇩🇪 German</option>
-      <option value="japanese">🇯🇵 Japanese</option>
-      <option value="italian">🇮🇹 Italian</option>
-      <option value="portuguese">🇵🇹 Portuguese</option>
-      <option value="chinese">🇨🇳 Chinese</option>
-      <option value="korean">🇰🇷 Korean</option>
-    </select>
+    <select id="quiz-lang-select" onchange="startQuiz()"></select>
   </div>
   <div id="quiz-msg-list"></div>
   <div id="quiz-input-area">
@@ -423,16 +387,7 @@ select:focus{outline:2px solid var(--pri)}
     <p style="font-size:13px;color:var(--mut);margin-bottom:12px">CSV nebo TXT: každý řádek = <code>slovo,překlad,poznámka(volitelné)</code><br>Nebo vlož JSON ze zálohy.</p>
     <div class="field"><label>Obsah souboru</label><textarea id="import-text" style="min-height:120px;font-family:monospace;font-size:12px" placeholder="hola,ahoj,pozdrav&#10;gracias,děkuji"></textarea></div>
     <div class="field"><label>Cílový jazyk</label>
-      <select id="import-lang-sel">
-        <option value="spanish">🇪🇸 Spanish</option>
-        <option value="french">🇫🇷 French</option>
-        <option value="german">🇩🇪 German</option>
-        <option value="japanese">🇯🇵 Japanese</option>
-        <option value="italian">🇮🇹 Italian</option>
-        <option value="portuguese">🇵🇹 Portuguese</option>
-        <option value="chinese">🇨🇳 Chinese</option>
-        <option value="korean">🇰🇷 Korean</option>
-      </select>
+      <select id="import-lang-sel"></select>
     </div>
     <div class="hint" id="import-preview" style="margin-bottom:10px"></div>
     <div class="btn-row">
@@ -449,11 +404,11 @@ select:focus{outline:2px solid var(--pri)}
 // CONSTANTS & STATE
 // ══════════════════════════════════════════════
 const MODELS={anthropic:['claude-sonnet-4-6','claude-opus-4-7','claude-haiku-4-5-20251001'],openai:['gpt-5.5','gpt-5.4-mini','gpt-5.4-nano','gpt-4o'],gemini:['gemini-2.5-flash','gemini-2.5-pro','gemini-3.1-flash-lite','gemini-2.5-flash-lite'],ollama:['llama3.3','llama3.2','mistral','phi4','gemma3','qwen2.5'],custom:[]};
-const LANG_META={spanish:{name:'Spanish',native:'Español',flag:'🇪🇸'},french:{name:'French',native:'Français',flag:'🇫🇷'},german:{name:'German',native:'Deutsch',flag:'🇩🇪'},japanese:{name:'Japanese',native:'日本語',flag:'🇯🇵'},italian:{name:'Italian',native:'Italiano',flag:'🇮🇹'},portuguese:{name:'Portuguese',native:'Português',flag:'🇵🇹'},chinese:{name:'Chinese',native:'中文',flag:'🇨🇳'},korean:{name:'Korean',native:'한국어',flag:'🇰🇷'}};
+const LANG_META={english:{name:'English',native:'English',flag:'🇬🇧'},spanish:{name:'Spanish',native:'Español',flag:'🇪🇸'},french:{name:'French',native:'Français',flag:'🇫🇷'},german:{name:'German',native:'Deutsch',flag:'🇩🇪'},italian:{name:'Italian',native:'Italiano',flag:'🇮🇹'},portuguese:{name:'Portuguese',native:'Português',flag:'🇵🇹'},dutch:{name:'Dutch',native:'Nederlands',flag:'🇳🇱'},swedish:{name:'Swedish',native:'Svenska',flag:'🇸🇪'},polish:{name:'Polish',native:'Polski',flag:'🇵🇱'},ukrainian:{name:'Ukrainian',native:'Українська',flag:'🇺🇦'},arabic:{name:'Arabic',native:'العربية',flag:'🇸🇦'},turkish:{name:'Turkish',native:'Türkçe',flag:'🇹🇷'},hindi:{name:'Hindi',native:'हिन्दी',flag:'🇮🇳'},japanese:{name:'Japanese',native:'日本語',flag:'🇯🇵'},chinese:{name:'Chinese',native:'中文',flag:'🇨🇳'},korean:{name:'Korean',native:'한국어',flag:'🇰🇷'}};
 const SORT_MODES=['alpha','due','new'];
 let sortIdx=0;
 
-let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',level:'beginner',feedbackStyle:'balanced',uiLang:'cs',lessonMode:false};
+let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',level:'beginner',feedbackStyle:'balanced',uiLang:navigator.language.startsWith('cs')?'cs':'en',lessonMode:false};
 let chatHistory=[];
 let quizHistory=[];
 let currentLang='spanish';
@@ -475,8 +430,13 @@ let t=I18N.cs;
 // ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
+function populateLangSelects(){
+  const opts=Object.entries(LANG_META).map(([k,m])=>`<option value="${k}">${m.flag} ${m.native}</option>`).join('');
+  ['lang-select','vocab-lang-select','fc-lang-select','quiz-lang-select','import-lang-sel'].forEach(id=>{document.getElementById(id).innerHTML=opts;});
+}
 (function init(){
   try{Object.assign(cfg,JSON.parse(localStorage.getItem('lt-cfg')||'{}'));}catch{}
+  populateLangSelects();
   const sl=localStorage.getItem('lt-lang');
   if(sl&&LANG_META[sl])currentLang=sl;
   vocabLang=currentLang;
@@ -833,8 +793,11 @@ Level: ${levelMap[cfg.level]||'A1-A2'}.
 Words to test (use them, don't show translations): ${wordList}.
 Ask a question that tests one of these words naturally (e.g. fill-in-the-blank, translate, use in a sentence). 
 Respond ONLY with JSON: {"question":"<question text in ${meta.name} and/or ${cfg.uiLang==='cs'?'Czech':'English'}>","targetWord":"<the word being tested>"}`;
+  if(cfg.provider==='custom'&&(!cfg.customUrl||!cfg.customModel)){appendQuizMsg('tutor',t.errNoKey);return;}
   if(cfg.provider!=='ollama'&&cfg.provider!=='custom'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendQuizMsg('tutor',t.errNoKey);return;}
-  const raw=await safeLLM([{role:'user',content:prompt}],'');
+  let raw;
+  try{raw=await safeLLM([{role:'user',content:prompt}],'');}
+  catch(err){appendQuizMsg('tutor',err.message==='NO_KEY'?t.errNoKey:t.errGeneric+' '+err.message);return;}
   try{const p=JSON.parse(clean(raw));appendQuizMsg('tutor',p.question);quizHistory.push({role:'assistant-question',word:p.targetWord,content:p.question});}
   catch{appendQuizMsg('tutor',clean(raw));}
 }
@@ -856,7 +819,9 @@ Question asked: "${question}"
 Target word: "${targetWord}"
 Student answer: "${txt}"
 Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief feedback in ${cfg.uiLang==='cs'?'Czech':'English'}>","nextQuestion":"<next question testing a different word or same if failed>","nextTargetWord":"<word being tested next>"}`;
-  const raw=await safeLLM([{role:'user',content:evalPrompt}],'');
+  let raw;
+  try{raw=await safeLLM([{role:'user',content:evalPrompt}],'');}
+  catch(err){appendQuizMsg('tutor',err.message==='NO_KEY'?t.errNoKey:t.errGeneric+' '+err.message);document.getElementById('quiz-send-btn').disabled=false;return;}
   try{
     const p=JSON.parse(clean(raw));
     const icon=p.correct?'✅':'❌';
