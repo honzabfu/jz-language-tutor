@@ -192,6 +192,7 @@ Gemini 2.0 Flash a GPT-4o-mini jsou výrazně levnější alternativy. Ollama (l
 - [ ] Učební cíle s progress barem
 - [ ] Filtrování flashcards podle tagů
 - [ ] Tmavý režim
+- [ ] Refaktoring do oddělených souborů (`style.css`, `app.js`, `i18n.js`) — bez build nástroje, jen `<link>`/`<script src>`; zlepší udržovatelnost i18n a navigaci v kódu
 
 ---
 
@@ -385,6 +386,7 @@ Gemini 2.0 Flash and GPT-4o-mini are significantly cheaper alternatives. Ollama 
 - [ ] Learning goals with progress bar
 - [ ] Tag-based flashcard filtering
 - [ ] Dark mode
+- [ ] Refactor into separate files (`style.css`, `app.js`, `i18n.js`) — no build tool, just `<link>`/`<script src>`; improves i18n maintainability and code navigation
 
 ---
 
