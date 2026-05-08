@@ -1225,6 +1225,7 @@ function buildSystemPrompt(){
   const meta=LANG_META[currentLang];
   const lvMap={beginner:'A1-A2',intermediate:'B1-B2',advanced:'C1-C2'};
   const fbMap={gentle:'encouraging and gentle',balanced:'balanced',strict:'strict and exhaustive'};
+  const uiLangName=cfg.uiLang==='cs'?'Czech':'English';
   let vocabCtx='';
   if(cfg.lessonMode){
     const arr=getVocab(currentLang).slice(0,50);
@@ -1234,7 +1235,7 @@ function buildSystemPrompt(){
 Student level: ${lvMap[getLangLevel(currentLang)]||'A1-A2'}. Feedback style: ${fbMap[cfg.feedbackStyle]||'balanced'}.${vocabCtx}
 ${cfg.lessonMode?'LESSON MODE: Actively incorporate vocabulary from the list above into your responses and explanations.':''}
 Respond ONLY with valid JSON (no markdown, no preamble):
-{"reply":"<response in ${meta.name}>","translation":"<English translation>","feedback":{"positive":["..."],"corrections":["..."],"suggestions":["..."]}}`;
+{"reply":"<response in ${meta.name}>","translation":"<${uiLangName} translation>","feedback":{"positive":["..."],"corrections":["..."],"suggestions":["..."]}}`;
 }
 
 async function sendMessage(){
