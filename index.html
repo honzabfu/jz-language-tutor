@@ -335,7 +335,10 @@ select:focus{outline:2px solid var(--pri)}
     </div>
     <div class="card">
       <h3>Chování tutora</h3>
-      <div class="field"><label>Úroveň studenta (<span id="cfg-level-lang"></span>)</label>
+      <div class="field"><label>Jazyk</label>
+        <select id="cfg-level-lang-select" onchange="onSettingsLevelLangChange(this.value)"></select>
+      </div>
+      <div class="field"><label>Úroveň studenta</label>
         <select id="cfg-level">
           <option value="beginner">Začátečník (A1–A2)</option>
           <option value="intermediate">Mírně pokročilý (B1–B2)</option>
@@ -485,6 +488,13 @@ select:focus{outline:2px solid var(--pri)}
           <option value="50">50</option>
         </select>
       </div>
+      <div class="field"><label>Úroveň</label>
+        <select id="gen-level">
+          <option value="beginner">Začátečník (A1–A2)</option>
+          <option value="intermediate">Mírně pokročilý (B1–B2)</option>
+          <option value="advanced">Pokročilý (C1–C2)</option>
+        </select>
+      </div>
       <p id="gen-api-note" class="hint" style="margin-bottom:12px"></p>
       <div class="btn-row">
         <button class="btn btn-primary" id="gen-action-btn" onclick="generateVocab()">Generovat</button>
@@ -618,8 +628,10 @@ function updateEmptyState(){const m=LANG_META[currentLang];if(m)document.getElem
 function populateSettingsUI(){
   document.getElementById('cfg-provider').value=cfg.provider;
   document.getElementById('cfg-ui-lang').value=cfg.uiLang;
+  const lls=document.getElementById('cfg-level-lang-select');
+  lls.innerHTML=Object.entries(LANG_META).map(([k,m])=>`<option value="${k}">${m.flag} ${m.native}</option>`).join('');
+  lls.value=currentLang;
   document.getElementById('cfg-level').value=getLangLevel(currentLang);
-  document.getElementById('cfg-level-lang').textContent=LANG_META[currentLang]?.name||currentLang;
   document.getElementById('cfg-feedback-style').value=cfg.feedbackStyle;
   document.getElementById('cfg-apikey').value=cfg.apiKey||'';
   document.getElementById('cfg-ollama-url').value=cfg.ollamaUrl;
@@ -651,7 +663,8 @@ function saveSettings(){
   cfg.ollamaUrl=document.getElementById('cfg-ollama-url').value.trim();
   cfg.customUrl=document.getElementById('cfg-custom-url').value.trim();
   cfg.customModel=document.getElementById('cfg-custom-model').value.trim();
-  langLevels[currentLang]=document.getElementById('cfg-level').value;
+  const settingsLang=document.getElementById('cfg-level-lang-select').value;
+  langLevels[settingsLang]=document.getElementById('cfg-level').value;
   localStorage.setItem('lt-levels',JSON.stringify(langLevels));
   cfg.feedbackStyle=document.getElementById('cfg-feedback-style').value;
   cfg.uiLang=document.getElementById('cfg-ui-lang').value;
@@ -893,6 +906,7 @@ function openGenerateModal(){
     ?'Slovíčka vygeneruje nakonfigurovaný LLM.'
     :'API klíč není nastaven – zkopíruje prompt do schránky pro použití ve vlastním AI nástroji (ChatGPT, Claude.ai…).';
   document.getElementById('gen-action-btn').textContent=hasApi?'Generovat':'📋 Kopírovat prompt';
+  document.getElementById('gen-level').value=getLangLevel(vocabLang);
   showGenForm();
   document.getElementById('gen-modal').classList.add('open');
   setTimeout(()=>document.getElementById('gen-topic').focus(),100);
@@ -909,7 +923,10 @@ async function generateVocab(){
   const count=parseInt(document.getElementById('gen-count').value);
   const meta=LANG_META[vocabLang];
   const levelMap={beginner:'A1-A2',intermediate:'B1-B2',advanced:'C1-C2'};
-  const level=levelMap[getLangLevel(vocabLang)]||'A1-A2';
+  const selectedLevel=document.getElementById('gen-level').value;
+  langLevels[vocabLang]=selectedLevel;
+  localStorage.setItem('lt-levels',JSON.stringify(langLevels));
+  const level=levelMap[selectedLevel]||'A1-A2';
   const nativeLang=cfg.uiLang==='cs'?'Czech':'English';
   if(!hasApiAccess()){
     const prompt=`Vygeneruj ${count} slovíček v jazyce ${meta.name} na téma "${topic}" pro úroveň ${level}.\nOdpověz POUZE jako CSV (bez záhlaví, jedno slovíčko na řádek):\nslovo v ${meta.name},překlad do ${nativeLang},poznámka nebo příklad (volitelné)\n\nPříklad výstupu:\ncestovat,to travel,cestovat vlakem\nletiště,airport,jít na letiště`;
@@ -1124,6 +1141,7 @@ function appendQuizMsg(role,text){
 // ══════════════════════════════════════════════
 // CHAT
 // ══════════════════════════════════════════════
+function onSettingsLevelLangChange(l){document.getElementById('cfg-level').value=getLangLevel(l);}
 function setMode(lesson){cfg.lessonMode=lesson;updateModeBadge();}
 function toggleLessonMode(){setMode(!cfg.lessonMode);}
 function updateModeBadge(){
@@ -1134,7 +1152,7 @@ function updateModeBadge(){
   document.getElementById('vocab-cost-warn').style.display=(cfg.lessonMode&&getVocab(currentLang).length>40)?'block':'none';
 }
 function clearChat(){chatHistory=[];currentFbData=null;const list=document.getElementById('msg-list');[...list.children].forEach(el=>{if(el.id!=='empty'&&el.id!=='typing-row')el.remove();});document.getElementById('empty').style.display='';document.getElementById('feedback-bar').classList.remove('visible');document.getElementById('typing-row').style.display='none';}
-function onLangChange(l){currentLang=l;localStorage.setItem('lt-lang',l);document.getElementById('vocab-lang-select').value=l;vocabLang=l;updateEmptyState();updateInputPlaceholder();updateModeBadge();clearChat();const lvEl=document.getElementById('cfg-level');if(lvEl)lvEl.value=getLangLevel(l);const lnEl=document.getElementById('cfg-level-lang');if(lnEl)lnEl.textContent=LANG_META[l]?.name||l;}
+function onLangChange(l){currentLang=l;localStorage.setItem('lt-lang',l);document.getElementById('vocab-lang-select').value=l;vocabLang=l;updateEmptyState();updateInputPlaceholder();updateModeBadge();clearChat();const lls=document.getElementById('cfg-level-lang-select');if(lls){lls.value=l;document.getElementById('cfg-level').value=getLangLevel(l);}}
 function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
 function scrollBottom(){const l=document.getElementById('msg-list');l.scrollTop=l.scrollHeight;}
