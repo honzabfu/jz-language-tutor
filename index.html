@@ -399,6 +399,22 @@ select:focus{outline:2px solid var(--pri)}
 </div>
 <input type="file" id="file-input" accept=".csv,.txt,.json" style="display:none" onchange="loadFile(event)">
 
+<!-- ═══════ BACKUP IMPORT MODAL ═══════ -->
+
+<div id="backup-import-modal" class="overlay" onclick="closeBackupModalOutside(event)">
+  <div class="sheet">
+    <h2>Import zálohy</h2>
+    <p style="font-size:13px;color:var(--mut);margin-bottom:12px">Vlož JSON zálohu nebo ji načti ze souboru.</p>
+    <div class="field"><label>JSON záloha</label><textarea id="backup-import-text" style="min-height:120px;font-family:monospace;font-size:12px" placeholder='{"version":2,"cfg":{},"vocab":{}}'></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="confirmBackupImport()">Importovat</button>
+      <button class="btn btn-ghost" onclick="closeBackupModal()">Zrušit</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('backup-file-input').click()">📂 Ze souboru</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="backup-file-input" accept=".json" style="display:none" onchange="loadBackupFile(event)">
+
 <script>
 // ══════════════════════════════════════════════
 // CONSTANTS & STATE
@@ -554,9 +570,22 @@ function exportAll(){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`langtutor-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();
 }
 function importAll(){
-  const raw=prompt('Vlož JSON zálohu (nebo použij tlačítko ze souboru):');
+  document.getElementById('backup-import-text').value='';
+  document.getElementById('backup-import-modal').classList.add('open');
+}
+function closeBackupModal(){document.getElementById('backup-import-modal').classList.remove('open');}
+function closeBackupModalOutside(e){if(e.target===document.getElementById('backup-import-modal'))closeBackupModal();}
+function loadBackupFile(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{document.getElementById('backup-import-text').value=ev.target.result;};
+  r.readAsText(f);
+  e.target.value='';
+}
+function confirmBackupImport(){
+  const raw=document.getElementById('backup-import-text').value.trim();
   if(!raw)return;
-  try{applyBackup(JSON.parse(raw));}catch{alert('Neplatný JSON');}
+  try{const data=JSON.parse(raw);closeBackupModal();applyBackup(data);}catch{alert('Neplatný JSON');}
 }
 function applyBackup(data){
   if(data.cfg)Object.assign(cfg,data.cfg);
