@@ -153,6 +153,9 @@ select:focus{outline:2px solid var(--pri)}
 #quiz-send-btn{background:var(--pri);color:#fff;border:none;border-radius:var(--r);padding:10px 13px;cursor:pointer;display:flex;align-items:center;flex-shrink:0}
 #quiz-send-btn:disabled{opacity:.4;cursor:default}
 #quiz-send-btn svg{width:19px;height:19px}
+.quiz-empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--mut);text-align:center;padding:32px}
+.quiz-empty-state h2{font-size:17px;font-weight:600;color:var(--txt)}
+.quiz-empty-state p{font-size:14px;line-height:1.5}
 
 /* ── SETTINGS VIEW ── */
 #settings-view{background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -289,7 +292,7 @@ select:focus{outline:2px solid var(--pri)}
     <h1 id="quiz-hdr-title">Quiz</h1>
     <select id="quiz-lang-select" onchange="startQuiz()"></select>
   </div>
-  <div id="quiz-msg-list"><div id="quiz-typing-row" class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+  <div id="quiz-msg-list"><div id="quiz-empty" class="quiz-empty-state"><div style="font-size:40px">🎯</div><h2 id="quiz-empty-title"></h2><p id="quiz-empty-desc"></p></div><div id="quiz-typing-row" class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
   <div id="quiz-input-area">
     <textarea id="quiz-input" rows="1" oninput="autoResize(this);document.getElementById('quiz-send-btn').disabled=!this.value.trim()" onkeydown="quizKey(event)" placeholder="Tvoje odpověď…"></textarea>
     <button id="quiz-send-btn" onclick="quizSend()" disabled>
@@ -547,8 +550,8 @@ const selectedIds=new Set();
 
 // ── I18N ──
 const I18N={
-  cs:{appTitle:'Language Tutor',settingsTitle:'Nastavení',emptyTitle:'Připrav se na procvičování!',emptyDesc:'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',inputPH:l=>`Napiš zprávu v jazyce ${l}…`,fbPositive:'Správně',fbCorrections:'Opravy',fbSuggestions:'Tipy',navChat:'Chat',navVocab:'Slovíčka',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Nastavení',vocabHdr:'Slovní zásoba',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lekce',modeChatDesc:'Volný rozhovor — tutor opravuje chyby a navrhuje zlepšení',modeLessonDesc:'Tutor aktivně procvičuje tvá slovíčka ze seznamu',saveToast:'Uloženo ✓',clearConfirm:'Smazat vše včetně API klíčů a slovní zásoby?',errNoKey:'API klíč není nastaven. Přejdi do Nastavení.',errNetwork:'Chyba sítě nebo CORS.',errGeneric:'Chyba LLM:',apiKeySet:'API klíč nastaven',noApiKey:'API klíč není nastaven',translationLabel:'Překlad',translateBtn:'přeložit',hideTranslation:'skrýt překlad',fcTap:'Klikni pro zobrazení překladu',fcRateQ:'Jak dobře sis vzpomněl/a?',fcDoneTitle:'Hotovo na dnes!',fcDoneDesc:n=>`Prošel jsi ${n} karet. Vrať se zítra.`,fcEmptyTitle:'Žádné karty k procvičení',fcEmptyDesc:'Přidej slovíčka v záložce Slovíčka.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Opakování',sortNew:'↕ Nejnovější',fcDirNormal:'⇄ Cizí → Mateřský',fcDirReverse:'⇄ Mateřský → Cizí',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Poskytovatel',sProviderLabel:'Poskytovatel',sOllamaOption:'Ollama (lokální)',sCustomOption:'Vlastní / Custom (OpenAI-kompatibilní)',sModelLabel:'Model',sCustomModelLabel:'Model (název)',sApiKeyLabel:'API klíč',sOllamaHint:'Ollama musí mít povoleno CORS pro tuto doménu.',sCustomUrlHint:'OpenAI-compatible endpoint (bez /chat/completions). API klíč výše je volitelný.',sGenerateAt:h=>`Vygeneruj na ${h}`,sTutorTitle:'Chování tutora',sLangLabel:'Jazyk',sLevelLabel:'Úroveň studenta',sLevelBeginner:'Začátečník (A1–A2)',sLevelIntermediate:'Mírně pokročilý (B1–B2)',sLevelAdvanced:'Pokročilý (C1–C2)',sFeedbackLabel:'Styl zpětné vazby',sFeedbackGentle:'Jemný (povzbuzující)',sFeedbackBalanced:'Vyvážený',sFeedbackStrict:'Přísný (každá chyba)',sUiLangLabel:'Jazyk rozhraní',sDataTitle:'Data & záloha',sDataDesc:'Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.',sSaveBtn:'Uložit',sExportBtn:'Export zálohy',sImportBtn:'Import zálohy',sClearBtn:'Smazat vše',sAddToHome:'přidej do plochy',sHelpLink:'Nápověda'},
-  en:{appTitle:'Language Tutor',settingsTitle:'Settings',emptyTitle:'Ready to practice!',emptyDesc:'Type anything and the tutor will respond with feedback.',inputPH:l=>`Type a message in ${l}…`,fbPositive:'Correct',fbCorrections:'Corrections',fbSuggestions:'Tips',navChat:'Chat',navVocab:'Vocab',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Settings',vocabHdr:'Vocabulary',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lesson',modeChatDesc:'Free conversation — tutor corrects mistakes and suggests improvements',modeLessonDesc:'Tutor actively practises your vocabulary list',saveToast:'Saved ✓',clearConfirm:'Delete everything including API keys and vocabulary?',errNoKey:'API key not set. Go to Settings.',errNetwork:'Network error or CORS issue.',errGeneric:'LLM error:',apiKeySet:'API key set',noApiKey:'API key not set',translationLabel:'Translation',translateBtn:'translate',hideTranslation:'hide',fcTap:'Tap to reveal translation',fcRateQ:'How well did you remember?',fcDoneTitle:'All done for today!',fcDoneDesc:n=>`Reviewed ${n} cards. Come back tomorrow.`,fcEmptyTitle:'No cards to review',fcEmptyDesc:'Add words in the Vocabulary tab.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Due',sortNew:'↕ Newest',fcDirNormal:'⇄ Foreign → Native',fcDirReverse:'⇄ Native → Foreign',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Provider',sProviderLabel:'Provider',sOllamaOption:'Ollama (local)',sCustomOption:'Custom (OpenAI-compatible)',sModelLabel:'Model',sCustomModelLabel:'Model (name)',sApiKeyLabel:'API key',sOllamaHint:'Ollama must have CORS enabled for this domain.',sCustomUrlHint:'OpenAI-compatible endpoint (without /chat/completions). API key above is optional.',sGenerateAt:h=>`Generate at ${h}`,sTutorTitle:'Tutor behaviour',sLangLabel:'Language',sLevelLabel:'Student level',sLevelBeginner:'Beginner (A1–A2)',sLevelIntermediate:'Intermediate (B1–B2)',sLevelAdvanced:'Advanced (C1–C2)',sFeedbackLabel:'Feedback style',sFeedbackGentle:'Gentle (encouraging)',sFeedbackBalanced:'Balanced',sFeedbackStrict:'Strict (every mistake)',sUiLangLabel:'Interface language',sDataTitle:'Data & backup',sDataDesc:'Export includes configuration, all vocabulary (all languages) and SM-2 data.',sSaveBtn:'Save',sExportBtn:'Export backup',sImportBtn:'Import backup',sClearBtn:'Delete all',sAddToHome:'add to home screen',sHelpLink:'Help'}
+  cs:{appTitle:'Language Tutor',settingsTitle:'Nastavení',emptyTitle:'Připrav se na procvičování!',emptyDesc:'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',inputPH:l=>`Napiš zprávu v jazyce ${l}…`,fbPositive:'Správně',fbCorrections:'Opravy',fbSuggestions:'Tipy',navChat:'Chat',navVocab:'Slovíčka',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Nastavení',vocabHdr:'Slovní zásoba',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lekce',modeChatDesc:'Volný rozhovor — tutor opravuje chyby a navrhuje zlepšení',modeLessonDesc:'Tutor aktivně procvičuje tvá slovíčka ze seznamu',saveToast:'Uloženo ✓',clearConfirm:'Smazat vše včetně API klíčů a slovní zásoby?',errNoKey:'API klíč není nastaven. Přejdi do Nastavení.',errNetwork:'Chyba sítě nebo CORS.',errGeneric:'Chyba LLM:',apiKeySet:'API klíč nastaven',noApiKey:'API klíč není nastaven',translationLabel:'Překlad',translateBtn:'přeložit',hideTranslation:'skrýt překlad',fcTap:'Klikni pro zobrazení překladu',fcRateQ:'Jak dobře sis vzpomněl/a?',fcDoneTitle:'Hotovo na dnes!',fcDoneDesc:n=>`Prošel jsi ${n} karet. Vrať se zítra.`,fcEmptyTitle:'Žádné karty k procvičení',fcEmptyDesc:'Přidej slovíčka v záložce Slovíčka.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Opakování',sortNew:'↕ Nejnovější',fcDirNormal:'⇄ Cizí → Mateřský',fcDirReverse:'⇄ Mateřský → Cizí',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Poskytovatel',sProviderLabel:'Poskytovatel',sOllamaOption:'Ollama (lokální)',sCustomOption:'Vlastní / Custom (OpenAI-kompatibilní)',sModelLabel:'Model',sCustomModelLabel:'Model (název)',sApiKeyLabel:'API klíč',sOllamaHint:'Ollama musí mít povoleno CORS pro tuto doménu.',sCustomUrlHint:'OpenAI-compatible endpoint (bez /chat/completions). API klíč výše je volitelný.',sGenerateAt:h=>`Vygeneruj na ${h}`,sTutorTitle:'Chování tutora',sLangLabel:'Jazyk',sLevelLabel:'Úroveň studenta',sLevelBeginner:'Začátečník (A1–A2)',sLevelIntermediate:'Mírně pokročilý (B1–B2)',sLevelAdvanced:'Pokročilý (C1–C2)',sFeedbackLabel:'Styl zpětné vazby',sFeedbackGentle:'Jemný (povzbuzující)',sFeedbackBalanced:'Vyvážený',sFeedbackStrict:'Přísný (každá chyba)',sUiLangLabel:'Jazyk rozhraní',sDataTitle:'Data & záloha',sDataDesc:'Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.',sSaveBtn:'Uložit',sExportBtn:'Export zálohy',sImportBtn:'Import zálohy',sClearBtn:'Smazat vše',sAddToHome:'přidej do plochy',sHelpLink:'Nápověda',quizEmptyTitle:'Připraven na kvíz?',quizEmptyDesc:'Přidej slovíčka v záložce Slovíčka a stiskni tlačítko ↺ pro spuštění kvízu.'},
+  en:{appTitle:'Language Tutor',settingsTitle:'Settings',emptyTitle:'Ready to practice!',emptyDesc:'Type anything and the tutor will respond with feedback.',inputPH:l=>`Type a message in ${l}…`,fbPositive:'Correct',fbCorrections:'Corrections',fbSuggestions:'Tips',navChat:'Chat',navVocab:'Vocab',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Settings',vocabHdr:'Vocabulary',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lesson',modeChatDesc:'Free conversation — tutor corrects mistakes and suggests improvements',modeLessonDesc:'Tutor actively practises your vocabulary list',saveToast:'Saved ✓',clearConfirm:'Delete everything including API keys and vocabulary?',errNoKey:'API key not set. Go to Settings.',errNetwork:'Network error or CORS issue.',errGeneric:'LLM error:',apiKeySet:'API key set',noApiKey:'API key not set',translationLabel:'Translation',translateBtn:'translate',hideTranslation:'hide',fcTap:'Tap to reveal translation',fcRateQ:'How well did you remember?',fcDoneTitle:'All done for today!',fcDoneDesc:n=>`Reviewed ${n} cards. Come back tomorrow.`,fcEmptyTitle:'No cards to review',fcEmptyDesc:'Add words in the Vocabulary tab.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Due',sortNew:'↕ Newest',fcDirNormal:'⇄ Foreign → Native',fcDirReverse:'⇄ Native → Foreign',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Provider',sProviderLabel:'Provider',sOllamaOption:'Ollama (local)',sCustomOption:'Custom (OpenAI-compatible)',sModelLabel:'Model',sCustomModelLabel:'Model (name)',sApiKeyLabel:'API key',sOllamaHint:'Ollama must have CORS enabled for this domain.',sCustomUrlHint:'OpenAI-compatible endpoint (without /chat/completions). API key above is optional.',sGenerateAt:h=>`Generate at ${h}`,sTutorTitle:'Tutor behaviour',sLangLabel:'Language',sLevelLabel:'Student level',sLevelBeginner:'Beginner (A1–A2)',sLevelIntermediate:'Intermediate (B1–B2)',sLevelAdvanced:'Advanced (C1–C2)',sFeedbackLabel:'Feedback style',sFeedbackGentle:'Gentle (encouraging)',sFeedbackBalanced:'Balanced',sFeedbackStrict:'Strict (every mistake)',sUiLangLabel:'Interface language',sDataTitle:'Data & backup',sDataDesc:'Export includes configuration, all vocabulary (all languages) and SM-2 data.',sSaveBtn:'Save',sExportBtn:'Export backup',sImportBtn:'Import backup',sClearBtn:'Delete all',sAddToHome:'add to home screen',sHelpLink:'Help',quizEmptyTitle:'Ready to quiz?',quizEmptyDesc:'Add vocabulary in the Vocab tab, then press ↺ to start a quiz.'}
 };
 let t=I18N.cs;
 
@@ -604,6 +607,8 @@ function applyI18n(){
   document.getElementById('settings-title').textContent=t.settingsTitle;
   document.getElementById('empty-title').textContent=t.emptyTitle;
   document.getElementById('empty-desc').textContent=t.emptyDesc;
+  document.getElementById('quiz-empty-title').textContent=t.quizEmptyTitle;
+  document.getElementById('quiz-empty-desc').textContent=t.quizEmptyDesc;
   document.getElementById('fb-lbl-positive').textContent=t.fbPositive;
   document.getElementById('fb-lbl-corrections').textContent=t.fbCorrections;
   document.getElementById('fb-lbl-suggestions').textContent=t.fbSuggestions;
@@ -1120,10 +1125,12 @@ function rateFC(q){
 // ══════════════════════════════════════════════
 function startQuiz(){
   quizHistory=[];
-  document.getElementById('quiz-msg-list').innerHTML='';
+  const qList=document.getElementById('quiz-msg-list');
+  [...qList.children].forEach(el=>{if(el.id!=='quiz-typing-row'&&el.id!=='quiz-empty')el.remove();});
+  document.getElementById('quiz-empty').style.display='none';
   const lang=document.getElementById('quiz-lang-select').value;
   const arr=getVocab(lang);
-  if(!arr.length){appendQuizMsg('tutor','Nejsou žádná slovíčka k procvičení. Přidej je v záložce Slovíčka.');return;}
+  if(!arr.length){document.getElementById('quiz-empty').style.display='';return;}
   const sample=arr.sort(()=>Math.random()-.5).slice(0,10);
   const wordList=sample.map(w=>w.word).join(', ');
   const sysContext=`Vocabulary to test: ${wordList}`;
@@ -1142,9 +1149,11 @@ Ask a question that tests one of these words naturally (e.g. fill-in-the-blank, 
 Respond ONLY with JSON: {"question":"<question text in ${meta.name} and/or ${cfg.uiLang==='cs'?'Czech':'English'}>","targetWord":"<the word being tested>"}`;
   if(cfg.provider==='custom'&&(!cfg.customUrl||!cfg.customModel)){appendQuizMsg('tutor',t.errNoKey);return;}
   if(cfg.provider!=='ollama'&&cfg.provider!=='custom'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendQuizMsg('tutor',t.errNoKey);return;}
+  setQuizTyping(true);
   let raw;
   try{raw=await safeLLM([{role:'user',content:prompt}],'');}
-  catch(err){appendQuizMsg('tutor',err.message==='NO_KEY'?t.errNoKey:t.errGeneric+' '+err.message);return;}
+  catch(err){setQuizTyping(false);appendQuizMsg('tutor',err.message==='NO_KEY'?t.errNoKey:t.errGeneric+' '+err.message);return;}
+  setQuizTyping(false);
   try{const p=JSON.parse(clean(raw));appendQuizMsg('tutor',p.question);quizHistory.push({role:'assistant-question',word:p.targetWord,content:p.question});}
   catch{appendQuizMsg('tutor',clean(raw));}
 }
@@ -1187,7 +1196,7 @@ function appendQuizMsg(role,text){
   const list=document.getElementById('quiz-msg-list');
   const typingRow=document.getElementById('quiz-typing-row');
   const wrap=document.createElement('div');wrap.className=`msg ${role}`;
-  const b=document.createElement('div');b.className='bubble';b.textContent=text;
+  const b=document.createElement('div');b.className='bubble';b.innerHTML=renderMarkdown(text);
   wrap.appendChild(b);list.insertBefore(wrap,typingRow);list.scrollTop=list.scrollHeight;
 }
 
