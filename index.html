@@ -810,7 +810,7 @@ async function quizAsk(lang,sample){
 Level: ${levelMap[cfg.level]||'A1-A2'}. 
 Words to test (use them, don't show translations): ${wordList}.
 Ask a question that tests one of these words naturally (e.g. fill-in-the-blank, translate, use in a sentence). 
-Respond ONLY with JSON: {"question":"<question text in ${meta.name} and/or Czech/English>","targetWord":"<the word being tested>"}`;
+Respond ONLY with JSON: {"question":"<question text in ${meta.name} and/or ${cfg.uiLang==='cs'?'Czech':'English'}>","targetWord":"<the word being tested>"}`;
   if(cfg.provider!=='ollama'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendQuizMsg('tutor',t.errNoKey);return;}
   const raw=await safeLLM([{role:'user',content:prompt}],'');
   try{const p=JSON.parse(clean(raw));appendQuizMsg('tutor',p.question);quizHistory.push({role:'assistant-question',word:p.targetWord,content:p.question});}
@@ -833,7 +833,7 @@ async function quizSend(){
 Question asked: "${question}"
 Target word: "${targetWord}"
 Student answer: "${txt}"
-Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief feedback in the UI language>","nextQuestion":"<next question testing a different word or same if failed>","nextTargetWord":"<word being tested next>"}`;
+Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief feedback in ${cfg.uiLang==='cs'?'Czech':'English'}>","nextQuestion":"<next question testing a different word or same if failed>","nextTargetWord":"<word being tested next>"}`;
   const raw=await safeLLM([{role:'user',content:evalPrompt}],'');
   try{
     const p=JSON.parse(clean(raw));
