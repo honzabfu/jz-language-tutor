@@ -160,6 +160,14 @@ select:focus{outline:2px solid var(--pri)}
 .save-toast{display:none;font-size:13px;color:var(--ok);font-weight:600;margin-left:8px}
 .save-toast.visible{display:inline}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
+
+/* ── PWA INSTALL BANNER ── */
+#pwa-banner{display:none;align-items:center;gap:10px;padding:9px 14px;background:var(--prit);border-top:1px solid #bfdbfe;flex-shrink:0;font-size:13px}
+#pwa-banner.visible{display:flex}
+#pwa-banner span{flex:1;color:var(--txt)}
+#pwa-banner .pwa-install-btn{background:var(--pri);color:#fff;border:none;border-radius:var(--rs);padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+#pwa-banner .pwa-install-btn:hover{background:var(--prid)}
+#pwa-banner .pwa-dismiss-btn{background:none;border:none;cursor:pointer;color:var(--mut);font-size:18px;line-height:1;padding:2px 4px;flex-shrink:0}
 </style>
 
 </head>
@@ -335,6 +343,14 @@ select:focus{outline:2px solid var(--pri)}
     </div>
     <div style="text-align:center;font-size:12px;color:var(--mut);padding-bottom:4px">Language Tutor v0.2 · PWA: přidej do plochy · <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" style="color:var(--mut)">Nápověda</a></div>
   </div>
+</div>
+
+<!-- ═══════ PWA INSTALL BANNER ═══════ -->
+
+<div id="pwa-banner">
+  <span>📲 Přidat Language Tutor na plochu</span>
+  <button class="pwa-install-btn" onclick="pwaInstall()">Přidat</button>
+  <button class="pwa-dismiss-btn" onclick="pwaDismiss()" title="Zavřít">×</button>
 </div>
 
 <!-- ═══════ NAVBAR ═══════ -->
@@ -992,6 +1008,36 @@ async function callCustom(msgs,sys){
   const res=await fetch(`${base}/chat/completions`,{method:'POST',headers,body:JSON.stringify({model:cfg.customModel,max_tokens:1024,messages:m})});
   if(!res.ok)throw new Error(await res.text());
   return(await res.json()).choices[0].message.content;
+}
+
+// ══════════════════════════════════════════════
+// PWA INSTALL PROMPT
+// ══════════════════════════════════════════════
+let _pwaPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  if(localStorage.getItem('lt-pwa-dismissed')||window.matchMedia('(display-mode: standalone)').matches)return;
+  _pwaPrompt=e;
+  document.getElementById('pwa-banner').classList.add('visible');
+});
+async function pwaInstall(){
+  if(!_pwaPrompt)return;
+  _pwaPrompt.prompt();
+  const{outcome}=await _pwaPrompt.userChoice;
+  _pwaPrompt=null;
+  document.getElementById('pwa-banner').classList.remove('visible');
+  if(outcome==='accepted')localStorage.setItem('lt-pwa-dismissed','1');
+}
+function pwaDismiss(){
+  document.getElementById('pwa-banner').classList.remove('visible');
+  localStorage.setItem('lt-pwa-dismissed','1');
+}
+
+// ── Service Worker ──
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  });
 }
 </script>
 
