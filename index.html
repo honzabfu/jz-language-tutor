@@ -306,7 +306,7 @@ select:focus{outline:2px solid var(--pri)}
   <div class="settings-body">
     <div class="card">
       <h3 id="s-provider-title">LLM Poskytovatel</h3>
-      <div class="field"><label>Poskytovatel</label>
+      <div class="field"><label id="s-provider-label">Poskytovatel</label>
         <select id="cfg-provider" onchange="onProviderChange(this.value)">
           <option value="anthropic">Anthropic (Claude)</option>
           <option value="openai">OpenAI (GPT)</option>
@@ -315,37 +315,37 @@ select:focus{outline:2px solid var(--pri)}
           <option value="custom">Vlastní / Custom (OpenAI-compatible)</option>
         </select>
       </div>
-      <div class="field" id="field-model-select"><label>Model</label><select id="cfg-model"></select></div>
-      <div class="field" id="field-custom-model" style="display:none"><label>Model (název)</label>
+      <div class="field" id="field-model-select"><label id="s-model-label">Model</label><select id="cfg-model"></select></div>
+      <div class="field" id="field-custom-model" style="display:none"><label id="s-custom-model-label">Model (název)</label>
         <input type="text" id="cfg-custom-model" placeholder="gpt-4o-mini">
       </div>
-      <div class="field" id="field-apikey"><label>API klíč</label>
+      <div class="field" id="field-apikey"><label id="s-apikey-label">API klíč</label>
         <input type="password" id="cfg-apikey" placeholder="sk-…" autocomplete="off" oninput="updateApiKeyStatus()">
         <div class="hint" id="apikey-hint"></div>
         <div class="provider-status" id="apikey-status"></div>
       </div>
       <div class="field" id="field-ollama-url" style="display:none"><label>Ollama URL</label>
         <input type="text" id="cfg-ollama-url" placeholder="http://localhost:11434">
-        <div class="hint">Ollama musí mít povoleno CORS pro tuto doménu.</div>
+        <div class="hint" id="s-ollama-hint">Ollama musí mít povoleno CORS pro tuto doménu.</div>
       </div>
       <div class="field" id="field-custom-url" style="display:none"><label>API URL</label>
         <input type="text" id="cfg-custom-url" placeholder="https://openrouter.ai/api/v1">
-        <div class="hint">OpenAI-compatible endpoint (bez /chat/completions). API klíč výše je volitelný.</div>
+        <div class="hint" id="s-custom-url-hint">OpenAI-compatible endpoint (bez /chat/completions). API klíč výše je volitelný.</div>
       </div>
     </div>
     <div class="card">
-      <h3>Chování tutora</h3>
-      <div class="field"><label>Jazyk</label>
+      <h3 id="s-tutor-title">Chování tutora</h3>
+      <div class="field"><label id="s-lang-label">Jazyk</label>
         <select id="cfg-level-lang-select" onchange="onSettingsLevelLangChange(this.value)"></select>
       </div>
-      <div class="field"><label>Úroveň studenta</label>
+      <div class="field"><label id="s-level-label">Úroveň studenta</label>
         <select id="cfg-level">
           <option value="beginner">Začátečník (A1–A2)</option>
           <option value="intermediate">Mírně pokročilý (B1–B2)</option>
           <option value="advanced">Pokročilý (C1–C2)</option>
         </select>
       </div>
-      <div class="field"><label>Styl zpětné vazby</label>
+      <div class="field"><label id="s-feedback-label">Styl zpětné vazby</label>
         <select id="cfg-feedback-style">
           <option value="gentle">Jemný (povzbuzující)</option>
           <option value="balanced">Vyvážený</option>
@@ -355,7 +355,7 @@ select:focus{outline:2px solid var(--pri)}
     </div>
     <div class="card">
       <h3>UI</h3>
-      <div class="field"><label>Jazyk rozhraní</label>
+      <div class="field"><label id="s-ui-lang-label">Jazyk rozhraní</label>
         <select id="cfg-ui-lang" onchange="onUiLangChange(this.value)">
           <option value="cs">Čeština</option>
           <option value="en">English</option>
@@ -363,19 +363,19 @@ select:focus{outline:2px solid var(--pri)}
       </div>
     </div>
     <div class="card">
-      <h3>Data & záloha</h3>
-      <p style="font-size:13px;color:var(--mut);margin-bottom:12px">Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.</p>
+      <h3 id="s-data-title">Data & záloha</h3>
+      <p id="s-data-desc" style="font-size:13px;color:var(--mut);margin-bottom:12px">Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.</p>
       <div class="btn-row">
-        <button class="btn btn-primary" onclick="saveSettings()">Uložit</button>
-        <button class="btn btn-ghost" onclick="exportAll()">Export zálohy</button>
-        <button class="btn btn-ghost" onclick="importAll()">Import zálohy</button>
+        <button id="s-save-btn" class="btn btn-primary" onclick="saveSettings()">Uložit</button>
+        <button id="s-export-btn" class="btn btn-ghost" onclick="exportAll()">Export zálohy</button>
+        <button id="s-import-btn" class="btn btn-ghost" onclick="importAll()">Import zálohy</button>
       </div>
       <div style="margin-top:10px" class="btn-row">
-        <button class="btn btn-danger" onclick="clearData()">Smazat vše</button>
+        <button id="s-clear-btn" class="btn btn-danger" onclick="clearData()">Smazat vše</button>
       </div>
       <span id="save-toast" class="save-toast"></span>
     </div>
-    <div style="text-align:center;font-size:12px;color:var(--mut);padding-bottom:4px">Language Tutor v0.2 · PWA: přidej do plochy · <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" style="color:var(--mut)">Nápověda</a></div>
+    <div style="text-align:center;font-size:12px;color:var(--mut);padding-bottom:4px">Language Tutor v0.2 · PWA: <span id="s-add-to-home">přidej do plochy</span> · <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" style="color:var(--mut)" id="s-help-link">Nápověda</a></div>
   </div>
 </div>
 
@@ -541,8 +541,8 @@ const selectedIds=new Set();
 
 // ── I18N ──
 const I18N={
-  cs:{appTitle:'Language Tutor',settingsTitle:'Nastavení',emptyTitle:'Připrav se na procvičování!',emptyDesc:'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',inputPH:l=>`Napiš zprávu v jazyce ${l}…`,fbPositive:'Správně',fbCorrections:'Opravy',fbSuggestions:'Tipy',navChat:'Chat',navVocab:'Slovíčka',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Nastavení',vocabHdr:'Slovní zásoba',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lekce',modeChatDesc:'Volný rozhovor — tutor opravuje chyby a navrhuje zlepšení',modeLessonDesc:'Tutor aktivně procvičuje tvá slovíčka ze seznamu',saveToast:'Uloženo ✓',clearConfirm:'Smazat vše včetně API klíčů a slovní zásoby?',errNoKey:'API klíč není nastaven. Přejdi do Nastavení.',errNetwork:'Chyba sítě nebo CORS.',errGeneric:'Chyba LLM:',apiKeySet:'API klíč nastaven',noApiKey:'API klíč není nastaven',translationLabel:'Překlad',translateBtn:'přeložit',hideTranslation:'skrýt překlad',fcTap:'Klikni pro zobrazení překladu',fcRateQ:'Jak dobře sis vzpomněl/a?',fcDoneTitle:'Hotovo na dnes!',fcDoneDesc:n=>`Prošel jsi ${n} karet. Vrať se zítra.`,fcEmptyTitle:'Žádné karty k procvičení',fcEmptyDesc:'Přidej slovíčka v záložce Slovíčka.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Splatnost',sortNew:'↕ Nejnovější',fcDirNormal:'⇄ Cizí → Mateřský',fcDirReverse:'⇄ Mateřský → Cizí',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''}},
-  en:{appTitle:'Language Tutor',settingsTitle:'Settings',emptyTitle:'Ready to practice!',emptyDesc:'Type anything and the tutor will respond with feedback.',inputPH:l=>`Type a message in ${l}…`,fbPositive:'Correct',fbCorrections:'Corrections',fbSuggestions:'Tips',navChat:'Chat',navVocab:'Vocab',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Settings',vocabHdr:'Vocabulary',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lesson',modeChatDesc:'Free conversation — tutor corrects mistakes and suggests improvements',modeLessonDesc:'Tutor actively practises your vocabulary list',saveToast:'Saved ✓',clearConfirm:'Delete everything including API keys and vocabulary?',errNoKey:'API key not set. Go to Settings.',errNetwork:'Network error or CORS issue.',errGeneric:'LLM error:',apiKeySet:'API key set',noApiKey:'API key not set',translationLabel:'Translation',translateBtn:'translate',hideTranslation:'hide',fcTap:'Tap to reveal translation',fcRateQ:'How well did you remember?',fcDoneTitle:'All done for today!',fcDoneDesc:n=>`Reviewed ${n} cards. Come back tomorrow.`,fcEmptyTitle:'No cards to review',fcEmptyDesc:'Add words in the Vocabulary tab.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Due',sortNew:'↕ Newest',fcDirNormal:'⇄ Foreign → Native',fcDirReverse:'⇄ Native → Foreign',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''}}
+  cs:{appTitle:'Language Tutor',settingsTitle:'Nastavení',emptyTitle:'Připrav se na procvičování!',emptyDesc:'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',inputPH:l=>`Napiš zprávu v jazyce ${l}…`,fbPositive:'Správně',fbCorrections:'Opravy',fbSuggestions:'Tipy',navChat:'Chat',navVocab:'Slovíčka',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Nastavení',vocabHdr:'Slovní zásoba',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lekce',modeChatDesc:'Volný rozhovor — tutor opravuje chyby a navrhuje zlepšení',modeLessonDesc:'Tutor aktivně procvičuje tvá slovíčka ze seznamu',saveToast:'Uloženo ✓',clearConfirm:'Smazat vše včetně API klíčů a slovní zásoby?',errNoKey:'API klíč není nastaven. Přejdi do Nastavení.',errNetwork:'Chyba sítě nebo CORS.',errGeneric:'Chyba LLM:',apiKeySet:'API klíč nastaven',noApiKey:'API klíč není nastaven',translationLabel:'Překlad',translateBtn:'přeložit',hideTranslation:'skrýt překlad',fcTap:'Klikni pro zobrazení překladu',fcRateQ:'Jak dobře sis vzpomněl/a?',fcDoneTitle:'Hotovo na dnes!',fcDoneDesc:n=>`Prošel jsi ${n} karet. Vrať se zítra.`,fcEmptyTitle:'Žádné karty k procvičení',fcEmptyDesc:'Přidej slovíčka v záložce Slovíčka.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Splatnost',sortNew:'↕ Nejnovější',fcDirNormal:'⇄ Cizí → Mateřský',fcDirReverse:'⇄ Mateřský → Cizí',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Poskytovatel',sProviderLabel:'Poskytovatel',sOllamaOption:'Ollama (lokální)',sCustomOption:'Vlastní / Custom (OpenAI-kompatibilní)',sModelLabel:'Model',sCustomModelLabel:'Model (název)',sApiKeyLabel:'API klíč',sOllamaHint:'Ollama musí mít povoleno CORS pro tuto doménu.',sCustomUrlHint:'OpenAI-compatible endpoint (bez /chat/completions). API klíč výše je volitelný.',sGenerateAt:h=>`Vygeneruj na ${h}`,sTutorTitle:'Chování tutora',sLangLabel:'Jazyk',sLevelLabel:'Úroveň studenta',sLevelBeginner:'Začátečník (A1–A2)',sLevelIntermediate:'Mírně pokročilý (B1–B2)',sLevelAdvanced:'Pokročilý (C1–C2)',sFeedbackLabel:'Styl zpětné vazby',sFeedbackGentle:'Jemný (povzbuzující)',sFeedbackBalanced:'Vyvážený',sFeedbackStrict:'Přísný (každá chyba)',sUiLangLabel:'Jazyk rozhraní',sDataTitle:'Data & záloha',sDataDesc:'Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.',sSaveBtn:'Uložit',sExportBtn:'Export zálohy',sImportBtn:'Import zálohy',sClearBtn:'Smazat vše',sAddToHome:'přidej do plochy',sHelpLink:'Nápověda'},
+  en:{appTitle:'Language Tutor',settingsTitle:'Settings',emptyTitle:'Ready to practice!',emptyDesc:'Type anything and the tutor will respond with feedback.',inputPH:l=>`Type a message in ${l}…`,fbPositive:'Correct',fbCorrections:'Corrections',fbSuggestions:'Tips',navChat:'Chat',navVocab:'Vocab',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Settings',vocabHdr:'Vocabulary',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lesson',modeChatDesc:'Free conversation — tutor corrects mistakes and suggests improvements',modeLessonDesc:'Tutor actively practises your vocabulary list',saveToast:'Saved ✓',clearConfirm:'Delete everything including API keys and vocabulary?',errNoKey:'API key not set. Go to Settings.',errNetwork:'Network error or CORS issue.',errGeneric:'LLM error:',apiKeySet:'API key set',noApiKey:'API key not set',translationLabel:'Translation',translateBtn:'translate',hideTranslation:'hide',fcTap:'Tap to reveal translation',fcRateQ:'How well did you remember?',fcDoneTitle:'All done for today!',fcDoneDesc:n=>`Reviewed ${n} cards. Come back tomorrow.`,fcEmptyTitle:'No cards to review',fcEmptyDesc:'Add words in the Vocabulary tab.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Due',sortNew:'↕ Newest',fcDirNormal:'⇄ Foreign → Native',fcDirReverse:'⇄ Native → Foreign',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Provider',sProviderLabel:'Provider',sOllamaOption:'Ollama (local)',sCustomOption:'Custom (OpenAI-compatible)',sModelLabel:'Model',sCustomModelLabel:'Model (name)',sApiKeyLabel:'API key',sOllamaHint:'Ollama must have CORS enabled for this domain.',sCustomUrlHint:'OpenAI-compatible endpoint (without /chat/completions). API key above is optional.',sGenerateAt:h=>`Generate at ${h}`,sTutorTitle:'Tutor behaviour',sLangLabel:'Language',sLevelLabel:'Student level',sLevelBeginner:'Beginner (A1–A2)',sLevelIntermediate:'Intermediate (B1–B2)',sLevelAdvanced:'Advanced (C1–C2)',sFeedbackLabel:'Feedback style',sFeedbackGentle:'Gentle (encouraging)',sFeedbackBalanced:'Balanced',sFeedbackStrict:'Strict (every mistake)',sUiLangLabel:'Interface language',sDataTitle:'Data & backup',sDataDesc:'Export includes configuration, all vocabulary (all languages) and SM-2 data.',sSaveBtn:'Save',sExportBtn:'Export backup',sImportBtn:'Import backup',sClearBtn:'Delete all',sAddToHome:'add to home screen',sHelpLink:'Help'}
 };
 let t=I18N.cs;
 
@@ -618,6 +618,34 @@ function applyI18n(){
   updateModeBadge();
   updateInputPlaceholder();
   updateApiKeyHint();
+  document.getElementById('s-provider-title').textContent=t.sProviderTitle;
+  document.getElementById('s-provider-label').textContent=t.sProviderLabel;
+  document.querySelector('#cfg-provider option[value="ollama"]').textContent=t.sOllamaOption;
+  document.querySelector('#cfg-provider option[value="custom"]').textContent=t.sCustomOption;
+  document.getElementById('s-model-label').textContent=t.sModelLabel;
+  document.getElementById('s-custom-model-label').textContent=t.sCustomModelLabel;
+  document.getElementById('s-apikey-label').textContent=t.sApiKeyLabel;
+  document.getElementById('s-ollama-hint').textContent=t.sOllamaHint;
+  document.getElementById('s-custom-url-hint').textContent=t.sCustomUrlHint;
+  document.getElementById('s-tutor-title').textContent=t.sTutorTitle;
+  document.getElementById('s-lang-label').textContent=t.sLangLabel;
+  document.getElementById('s-level-label').textContent=t.sLevelLabel;
+  document.querySelector('#cfg-level option[value="beginner"]').textContent=t.sLevelBeginner;
+  document.querySelector('#cfg-level option[value="intermediate"]').textContent=t.sLevelIntermediate;
+  document.querySelector('#cfg-level option[value="advanced"]').textContent=t.sLevelAdvanced;
+  document.getElementById('s-feedback-label').textContent=t.sFeedbackLabel;
+  document.querySelector('#cfg-feedback-style option[value="gentle"]').textContent=t.sFeedbackGentle;
+  document.querySelector('#cfg-feedback-style option[value="balanced"]').textContent=t.sFeedbackBalanced;
+  document.querySelector('#cfg-feedback-style option[value="strict"]').textContent=t.sFeedbackStrict;
+  document.getElementById('s-ui-lang-label').textContent=t.sUiLangLabel;
+  document.getElementById('s-data-title').textContent=t.sDataTitle;
+  document.getElementById('s-data-desc').textContent=t.sDataDesc;
+  document.getElementById('s-save-btn').textContent=t.sSaveBtn;
+  document.getElementById('s-export-btn').textContent=t.sExportBtn;
+  document.getElementById('s-import-btn').textContent=t.sImportBtn;
+  document.getElementById('s-clear-btn').textContent=t.sClearBtn;
+  document.getElementById('s-add-to-home').textContent=t.sAddToHome;
+  document.getElementById('s-help-link').textContent=t.sHelpLink;
 }
 function updateInputPlaceholder(){const m=LANG_META[currentLang];document.getElementById('msg-input').placeholder=t.inputPH(m?m.name:currentLang);}
 function updateEmptyState(){const m=LANG_META[currentLang];if(m)document.getElementById('empty-flag').textContent=m.flag;}
@@ -653,7 +681,7 @@ function toggleProviderFields(p){
   document.getElementById('field-custom-model').style.display=isCustom?'':'none';
   document.getElementById('field-model-select').style.display=isCustom?'none':'';
 }
-function updateApiKeyHint(){const el=document.getElementById('apikey-hint');const h=t.apiHints[cfg.provider]||'';el.textContent=h?`Vygeneruj na ${h}`:''}
+function updateApiKeyHint(){const el=document.getElementById('apikey-hint');const h=t.apiHints[cfg.provider]||'';el.textContent=h?t.sGenerateAt(h):''}
 function updateApiKeyStatus(){const el=document.getElementById('apikey-status');if(cfg.provider==='ollama'||cfg.provider==='custom'){el.textContent='';return;}const k=document.getElementById('cfg-apikey')?.value||cfg.apiKey||'';el.innerHTML=k.length>8?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:`<span class="status-dot status-empty"></span>${t.noApiKey}`;}
 function onUiLangChange(l){cfg.uiLang=l;t=I18N[l]||I18N.cs;applyI18n();}
 function saveSettings(){
