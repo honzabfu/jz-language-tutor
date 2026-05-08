@@ -815,7 +815,7 @@ function openWordModal(word){
       ['Příští opakování',due],
       ['Interval',sm2.interval===1?'1 den':`${sm2.interval} dní`],
       ['Počet opakování',`${sm2.reps}×`],
-      ['Obtížnost',sm2.ef<=1.5?'Těžké':sm2.ef<=2.0?'Střední':'Snadné'],
+      ['Obtížnost',sm2.ef==null?'–':sm2.ef<=1.5?'Těžké':sm2.ef<=2.0?'Střední':'Snadné'],
     ];
     document.getElementById('modal-sm2-rows').innerHTML=rows.map(([k,v])=>`<span style="color:var(--muted)">${k}</span><span style="color:var(--fg);font-weight:500">${v}</span>`).join('');
     infoEl.style.display='block';
