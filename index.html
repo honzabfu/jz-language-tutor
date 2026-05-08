@@ -309,9 +309,13 @@ select:focus{outline:2px solid var(--pri)}
           <option value="openai">OpenAI (GPT)</option>
           <option value="gemini">Google (Gemini)</option>
           <option value="ollama">Ollama (lokální)</option>
+          <option value="custom">Vlastní / Custom (OpenAI-compatible)</option>
         </select>
       </div>
-      <div class="field"><label>Model</label><select id="cfg-model"></select></div>
+      <div class="field" id="field-model-select"><label>Model</label><select id="cfg-model"></select></div>
+      <div class="field" id="field-custom-model" style="display:none"><label>Model (název)</label>
+        <input type="text" id="cfg-custom-model" placeholder="gpt-4o-mini">
+      </div>
       <div class="field" id="field-apikey"><label>API klíč</label>
         <input type="password" id="cfg-apikey" placeholder="sk-…" autocomplete="off" oninput="updateApiKeyStatus()">
         <div class="hint" id="apikey-hint"></div>
@@ -320,6 +324,10 @@ select:focus{outline:2px solid var(--pri)}
       <div class="field" id="field-ollama-url" style="display:none"><label>Ollama URL</label>
         <input type="text" id="cfg-ollama-url" placeholder="http://localhost:11434">
         <div class="hint">Ollama musí mít povoleno CORS pro tuto doménu.</div>
+      </div>
+      <div class="field" id="field-custom-url" style="display:none"><label>API URL</label>
+        <input type="text" id="cfg-custom-url" placeholder="https://openrouter.ai/api/v1">
+        <div class="hint">OpenAI-compatible endpoint (bez /chat/completions). API klíč výše je volitelný.</div>
       </div>
     </div>
     <div class="card">
@@ -440,12 +448,12 @@ select:focus{outline:2px solid var(--pri)}
 // ══════════════════════════════════════════════
 // CONSTANTS & STATE
 // ══════════════════════════════════════════════
-const MODELS={anthropic:['claude-sonnet-4-6','claude-opus-4-7','claude-haiku-4-5-20251001'],openai:['gpt-5.5','gpt-5.4-mini','gpt-5.4-nano','gpt-4o'],gemini:['gemini-2.5-flash','gemini-2.5-pro','gemini-3.1-flash-lite','gemini-2.5-flash-lite'],ollama:['llama3.3','llama3.2','mistral','phi4','gemma3','qwen2.5']};
+const MODELS={anthropic:['claude-sonnet-4-6','claude-opus-4-7','claude-haiku-4-5-20251001'],openai:['gpt-5.5','gpt-5.4-mini','gpt-5.4-nano','gpt-4o'],gemini:['gemini-2.5-flash','gemini-2.5-pro','gemini-3.1-flash-lite','gemini-2.5-flash-lite'],ollama:['llama3.3','llama3.2','mistral','phi4','gemma3','qwen2.5'],custom:[]};
 const LANG_META={spanish:{name:'Spanish',native:'Español',flag:'🇪🇸'},french:{name:'French',native:'Français',flag:'🇫🇷'},german:{name:'German',native:'Deutsch',flag:'🇩🇪'},japanese:{name:'Japanese',native:'日本語',flag:'🇯🇵'},italian:{name:'Italian',native:'Italiano',flag:'🇮🇹'},portuguese:{name:'Portuguese',native:'Português',flag:'🇵🇹'},chinese:{name:'Chinese',native:'中文',flag:'🇨🇳'},korean:{name:'Korean',native:'한국어',flag:'🇰🇷'}};
 const SORT_MODES=['alpha','due','new'];
 let sortIdx=0;
 
-let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',level:'beginner',feedbackStyle:'balanced',uiLang:'cs',lessonMode:false};
+let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',level:'beginner',feedbackStyle:'balanced',uiLang:'cs',lessonMode:false};
 let chatHistory=[];
 let quizHistory=[];
 let currentLang='spanish';
@@ -459,8 +467,8 @@ let fcRevealed=false;
 
 // ── I18N ──
 const I18N={
-  cs:{appTitle:'Language Tutor',settingsTitle:'Nastavení',emptyTitle:'Připrav se na procvičování!',emptyDesc:'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',inputPH:l=>`Napiš zprávu v jazyce ${l}…`,fbPositive:'Správně',fbCorrections:'Opravy',fbSuggestions:'Tipy',navChat:'Chat',navVocab:'Slovíčka',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Nastavení',vocabHdr:'Slovní zásoba',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lekce',saveToast:'Uloženo ✓',clearConfirm:'Smazat vše včetně API klíčů a slovní zásoby?',errNoKey:'API klíč není nastaven. Přejdi do Nastavení.',errNetwork:'Chyba sítě nebo CORS.',errGeneric:'Chyba LLM:',apiKeySet:'API klíč nastaven',noApiKey:'API klíč není nastaven',translationLabel:'Překlad',translateBtn:'přeložit',hideTranslation:'skrýt překlad',fcTap:'Klikni pro zobrazení překladu',fcRateQ:'Jak dobře sis vzpomněl/a?',fcDoneTitle:'Hotovo na dnes!',fcDoneDesc:n=>`Prošel jsi ${n} karet. Vrať se zítra.`,fcEmptyTitle:'Žádné karty k procvičení',fcEmptyDesc:'Přidej slovíčka v záložce Slovíčka.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Splatnost',sortNew:'↕ Nejnovější',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:''}},
-  en:{appTitle:'Language Tutor',settingsTitle:'Settings',emptyTitle:'Ready to practice!',emptyDesc:'Type anything and the tutor will respond with feedback.',inputPH:l=>`Type a message in ${l}…`,fbPositive:'Correct',fbCorrections:'Corrections',fbSuggestions:'Tips',navChat:'Chat',navVocab:'Vocab',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Settings',vocabHdr:'Vocabulary',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lesson',saveToast:'Saved ✓',clearConfirm:'Delete everything including API keys and vocabulary?',errNoKey:'API key not set. Go to Settings.',errNetwork:'Network error or CORS issue.',errGeneric:'LLM error:',apiKeySet:'API key set',noApiKey:'API key not set',translationLabel:'Translation',translateBtn:'translate',hideTranslation:'hide',fcTap:'Tap to reveal translation',fcRateQ:'How well did you remember?',fcDoneTitle:'All done for today!',fcDoneDesc:n=>`Reviewed ${n} cards. Come back tomorrow.`,fcEmptyTitle:'No cards to review',fcEmptyDesc:'Add words in the Vocabulary tab.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Due',sortNew:'↕ Newest',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:''}}
+  cs:{appTitle:'Language Tutor',settingsTitle:'Nastavení',emptyTitle:'Připrav se na procvičování!',emptyDesc:'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',inputPH:l=>`Napiš zprávu v jazyce ${l}…`,fbPositive:'Správně',fbCorrections:'Opravy',fbSuggestions:'Tipy',navChat:'Chat',navVocab:'Slovíčka',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Nastavení',vocabHdr:'Slovní zásoba',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lekce',saveToast:'Uloženo ✓',clearConfirm:'Smazat vše včetně API klíčů a slovní zásoby?',errNoKey:'API klíč není nastaven. Přejdi do Nastavení.',errNetwork:'Chyba sítě nebo CORS.',errGeneric:'Chyba LLM:',apiKeySet:'API klíč nastaven',noApiKey:'API klíč není nastaven',translationLabel:'Překlad',translateBtn:'přeložit',hideTranslation:'skrýt překlad',fcTap:'Klikni pro zobrazení překladu',fcRateQ:'Jak dobře sis vzpomněl/a?',fcDoneTitle:'Hotovo na dnes!',fcDoneDesc:n=>`Prošel jsi ${n} karet. Vrať se zítra.`,fcEmptyTitle:'Žádné karty k procvičení',fcEmptyDesc:'Přidej slovíčka v záložce Slovíčka.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Splatnost',sortNew:'↕ Nejnovější',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''}},
+  en:{appTitle:'Language Tutor',settingsTitle:'Settings',emptyTitle:'Ready to practice!',emptyDesc:'Type anything and the tutor will respond with feedback.',inputPH:l=>`Type a message in ${l}…`,fbPositive:'Correct',fbCorrections:'Corrections',fbSuggestions:'Tips',navChat:'Chat',navVocab:'Vocab',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Settings',vocabHdr:'Vocabulary',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lesson',saveToast:'Saved ✓',clearConfirm:'Delete everything including API keys and vocabulary?',errNoKey:'API key not set. Go to Settings.',errNetwork:'Network error or CORS issue.',errGeneric:'LLM error:',apiKeySet:'API key set',noApiKey:'API key not set',translationLabel:'Translation',translateBtn:'translate',hideTranslation:'hide',fcTap:'Tap to reveal translation',fcRateQ:'How well did you remember?',fcDoneTitle:'All done for today!',fcDoneDesc:n=>`Reviewed ${n} cards. Come back tomorrow.`,fcEmptyTitle:'No cards to review',fcEmptyDesc:'Add words in the Vocabulary tab.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Due',sortNew:'↕ Newest',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''}}
 };
 let t=I18N.cs;
 
@@ -538,23 +546,34 @@ function populateSettingsUI(){
   document.getElementById('cfg-feedback-style').value=cfg.feedbackStyle;
   document.getElementById('cfg-apikey').value=cfg.apiKey||'';
   document.getElementById('cfg-ollama-url').value=cfg.ollamaUrl;
+  document.getElementById('cfg-custom-url').value=cfg.customUrl||'';
+  document.getElementById('cfg-custom-model').value=cfg.customModel||'';
   rebuildModelList(cfg.provider);
   document.getElementById('cfg-model').value=cfg.model;
-  toggleOllamaUrl(cfg.provider);
+  toggleProviderFields(cfg.provider);
   updateApiKeyHint();
   updateApiKeyStatus();
 }
-function onProviderChange(p){cfg.provider=p;rebuildModelList(p);toggleOllamaUrl(p);updateApiKeyHint();updateApiKeyStatus();}
+function onProviderChange(p){cfg.provider=p;rebuildModelList(p);toggleProviderFields(p);updateApiKeyHint();updateApiKeyStatus();}
 function rebuildModelList(p){const s=document.getElementById('cfg-model');s.innerHTML='';(MODELS[p]||[]).forEach(m=>{const o=document.createElement('option');o.value=o.textContent=m;s.appendChild(o);});if((MODELS[p]||[]).includes(cfg.model))s.value=cfg.model;}
-function toggleOllamaUrl(p){document.getElementById('field-apikey').style.display=p==='ollama'?'none':'';document.getElementById('field-ollama-url').style.display=p==='ollama'?'':'none';}
+function toggleProviderFields(p){
+  const isOllama=p==='ollama',isCustom=p==='custom';
+  document.getElementById('field-apikey').style.display=isOllama?'none':'';
+  document.getElementById('field-ollama-url').style.display=isOllama?'':'none';
+  document.getElementById('field-custom-url').style.display=isCustom?'':'none';
+  document.getElementById('field-custom-model').style.display=isCustom?'':'none';
+  document.getElementById('field-model-select').style.display=isCustom?'none':'';
+}
 function updateApiKeyHint(){const el=document.getElementById('apikey-hint');const h=t.apiHints[cfg.provider]||'';el.textContent=h?`Vygeneruj na ${h}`:''}
-function updateApiKeyStatus(){const el=document.getElementById('apikey-status');if(cfg.provider==='ollama'){el.textContent='';return;}const k=document.getElementById('cfg-apikey')?.value||cfg.apiKey||'';el.innerHTML=k.length>8?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:`<span class="status-dot status-empty"></span>${t.noApiKey}`;}
+function updateApiKeyStatus(){const el=document.getElementById('apikey-status');if(cfg.provider==='ollama'||cfg.provider==='custom'){el.textContent='';return;}const k=document.getElementById('cfg-apikey')?.value||cfg.apiKey||'';el.innerHTML=k.length>8?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:`<span class="status-dot status-empty"></span>${t.noApiKey}`;}
 function onUiLangChange(l){cfg.uiLang=l;t=I18N[l]||I18N.cs;applyI18n();}
 function saveSettings(){
   cfg.provider=document.getElementById('cfg-provider').value;
   cfg.model=document.getElementById('cfg-model').value;
   cfg.apiKey=document.getElementById('cfg-apikey').value.trim();
   cfg.ollamaUrl=document.getElementById('cfg-ollama-url').value.trim();
+  cfg.customUrl=document.getElementById('cfg-custom-url').value.trim();
+  cfg.customModel=document.getElementById('cfg-custom-model').value.trim();
   cfg.level=document.getElementById('cfg-level').value;
   cfg.feedbackStyle=document.getElementById('cfg-feedback-style').value;
   cfg.uiLang=document.getElementById('cfg-ui-lang').value;
@@ -565,7 +584,7 @@ function saveSettings(){
   setTimeout(()=>toast.classList.remove('visible'),2000);
   updateApiKeyStatus();
 }
-function updateProviderBadge(){const el=document.getElementById('provider-badge');const lb={anthropic:'Claude',openai:'GPT',gemini:'Gemini',ollama:'Ollama'};const ok=cfg.provider==='ollama'||(cfg.apiKey&&cfg.apiKey.length>8);el.textContent=lb[cfg.provider]||cfg.provider;el.className='provider-badge'+(ok?'':' warn');}
+function updateProviderBadge(){const el=document.getElementById('provider-badge');const lb={anthropic:'Claude',openai:'GPT',gemini:'Gemini',ollama:'Ollama',custom:'Custom'};const ok=cfg.provider==='ollama'||(cfg.provider==='custom'&&!!cfg.customUrl&&!!cfg.customModel)||(cfg.apiKey&&cfg.apiKey.length>8);el.textContent=lb[cfg.provider]||cfg.provider;el.className='provider-badge'+(ok?'':' warn');}
 
 // ── Export / Import full backup ──
 function exportAll(){
@@ -814,7 +833,7 @@ Level: ${levelMap[cfg.level]||'A1-A2'}.
 Words to test (use them, don't show translations): ${wordList}.
 Ask a question that tests one of these words naturally (e.g. fill-in-the-blank, translate, use in a sentence). 
 Respond ONLY with JSON: {"question":"<question text in ${meta.name} and/or ${cfg.uiLang==='cs'?'Czech':'English'}>","targetWord":"<the word being tested>"}`;
-  if(cfg.provider!=='ollama'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendQuizMsg('tutor',t.errNoKey);return;}
+  if(cfg.provider!=='ollama'&&cfg.provider!=='custom'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendQuizMsg('tutor',t.errNoKey);return;}
   const raw=await safeLLM([{role:'user',content:prompt}],'');
   try{const p=JSON.parse(clean(raw));appendQuizMsg('tutor',p.question);quizHistory.push({role:'assistant-question',word:p.targetWord,content:p.question});}
   catch{appendQuizMsg('tutor',clean(raw));}
@@ -902,7 +921,7 @@ Respond ONLY with valid JSON (no markdown, no preamble):
 async function sendMessage(){
   const input=document.getElementById('msg-input');
   const text=input.value.trim();if(!text)return;
-  if(cfg.provider!=='ollama'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendMsg('tutor',t.errNoKey,null);return;}
+  if(cfg.provider!=='ollama'&&cfg.provider!=='custom'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendMsg('tutor',t.errNoKey,null);return;}
   input.value='';input.style.height='auto';document.getElementById('send-btn').disabled=true;
   appendMsg('user',text,null);
   chatHistory.push({role:'user',content:text});
@@ -937,6 +956,7 @@ async function safeLLM(msgs,sys){
   if(cfg.provider==='openai')return callOpenAI(msgs,sys);
   if(cfg.provider==='gemini')return callGemini(msgs,sys);
   if(cfg.provider==='ollama')return callOllama(msgs,sys);
+  if(cfg.provider==='custom')return callCustom(msgs,sys);
   throw new Error('Unknown provider');
 }
 async function callAnthropic(msgs,sys){
@@ -968,6 +988,16 @@ async function callOllama(msgs,sys){
   const res=await fetch(`${base}/api/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,stream:false,messages:m})});
   if(!res.ok)throw new Error(await res.text());
   return(await res.json()).message.content;
+}
+async function callCustom(msgs,sys){
+  const base=(cfg.customUrl||'').replace(/\/$/,'');
+  if(!base||!cfg.customModel)throw new Error('NO_KEY');
+  const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
+  const headers={'Content-Type':'application/json'};
+  if(cfg.apiKey)headers['Authorization']=`Bearer ${cfg.apiKey}`;
+  const res=await fetch(`${base}/chat/completions`,{method:'POST',headers,body:JSON.stringify({model:cfg.customModel,max_tokens:1024,messages:m})});
+  if(!res.ok)throw new Error(await res.text());
+  return(await res.json()).choices[0].message.content;
 }
 </script>
 
