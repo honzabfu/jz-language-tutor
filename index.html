@@ -1120,7 +1120,8 @@ function rateFC(q){
 // ══════════════════════════════════════════════
 function startQuiz(){
   quizHistory=[];
-  document.getElementById('quiz-msg-list').innerHTML='';
+  const qList=document.getElementById('quiz-msg-list');
+  [...qList.children].forEach(el=>{if(el.id!=='quiz-typing-row')el.remove();});
   const lang=document.getElementById('quiz-lang-select').value;
   const arr=getVocab(lang);
   if(!arr.length){appendQuizMsg('tutor','Nejsou žádná slovíčka k procvičení. Přidej je v záložce Slovíčka.');return;}
@@ -1187,7 +1188,7 @@ function appendQuizMsg(role,text){
   const list=document.getElementById('quiz-msg-list');
   const typingRow=document.getElementById('quiz-typing-row');
   const wrap=document.createElement('div');wrap.className=`msg ${role}`;
-  const b=document.createElement('div');b.className='bubble';b.textContent=text;
+  const b=document.createElement('div');b.className='bubble';b.innerHTML=renderMarkdown(text);
   wrap.appendChild(b);list.insertBefore(wrap,typingRow);list.scrollTop=list.scrollHeight;
 }
 
