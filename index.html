@@ -10,9 +10,9 @@
 <link rel="manifest" href="manifest.json">
 <title>Language Tutor</title>
 <style>
-:root{--bg:#f8f9fa;--sur:#fff;--bdr:#e2e8f0;--pri:#3b82f6;--prid:#2563eb;--prit:#eff6ff;--txt:#1e293b;--mut:#64748b;--ok:#16a34a;--warn:#d97706;--err:#dc2626;--r:12px;--rs:8px;--sh:0 1px 3px rgba(0,0,0,.08);--sb:env(safe-area-inset-bottom,0px)}
+:root{--bg:#f8f9fa;--sur:#fff;--bdr:#e2e8f0;--pri:#3b82f6;--prid:#2563eb;--prit:#eff6ff;--txt:#1e293b;--mut:#64748b;--ok:#16a34a;--warn:#d97706;--err:#dc2626;--r:12px;--rs:8px;--sh:0 1px 3px rgba(0,0,0,.08);--sb:env(safe-area-inset-bottom,0px);--fs:15px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);font-size:15px}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);font-size:var(--fs)}
 #app{display:flex;flex-direction:column;height:100%;height:100dvh}
 .view{display:none;flex-direction:column;flex:1;overflow:hidden}
 .view.active{display:flex}
@@ -365,6 +365,14 @@ select:focus{outline:2px solid var(--pri)}
           <option value="en">English</option>
         </select>
       </div>
+      <div class="field"><label id="s-font-size-label">Velikost písma</label>
+        <select id="cfg-font-size">
+          <option value="small">Malé (13px)</option>
+          <option value="medium">Střední (15px)</option>
+          <option value="large">Velké (17px)</option>
+          <option value="xl">Extra velké (20px)</option>
+        </select>
+      </div>
     </div>
     <div class="card">
       <h3 id="s-data-title">Data & záloha</h3>
@@ -530,7 +538,7 @@ const LANG_META={english:{name:'English',native:'English',flag:'🇬🇧'},spani
 const SORT_MODES=['alpha','due','new'];
 let sortIdx=0;
 
-let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',level:'beginner',feedbackStyle:'balanced',uiLang:navigator.language.startsWith('cs')?'cs':'en',lessonMode:false};
+let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',level:'beginner',feedbackStyle:'balanced',uiLang:navigator.language.startsWith('cs')?'cs':'en',lessonMode:false,fontSize:'medium'};
 let langLevels={};
 function getLangLevel(lang){return langLevels[lang]||cfg.level;}
 let chatHistory=[];
@@ -550,8 +558,8 @@ const selectedIds=new Set();
 
 // ── I18N ──
 const I18N={
-  cs:{appTitle:'Language Tutor',settingsTitle:'Nastavení',emptyTitle:'Připrav se na procvičování!',emptyDesc:'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',inputPH:l=>`Napiš zprávu v jazyce ${l}…`,fbPositive:'Správně',fbCorrections:'Opravy',fbSuggestions:'Tipy',navChat:'Chat',navVocab:'Slovíčka',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Nastavení',vocabHdr:'Slovní zásoba',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lekce',modeChatDesc:'Volný rozhovor — tutor opravuje chyby a navrhuje zlepšení',modeLessonDesc:'Tutor aktivně procvičuje tvá slovíčka ze seznamu',saveToast:'Uloženo ✓',clearConfirm:'Smazat vše včetně API klíčů a slovní zásoby?',errNoKey:'API klíč není nastaven. Přejdi do Nastavení.',errNetwork:'Chyba sítě nebo CORS.',errGeneric:'Chyba LLM:',apiKeySet:'API klíč nastaven',noApiKey:'API klíč není nastaven',translationLabel:'Překlad',translateBtn:'přeložit',hideTranslation:'skrýt překlad',fcTap:'Klikni pro zobrazení překladu',fcRateQ:'Jak dobře sis vzpomněl/a?',fcDoneTitle:'Hotovo na dnes!',fcDoneDesc:n=>`Prošel jsi ${n} karet. Vrať se zítra.`,fcEmptyTitle:'Žádné karty k procvičení',fcEmptyDesc:'Přidej slovíčka v záložce Slovíčka.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Opakování',sortNew:'↕ Nejnovější',fcDirNormal:'⇄ Cizí → Mateřský',fcDirReverse:'⇄ Mateřský → Cizí',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Poskytovatel',sProviderLabel:'Poskytovatel',sOllamaOption:'Ollama (lokální)',sCustomOption:'Vlastní / Custom (OpenAI-kompatibilní)',sModelLabel:'Model',sCustomModelLabel:'Model (název)',sApiKeyLabel:'API klíč',sOllamaHint:'Ollama musí mít povoleno CORS pro tuto doménu.',sCustomUrlHint:'OpenAI-compatible endpoint (bez /chat/completions). API klíč výše je volitelný.',sGenerateAt:h=>`Vygeneruj na ${h}`,sTutorTitle:'Chování tutora',sLangLabel:'Jazyk',sLevelLabel:'Úroveň studenta',sLevelBeginner:'Začátečník (A1–A2)',sLevelIntermediate:'Mírně pokročilý (B1–B2)',sLevelAdvanced:'Pokročilý (C1–C2)',sFeedbackLabel:'Styl zpětné vazby',sFeedbackGentle:'Jemný (povzbuzující)',sFeedbackBalanced:'Vyvážený',sFeedbackStrict:'Přísný (každá chyba)',sUiLangLabel:'Jazyk rozhraní',sDataTitle:'Data & záloha',sDataDesc:'Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.',sSaveBtn:'Uložit',sExportBtn:'Export zálohy',sImportBtn:'Import zálohy',sClearBtn:'Smazat vše',sAddToHome:'přidej do plochy',sHelpLink:'Nápověda',quizEmptyTitle:'Připraven na kvíz?',quizEmptyDesc:'Přidej slovíčka v záložce Slovíčka a stiskni tlačítko ↺ pro spuštění kvízu.'},
-  en:{appTitle:'Language Tutor',settingsTitle:'Settings',emptyTitle:'Ready to practice!',emptyDesc:'Type anything and the tutor will respond with feedback.',inputPH:l=>`Type a message in ${l}…`,fbPositive:'Correct',fbCorrections:'Corrections',fbSuggestions:'Tips',navChat:'Chat',navVocab:'Vocab',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Settings',vocabHdr:'Vocabulary',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lesson',modeChatDesc:'Free conversation — tutor corrects mistakes and suggests improvements',modeLessonDesc:'Tutor actively practises your vocabulary list',saveToast:'Saved ✓',clearConfirm:'Delete everything including API keys and vocabulary?',errNoKey:'API key not set. Go to Settings.',errNetwork:'Network error or CORS issue.',errGeneric:'LLM error:',apiKeySet:'API key set',noApiKey:'API key not set',translationLabel:'Translation',translateBtn:'translate',hideTranslation:'hide',fcTap:'Tap to reveal translation',fcRateQ:'How well did you remember?',fcDoneTitle:'All done for today!',fcDoneDesc:n=>`Reviewed ${n} cards. Come back tomorrow.`,fcEmptyTitle:'No cards to review',fcEmptyDesc:'Add words in the Vocabulary tab.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Due',sortNew:'↕ Newest',fcDirNormal:'⇄ Foreign → Native',fcDirReverse:'⇄ Native → Foreign',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Provider',sProviderLabel:'Provider',sOllamaOption:'Ollama (local)',sCustomOption:'Custom (OpenAI-compatible)',sModelLabel:'Model',sCustomModelLabel:'Model (name)',sApiKeyLabel:'API key',sOllamaHint:'Ollama must have CORS enabled for this domain.',sCustomUrlHint:'OpenAI-compatible endpoint (without /chat/completions). API key above is optional.',sGenerateAt:h=>`Generate at ${h}`,sTutorTitle:'Tutor behaviour',sLangLabel:'Language',sLevelLabel:'Student level',sLevelBeginner:'Beginner (A1–A2)',sLevelIntermediate:'Intermediate (B1–B2)',sLevelAdvanced:'Advanced (C1–C2)',sFeedbackLabel:'Feedback style',sFeedbackGentle:'Gentle (encouraging)',sFeedbackBalanced:'Balanced',sFeedbackStrict:'Strict (every mistake)',sUiLangLabel:'Interface language',sDataTitle:'Data & backup',sDataDesc:'Export includes configuration, all vocabulary (all languages) and SM-2 data.',sSaveBtn:'Save',sExportBtn:'Export backup',sImportBtn:'Import backup',sClearBtn:'Delete all',sAddToHome:'add to home screen',sHelpLink:'Help',quizEmptyTitle:'Ready to quiz?',quizEmptyDesc:'Add vocabulary in the Vocab tab, then press ↺ to start a quiz.'}
+  cs:{appTitle:'Language Tutor',settingsTitle:'Nastavení',emptyTitle:'Připrav se na procvičování!',emptyDesc:'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',inputPH:l=>`Napiš zprávu v jazyce ${l}…`,fbPositive:'Správně',fbCorrections:'Opravy',fbSuggestions:'Tipy',navChat:'Chat',navVocab:'Slovíčka',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Nastavení',vocabHdr:'Slovní zásoba',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lekce',modeChatDesc:'Volný rozhovor — tutor opravuje chyby a navrhuje zlepšení',modeLessonDesc:'Tutor aktivně procvičuje tvá slovíčka ze seznamu',saveToast:'Uloženo ✓',clearConfirm:'Smazat vše včetně API klíčů a slovní zásoby?',errNoKey:'API klíč není nastaven. Přejdi do Nastavení.',errNetwork:'Chyba sítě nebo CORS.',errGeneric:'Chyba LLM:',apiKeySet:'API klíč nastaven',noApiKey:'API klíč není nastaven',translationLabel:'Překlad',translateBtn:'přeložit',hideTranslation:'skrýt překlad',fcTap:'Klikni pro zobrazení překladu',fcRateQ:'Jak dobře sis vzpomněl/a?',fcDoneTitle:'Hotovo na dnes!',fcDoneDesc:n=>`Prošel jsi ${n} karet. Vrať se zítra.`,fcEmptyTitle:'Žádné karty k procvičení',fcEmptyDesc:'Přidej slovíčka v záložce Slovíčka.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Opakování',sortNew:'↕ Nejnovější',fcDirNormal:'⇄ Cizí → Mateřský',fcDirReverse:'⇄ Mateřský → Cizí',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Poskytovatel',sProviderLabel:'Poskytovatel',sOllamaOption:'Ollama (lokální)',sCustomOption:'Vlastní / Custom (OpenAI-kompatibilní)',sModelLabel:'Model',sCustomModelLabel:'Model (název)',sApiKeyLabel:'API klíč',sOllamaHint:'Ollama musí mít povoleno CORS pro tuto doménu.',sCustomUrlHint:'OpenAI-compatible endpoint (bez /chat/completions). API klíč výše je volitelný.',sGenerateAt:h=>`Vygeneruj na ${h}`,sTutorTitle:'Chování tutora',sLangLabel:'Jazyk',sLevelLabel:'Úroveň studenta',sLevelBeginner:'Začátečník (A1–A2)',sLevelIntermediate:'Mírně pokročilý (B1–B2)',sLevelAdvanced:'Pokročilý (C1–C2)',sFeedbackLabel:'Styl zpětné vazby',sFeedbackGentle:'Jemný (povzbuzující)',sFeedbackBalanced:'Vyvážený',sFeedbackStrict:'Přísný (každá chyba)',sUiLangLabel:'Jazyk rozhraní',sFontSizeLabel:'Velikost písma',sFontSizeSmall:'Malé (13px)',sFontSizeMedium:'Střední (15px)',sFontSizeLarge:'Velké (17px)',sFontSizeXl:'Extra velké (20px)',sDataTitle:'Data & záloha',sDataDesc:'Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.',sSaveBtn:'Uložit',sExportBtn:'Export zálohy',sImportBtn:'Import zálohy',sClearBtn:'Smazat vše',sAddToHome:'přidej do plochy',sHelpLink:'Nápověda',quizEmptyTitle:'Připraven na kvíz?',quizEmptyDesc:'Přidej slovíčka v záložce Slovíčka a stiskni tlačítko ↺ pro spuštění kvízu.'},
+  en:{appTitle:'Language Tutor',settingsTitle:'Settings',emptyTitle:'Ready to practice!',emptyDesc:'Type anything and the tutor will respond with feedback.',inputPH:l=>`Type a message in ${l}…`,fbPositive:'Correct',fbCorrections:'Corrections',fbSuggestions:'Tips',navChat:'Chat',navVocab:'Vocab',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Settings',vocabHdr:'Vocabulary',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lesson',modeChatDesc:'Free conversation — tutor corrects mistakes and suggests improvements',modeLessonDesc:'Tutor actively practises your vocabulary list',saveToast:'Saved ✓',clearConfirm:'Delete everything including API keys and vocabulary?',errNoKey:'API key not set. Go to Settings.',errNetwork:'Network error or CORS issue.',errGeneric:'LLM error:',apiKeySet:'API key set',noApiKey:'API key not set',translationLabel:'Translation',translateBtn:'translate',hideTranslation:'hide',fcTap:'Tap to reveal translation',fcRateQ:'How well did you remember?',fcDoneTitle:'All done for today!',fcDoneDesc:n=>`Reviewed ${n} cards. Come back tomorrow.`,fcEmptyTitle:'No cards to review',fcEmptyDesc:'Add words in the Vocabulary tab.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Due',sortNew:'↕ Newest',fcDirNormal:'⇄ Foreign → Native',fcDirReverse:'⇄ Native → Foreign',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Provider',sProviderLabel:'Provider',sOllamaOption:'Ollama (local)',sCustomOption:'Custom (OpenAI-compatible)',sModelLabel:'Model',sCustomModelLabel:'Model (name)',sApiKeyLabel:'API key',sOllamaHint:'Ollama must have CORS enabled for this domain.',sCustomUrlHint:'OpenAI-compatible endpoint (without /chat/completions). API key above is optional.',sGenerateAt:h=>`Generate at ${h}`,sTutorTitle:'Tutor behaviour',sLangLabel:'Language',sLevelLabel:'Student level',sLevelBeginner:'Beginner (A1–A2)',sLevelIntermediate:'Intermediate (B1–B2)',sLevelAdvanced:'Advanced (C1–C2)',sFeedbackLabel:'Feedback style',sFeedbackGentle:'Gentle (encouraging)',sFeedbackBalanced:'Balanced',sFeedbackStrict:'Strict (every mistake)',sUiLangLabel:'Interface language',sFontSizeLabel:'Font size',sFontSizeSmall:'Small (13px)',sFontSizeMedium:'Medium (15px)',sFontSizeLarge:'Large (17px)',sFontSizeXl:'Extra large (20px)',sDataTitle:'Data & backup',sDataDesc:'Export includes configuration, all vocabulary (all languages) and SM-2 data.',sSaveBtn:'Save',sExportBtn:'Export backup',sImportBtn:'Import backup',sClearBtn:'Delete all',sAddToHome:'add to home screen',sHelpLink:'Help',quizEmptyTitle:'Ready to quiz?',quizEmptyDesc:'Add vocabulary in the Vocab tab, then press ↺ to start a quiz.'}
 };
 let t=I18N.cs;
 
@@ -565,6 +573,7 @@ function populateLangSelects(){
 (function init(){
   try{Object.assign(cfg,JSON.parse(localStorage.getItem('lt-cfg')||'{}'));}catch{}
   try{Object.assign(langLevels,JSON.parse(localStorage.getItem('lt-levels')||'{}'));}catch{}
+  applyFontSize(cfg.fontSize||'medium');
   populateLangSelects();
   const sl=localStorage.getItem('lt-lang');
   if(sl&&LANG_META[sl])currentLang=sl;
@@ -649,6 +658,11 @@ function applyI18n(){
   document.querySelector('#cfg-feedback-style option[value="balanced"]').textContent=t.sFeedbackBalanced;
   document.querySelector('#cfg-feedback-style option[value="strict"]').textContent=t.sFeedbackStrict;
   document.getElementById('s-ui-lang-label').textContent=t.sUiLangLabel;
+  document.getElementById('s-font-size-label').textContent=t.sFontSizeLabel;
+  document.querySelector('#cfg-font-size option[value="small"]').textContent=t.sFontSizeSmall;
+  document.querySelector('#cfg-font-size option[value="medium"]').textContent=t.sFontSizeMedium;
+  document.querySelector('#cfg-font-size option[value="large"]').textContent=t.sFontSizeLarge;
+  document.querySelector('#cfg-font-size option[value="xl"]').textContent=t.sFontSizeXl;
   document.getElementById('s-data-title').textContent=t.sDataTitle;
   document.getElementById('s-data-desc').textContent=t.sDataDesc;
   document.getElementById('s-save-btn').textContent=t.sSaveBtn;
@@ -676,6 +690,7 @@ function populateSettingsUI(){
   document.getElementById('cfg-ollama-url').value=cfg.ollamaUrl;
   document.getElementById('cfg-custom-url').value=cfg.customUrl||'';
   document.getElementById('cfg-custom-model').value=cfg.customModel||'';
+  document.getElementById('cfg-font-size').value=cfg.fontSize||'medium';
   rebuildModelList(cfg.provider);
   document.getElementById('cfg-model').value=cfg.model;
   toggleProviderFields(cfg.provider);
@@ -695,6 +710,7 @@ function toggleProviderFields(p){
 function updateApiKeyHint(){const el=document.getElementById('apikey-hint');const h=t.apiHints[cfg.provider]||'';el.textContent=h?t.sGenerateAt(h):''}
 function updateApiKeyStatus(){const el=document.getElementById('apikey-status');if(cfg.provider==='ollama'||cfg.provider==='custom'){el.textContent='';return;}const k=document.getElementById('cfg-apikey')?.value||cfg.apiKey||'';el.innerHTML=k.length>8?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:`<span class="status-dot status-empty"></span>${t.noApiKey}`;}
 function onUiLangChange(l){cfg.uiLang=l;t=I18N[l]||I18N.cs;applyI18n();}
+function applyFontSize(size){const m={small:'13px',medium:'15px',large:'17px',xl:'20px'};document.documentElement.style.setProperty('--fs',m[size]||'15px');}
 function saveSettings(){
   cfg.provider=document.getElementById('cfg-provider').value;
   cfg.model=document.getElementById('cfg-model').value;
@@ -707,6 +723,8 @@ function saveSettings(){
   localStorage.setItem('lt-levels',JSON.stringify(langLevels));
   cfg.feedbackStyle=document.getElementById('cfg-feedback-style').value;
   cfg.uiLang=document.getElementById('cfg-ui-lang').value;
+  cfg.fontSize=document.getElementById('cfg-font-size').value;
+  applyFontSize(cfg.fontSize);
   localStorage.setItem('lt-cfg',JSON.stringify(cfg));
   updateProviderBadge();
   const toast=document.getElementById('save-toast');
