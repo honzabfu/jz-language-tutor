@@ -64,10 +64,11 @@ select:focus{outline:2px solid var(--pri)}
 .fb-content ul{padding-left:16px}
 .fb-content li{margin-bottom:2px}
 
-/* LESSON MODE BADGE */
-.mode-badge{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:600;cursor:pointer;border:none;white-space:nowrap}
-.mode-chat{background:#f1f5f9;color:var(--mut)}
-.mode-lesson{background:#fef9c3;color:#854d0e}
+/* MODE TOGGLE */
+.mode-toggle{display:flex;background:#e2e8f0;border-radius:20px;padding:2px;gap:0}
+.mode-opt{font-size:11px;padding:3px 9px;border-radius:18px;font-weight:600;cursor:pointer;border:none;background:transparent;color:#64748b;white-space:nowrap;transition:background .15s,color .15s,box-shadow .15s;line-height:1.5}
+.mode-opt.active{background:var(--sur);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.mode-opt.lesson.active{background:#fef9c3;color:#854d0e}
 
 /* INPUT */
 #input-area{background:var(--sur);border-top:1px solid var(--bdr);padding:8px 10px;padding-bottom:calc(8px + var(--sb));display:flex;gap:7px;align-items:flex-end;flex-shrink:0}
@@ -200,7 +201,10 @@ select:focus{outline:2px solid var(--pri)}
       <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" class="icon-btn" title="Nápověda">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       </a>
-      <button id="mode-btn" class="mode-badge mode-chat" onclick="toggleLessonMode()">Chat</button>
+      <div class="mode-toggle">
+        <button class="mode-opt active" id="mode-btn-chat" onclick="setMode(false)">💬 <span id="mode-lbl-chat">Chat</span></button>
+        <button class="mode-opt lesson" id="mode-btn-lesson" onclick="setMode(true)">📚 <span id="mode-lbl-lesson">Lekce</span></button>
+      </div>
       <span id="provider-badge" class="provider-badge warn">–</span>
       <select id="lang-select" onchange="onLangChange(this.value)"></select>
     </div>
@@ -527,8 +531,8 @@ const selectedIds=new Set();
 
 // ── I18N ──
 const I18N={
-  cs:{appTitle:'Language Tutor',settingsTitle:'Nastavení',emptyTitle:'Připrav se na procvičování!',emptyDesc:'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',inputPH:l=>`Napiš zprávu v jazyce ${l}…`,fbPositive:'Správně',fbCorrections:'Opravy',fbSuggestions:'Tipy',navChat:'Chat',navVocab:'Slovíčka',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Nastavení',vocabHdr:'Slovní zásoba',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lekce',saveToast:'Uloženo ✓',clearConfirm:'Smazat vše včetně API klíčů a slovní zásoby?',errNoKey:'API klíč není nastaven. Přejdi do Nastavení.',errNetwork:'Chyba sítě nebo CORS.',errGeneric:'Chyba LLM:',apiKeySet:'API klíč nastaven',noApiKey:'API klíč není nastaven',translationLabel:'Překlad',translateBtn:'přeložit',hideTranslation:'skrýt překlad',fcTap:'Klikni pro zobrazení překladu',fcRateQ:'Jak dobře sis vzpomněl/a?',fcDoneTitle:'Hotovo na dnes!',fcDoneDesc:n=>`Prošel jsi ${n} karet. Vrať se zítra.`,fcEmptyTitle:'Žádné karty k procvičení',fcEmptyDesc:'Přidej slovíčka v záložce Slovíčka.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Splatnost',sortNew:'↕ Nejnovější',fcDirNormal:'⇄ Cizí → Mateřský',fcDirReverse:'⇄ Mateřský → Cizí',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''}},
-  en:{appTitle:'Language Tutor',settingsTitle:'Settings',emptyTitle:'Ready to practice!',emptyDesc:'Type anything and the tutor will respond with feedback.',inputPH:l=>`Type a message in ${l}…`,fbPositive:'Correct',fbCorrections:'Corrections',fbSuggestions:'Tips',navChat:'Chat',navVocab:'Vocab',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Settings',vocabHdr:'Vocabulary',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lesson',saveToast:'Saved ✓',clearConfirm:'Delete everything including API keys and vocabulary?',errNoKey:'API key not set. Go to Settings.',errNetwork:'Network error or CORS issue.',errGeneric:'LLM error:',apiKeySet:'API key set',noApiKey:'API key not set',translationLabel:'Translation',translateBtn:'translate',hideTranslation:'hide',fcTap:'Tap to reveal translation',fcRateQ:'How well did you remember?',fcDoneTitle:'All done for today!',fcDoneDesc:n=>`Reviewed ${n} cards. Come back tomorrow.`,fcEmptyTitle:'No cards to review',fcEmptyDesc:'Add words in the Vocabulary tab.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Due',sortNew:'↕ Newest',fcDirNormal:'⇄ Foreign → Native',fcDirReverse:'⇄ Native → Foreign',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''}}
+  cs:{appTitle:'Language Tutor',settingsTitle:'Nastavení',emptyTitle:'Připrav se na procvičování!',emptyDesc:'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',inputPH:l=>`Napiš zprávu v jazyce ${l}…`,fbPositive:'Správně',fbCorrections:'Opravy',fbSuggestions:'Tipy',navChat:'Chat',navVocab:'Slovíčka',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Nastavení',vocabHdr:'Slovní zásoba',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lekce',modeChatDesc:'Volný rozhovor — tutor opravuje chyby a navrhuje zlepšení',modeLessonDesc:'Tutor aktivně procvičuje tvá slovíčka ze seznamu',saveToast:'Uloženo ✓',clearConfirm:'Smazat vše včetně API klíčů a slovní zásoby?',errNoKey:'API klíč není nastaven. Přejdi do Nastavení.',errNetwork:'Chyba sítě nebo CORS.',errGeneric:'Chyba LLM:',apiKeySet:'API klíč nastaven',noApiKey:'API klíč není nastaven',translationLabel:'Překlad',translateBtn:'přeložit',hideTranslation:'skrýt překlad',fcTap:'Klikni pro zobrazení překladu',fcRateQ:'Jak dobře sis vzpomněl/a?',fcDoneTitle:'Hotovo na dnes!',fcDoneDesc:n=>`Prošel jsi ${n} karet. Vrať se zítra.`,fcEmptyTitle:'Žádné karty k procvičení',fcEmptyDesc:'Přidej slovíčka v záložce Slovíčka.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Splatnost',sortNew:'↕ Nejnovější',fcDirNormal:'⇄ Cizí → Mateřský',fcDirReverse:'⇄ Mateřský → Cizí',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''}},
+  en:{appTitle:'Language Tutor',settingsTitle:'Settings',emptyTitle:'Ready to practice!',emptyDesc:'Type anything and the tutor will respond with feedback.',inputPH:l=>`Type a message in ${l}…`,fbPositive:'Correct',fbCorrections:'Corrections',fbSuggestions:'Tips',navChat:'Chat',navVocab:'Vocab',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Settings',vocabHdr:'Vocabulary',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lesson',modeChatDesc:'Free conversation — tutor corrects mistakes and suggests improvements',modeLessonDesc:'Tutor actively practises your vocabulary list',saveToast:'Saved ✓',clearConfirm:'Delete everything including API keys and vocabulary?',errNoKey:'API key not set. Go to Settings.',errNetwork:'Network error or CORS issue.',errGeneric:'LLM error:',apiKeySet:'API key set',noApiKey:'API key not set',translationLabel:'Translation',translateBtn:'translate',hideTranslation:'hide',fcTap:'Tap to reveal translation',fcRateQ:'How well did you remember?',fcDoneTitle:'All done for today!',fcDoneDesc:n=>`Reviewed ${n} cards. Come back tomorrow.`,fcEmptyTitle:'No cards to review',fcEmptyDesc:'Add words in the Vocabulary tab.',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Due',sortNew:'↕ Newest',fcDirNormal:'⇄ Foreign → Native',fcDirReverse:'⇄ Native → Foreign',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''}}
 };
 let t=I18N.cs;
 
@@ -597,6 +601,10 @@ function applyI18n(){
   document.getElementById('quiz-hdr-title').textContent=t.quizHdr;
   document.getElementById('sort-btn').textContent=t[['sortAlpha','sortDue','sortNew'][sortIdx]];
   const _dBtn=document.getElementById('fc-dir-btn');if(_dBtn)_dBtn.textContent=fcDirection==='normal'?t.fcDirNormal:t.fcDirReverse;
+  document.getElementById('mode-lbl-chat').textContent=t.modeChat;
+  document.getElementById('mode-lbl-lesson').textContent=t.modeLesson;
+  document.getElementById('mode-btn-chat').title=t.modeChatDesc;
+  document.getElementById('mode-btn-lesson').title=t.modeLessonDesc;
   updateModeBadge();
   updateInputPlaceholder();
   updateApiKeyHint();
@@ -1116,11 +1124,13 @@ function appendQuizMsg(role,text){
 // ══════════════════════════════════════════════
 // CHAT
 // ══════════════════════════════════════════════
-function toggleLessonMode(){cfg.lessonMode=!cfg.lessonMode;updateModeBadge();}
+function setMode(lesson){cfg.lessonMode=lesson;updateModeBadge();}
+function toggleLessonMode(){setMode(!cfg.lessonMode);}
 function updateModeBadge(){
-  const btn=document.getElementById('mode-btn');
-  btn.textContent=cfg.lessonMode?t.modeLesson:t.modeChat;
-  btn.className='mode-badge '+(cfg.lessonMode?'mode-lesson':'mode-chat');
+  const chat=document.getElementById('mode-btn-chat');
+  const lesson=document.getElementById('mode-btn-lesson');
+  chat.classList.toggle('active',!cfg.lessonMode);
+  lesson.classList.toggle('active',cfg.lessonMode);
   document.getElementById('vocab-cost-warn').style.display=(cfg.lessonMode&&getVocab(currentLang).length>40)?'block':'none';
 }
 function clearChat(){chatHistory=[];currentFbData=null;const list=document.getElementById('msg-list');[...list.children].forEach(el=>{if(el.id!=='empty'&&el.id!=='typing-row')el.remove();});document.getElementById('empty').style.display='';document.getElementById('feedback-bar').classList.remove('visible');document.getElementById('typing-row').style.display='none';}
