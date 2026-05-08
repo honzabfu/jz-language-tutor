@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+
+<html>
+<head><meta charset="UTF-8"><title>Icon generator</title></head>
+<body style="font-family:sans-serif;padding:24px;background:#f8f9fa">
+<h2>LangTutor — generátor ikon PWA</h2>
+<p style="color:#64748b;margin-bottom:16px">Klikni na tlačítko → pravým tlačítkem ulož obrázek jako <code>icon-192.png</code> / <code>icon-512.png</code> do složky <code>icons/</code>.</p>
+<div style="display:flex;gap:24px;flex-wrap:wrap">
+  <div>
+    <canvas id="c192" width="192" height="192" style="border-radius:24px;box-shadow:0 2px 8px rgba(0,0,0,.15)"></canvas>
+    <br><button onclick="dl('c192','icon-192.png')" style="margin-top:8px;padding:6px 14px;cursor:pointer">⬇ icon-192.png</button>
+  </div>
+  <div>
+    <canvas id="c512" width="512" height="512" style="border-radius:64px;box-shadow:0 2px 8px rgba(0,0,0,.15);width:192px;height:192px"></canvas>
+    <br><button onclick="dl('c512','icon-512.png')" style="margin-top:8px;padding:6px 14px;cursor:pointer">⬇ icon-512.png</button>
+  </div>
+</div>
+<script>
+function drawIcon(id) {
+  const c = document.getElementById(id);
+  const s = c.width;
+  const ctx = c.getContext('2d');
+  const r = s * 0.18;
+
+// Background
+const grad = ctx.createLinearGradient(0, 0, s, s);
+grad.addColorStop(0, ‘#3b82f6’);
+grad.addColorStop(1, ‘#1d4ed8’);
+ctx.fillStyle = grad;
+ctx.beginPath();
+ctx.moveTo(r, 0); ctx.lineTo(s - r, 0);
+ctx.quadraticCurveTo(s, 0, s, r);
+ctx.lineTo(s, s - r);
+ctx.quadraticCurveTo(s, s, s - r, s);
+ctx.lineTo(r, s);
+ctx.quadraticCurveTo(0, s, 0, s - r);
+ctx.lineTo(0, r);
+ctx.quadraticCurveTo(0, 0, r, 0);
+ctx.fill();
+
+// Speech bubble
+const cx = s / 2, cy = s * 0.44, bw = s * 0.54, bh = s * 0.36, br = s * 0.08;
+const bx = cx - bw / 2, by = cy - bh / 2;
+ctx.fillStyle = ‘rgba(255,255,255,0.95)’;
+ctx.beginPath();
+ctx.moveTo(bx + br, by);
+ctx.lineTo(bx + bw - br, by); ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + br);
+ctx.lineTo(bx + bw, by + bh - br); ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - br, by + bh);
+ctx.lineTo(bx + bw * 0.38, by + bh);
+ctx.lineTo(bx + bw * 0.22, by + bh + s * 0.1);
+ctx.lineTo(bx + bw * 0.28, by + bh);
+ctx.lineTo(bx + br, by + bh); ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - br);
+ctx.lineTo(bx, by + br); ctx.quadraticCurveTo(bx, by, bx + br, by);
+ctx.fill();
+
+// Lines inside bubble
+ctx.fillStyle = ‘#3b82f6’;
+const lx = bx + bw * 0.15, lw = bw * 0.7, lh = s * 0.045, lg = s * 0.07;
+const ly = by + bh * 0.25;
+[0, 1, 2].forEach((i, idx) => {
+const w = idx === 2 ? lw * 0.6 : lw;
+ctx.beginPath();
+ctx.roundRect(lx, ly + i * (lh + lg * 0.5), w, lh, lh / 2);
+ctx.fill();
+});
+}
+drawIcon(‘c192’);
+drawIcon(‘c512’);
+function dl(id, name) {
+const a = document.createElement(‘a’);
+a.download = name;
+a.href = document.getElementById(id).toDataURL(‘image/png’);
+a.click();
+}
+</script>
+
+</body>
+</html>
