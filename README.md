@@ -18,11 +18,11 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
 
 ### Funkce
 
-- **Flashcards** — SM-2 spaced repetition: karty se ti zobrazují přesně ve chvíli, kdy je potřeba je zopakovat
+- **Flashcards** — SM-2 spaced repetition: karty se ti zobrazují přesně ve chvíli, kdy je potřeba je zopakovat; přepínač směru (Cizí→Mateřský / Mateřský→Cizí)
 - **Quiz mód** — AI tě zkouší ze tvých slovíček interaktivně (otázka → odpověď → zpětná vazba)
 - **Chat tutor** — konverzace v cílovém jazyce, zpětná vazba ke gramatice, překlady na požádání
 - **Lesson mód** — tutor aktivně zapracovává tvá slovíčka do rozhovoru
-- **Správa slovní zásoby** — ruční zadávání, import z CSV/TXT, sady per jazyk
+- **Správa slovní zásoby** — ruční zadávání, import z CSV/TXT, generování slovíček přes AI, sady per jazyk
 - **Více AI poskytovatelů** — Anthropic (Claude), OpenAI (GPT), Google (Gemini), Ollama (lokálně), vlastní OpenAI-compatible endpoint
 - **CS/EN rozhraní** — přepínatelný jazyk celého rozhraní včetně nastavení
 - **PWA** — lze přidat na domovskou obrazovku iOS/Android
@@ -63,10 +63,24 @@ buenos días,dobré ráno
 - Oddělovač: čárka nebo tabulátor
 - Třetí sloupec (poznámka) je nepovinný
 - Prázdné řádky a duplicity jsou automaticky přeskočeny
+- **Pořadí sloupců**: v importním modalu lze přepnout na `Překlad, Cizí jazyk` — hodí se, pokud máš soubory v opačném pořadí sloupců
 
-### Jak vygenerovat importní soubor slovíček pomocí AI
+#### Generování slovíček přímo v aplikaci
 
-Nejrychlejší způsob, jak získat velké množství slovíček najednou, je nechat je vygenerovat AI. Použij tento prompt (například v Claude.ai, ChatGPT nebo Gemini):
+Na záložce **Slovíčka** klikni na **✨ Generovat**:
+
+1. Zadej **téma** (např. „cestování", „jídlo", „pracovní slovní zásoba").
+2. Vyber **počet slov** (5 / 10 / 20 / 50) a **úroveň** (A1–A2, B1–B2, C1–C2).
+3. Klikni na tlačítko:
+
+| Situace | Chování |
+|---------|---------|
+| API klíč je nastaven | Nakonfigurovaný LLM vygeneruje slovíčka; zobrazí se náhled se zaškrtávacími políčky — vyber, která chceš importovat, a potvrď. |
+| Bez API klíče | Aplikace zkopíruje připravený prompt do schránky. Vlož ho do externího AI nástroje (ChatGPT, Claude.ai…), výsledné CSV pak importuj tlačítkem **⬆ Import**. |
+
+### Generování slovíček přes externí AI nástroj
+
+Pokud API klíč nemáš, nebo chceš větší kontrolu nad promptem, použij libovolný AI nástroj (Claude.ai, ChatGPT, Gemini…):
 
 ---
 
@@ -115,13 +129,14 @@ Obnova: **Nastavení → Import zálohy** → nahraj JSON soubor.
 
 ### Co funguje bez API klíče
 
-| Funkce               | Bez klíče | S klíčem |
-|----------------------|-----------|----------|
-| Správa slovíčků      | ✅        | ✅       |
-| Flashcards (SM-2)    | ✅        | ✅       |
-| Import/export zálohy | ✅        | ✅       |
-| Chat tutor           | ❌        | ✅       |
-| Quiz mód             | ❌        | ✅       |
+| Funkce                    | Bez klíče              | S klíčem |
+|---------------------------|------------------------|----------|
+| Správa slovíčků           | ✅                     | ✅       |
+| Flashcards (SM-2)         | ✅                     | ✅       |
+| Import/export zálohy      | ✅                     | ✅       |
+| Generování slovíček       | ⚡ kopíruje prompt     | ✅       |
+| Chat tutor                | ❌                     | ✅       |
+| Quiz mód                  | ❌                     | ✅       |
 
 > Výjimka: **Ollama** (lokální) a **vlastní provider** nevyžadují klíč — stačí URL.
 
@@ -212,11 +227,11 @@ The primary purpose of this app is **practicing the vocabulary words you enter y
 
 ### Features
 
-- **Flashcards** — SM-2 spaced repetition: cards surface at precisely the right time
+- **Flashcards** — SM-2 spaced repetition: cards surface at precisely the right time; direction toggle (Foreign→Native / Native→Foreign)
 - **Quiz mode** — AI tests your vocabulary interactively (question → answer → feedback)
 - **Chat tutor** — conversation in the target language, grammar feedback, translations on demand
 - **Lesson mode** — tutor actively weaves your vocabulary into the dialogue
-- **Vocabulary management** — manual entry, CSV/TXT import, per-language sets
+- **Vocabulary management** — manual entry, CSV/TXT import, in-app AI generation, per-language sets
 - **Multi-provider LLM** — Anthropic (Claude), OpenAI (GPT), Google (Gemini), Ollama (local), custom OpenAI-compatible endpoint
 - **CS/EN UI** — switchable interface language including all settings
 - **PWA-ready** — add to iOS/Android home screen
@@ -257,10 +272,24 @@ buenos días,good morning
 - Separator: comma or tab
 - Third column (note) is optional
 - Empty lines and duplicates are skipped automatically
+- **Column order**: the import modal lets you switch to `Translation, Foreign word` — useful if your CSV files have the columns in reverse order
 
-### How to generate a vocabulary import file using AI
+#### In-app AI generation
 
-The fastest way to get a large set of words at once is to have an AI generate them. Use a prompt like the following (in Claude.ai, ChatGPT, Gemini, etc.):
+In the **Vocab** tab click **✨ Generate**:
+
+1. Enter a **topic** (e.g. "travel", "food", "workplace vocabulary").
+2. Choose the **word count** (5 / 10 / 20 / 50) and **level** (A1–A2, B1–B2, C1–C2).
+3. Click the button:
+
+| Situation | Behaviour |
+|-----------|-----------|
+| API key is configured | The configured LLM generates the words; a preview with checkboxes appears — select the words you want and confirm. |
+| No API key | The app copies a ready-made prompt to the clipboard. Paste it into an external AI tool (ChatGPT, Claude.ai…), then import the resulting CSV with the **⬆ Import** button. |
+
+### Generating vocabulary via an external AI tool
+
+If you don't have an API key, or want more control over the prompt, use any AI tool (Claude.ai, ChatGPT, Gemini…):
 
 ---
 
@@ -309,13 +338,14 @@ Restore: **Settings → Import backup** → load the JSON file.
 
 ### What works without an API key
 
-| Feature              | No key | With key |
-|----------------------|--------|----------|
-| Vocabulary management| ✅     | ✅       |
-| Flashcards (SM-2)    | ✅     | ✅       |
-| Backup import/export | ✅     | ✅       |
-| Chat tutor           | ❌     | ✅       |
-| Quiz mode            | ❌     | ✅       |
+| Feature                  | No key                 | With key |
+|--------------------------|------------------------|----------|
+| Vocabulary management    | ✅                     | ✅       |
+| Flashcards (SM-2)        | ✅                     | ✅       |
+| Backup import/export     | ✅                     | ✅       |
+| Vocabulary generation    | ⚡ copies prompt       | ✅       |
+| Chat tutor               | ❌                     | ✅       |
+| Quiz mode                | ❌                     | ✅       |
 
 > Exception: **Ollama** (local) and **custom provider** don't require a key — just a URL.
 
