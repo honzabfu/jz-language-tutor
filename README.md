@@ -23,8 +23,8 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
 - **Chat tutor** — konverzace v cílovém jazyce, zpětná vazba ke gramatice, překlady na požádání
 - **Lesson mód** — tutor aktivně zapracovává tvá slovíčka do rozhovoru
 - **Správa slovní zásoby** — ruční zadávání, import z CSV/TXT, sady per jazyk
-- **Více AI poskytovatelů** — Anthropic (Claude), OpenAI (GPT), Google (Gemini), Ollama (lokálně)
-- **CS/EN rozhraní** — přepínatelný jazyk aplikace
+- **Více AI poskytovatelů** — Anthropic (Claude), OpenAI (GPT), Google (Gemini), Ollama (lokálně), vlastní OpenAI-compatible endpoint
+- **CS/EN rozhraní** — přepínatelný jazyk celého rozhraní včetně nastavení
 - **PWA** — lze přidat na domovskou obrazovku iOS/Android
 - **Bez backendu** — jediný HTML soubor, vše uloženo v localStorage
 
@@ -113,16 +113,6 @@ Při používání více zařízení (telefon + počítač apod.):
 
 Obnova: **Nastavení → Import zálohy** → nahraj JSON soubor.
 
-### Formát CSV pro import
-
-```
-slovo,překlad,poznámka(volitelné)
-hola,ahoj,neformální pozdrav
-gracias,děkuji
-```
-
-Podporován je i formát s tabulátorem jako oddělovačem. Duplicity jsou přeskočeny automaticky.
-
 ### Co funguje bez API klíče
 
 | Funkce               | Bez klíče | S klíčem |
@@ -156,13 +146,6 @@ V Nastavení vyber **Vlastní (OpenAI-compatible)** a zadej:
   - Jakýkoliv jiný OpenAI-compatible server
 - **Model** — název modelu přesně tak, jak ho endpoint očekává (např. `meta-llama/llama-3.3-70b-instruct`)
 - **API klíč** — pokud ho endpoint vyžaduje (volitelné)
-
-### PWA (volitelné)
-
-Pro instalaci jako PWA přidej k `index.html` tyto dva soubory:
-
-- `manifest.json` (přiložen v repozitáři)
-- `sw.js` (přiložen v repozitáři)
 
 ### Odhadovaná spotřeba tokenů
 
@@ -199,7 +182,7 @@ Příklad pro **claude-sonnet-4-6** ($3/M vstupních, $15/M výstupních tokenů
 | Hodina aktivního chatu (~50 zpráv) | ~35 000 in + ~17 500 out | ~$0.37  |
 | Quiz session (10 kol)           | ~3 500 celkem             | ~$0.04  |
 
-Gemini 1.5 Flash a GPT-4o-mini jsou výrazně levnější alternativy. Ollama (lokální) je bez poplatků.
+Gemini 2.0 Flash a GPT-4o-mini jsou výrazně levnější alternativy. Ollama (lokální) je bez poplatků.
 
 > **Tip:** Lesson mód přidává celý seznam slovíček do každého requestu — při velké slovní zásobě (50 slov) zdražuje chat přibližně o 30–40 %.
 
@@ -209,6 +192,7 @@ Gemini 1.5 Flash a GPT-4o-mini jsou výrazně levnější alternativy. Ollama (l
 - [ ] Učební cíle s progress barem
 - [ ] Filtrování flashcards podle tagů
 - [ ] Tmavý režim
+- [ ] Refaktoring do oddělených souborů (`style.css`, `app.js`, `i18n.js`) — bez build nástroje, jen `<link>`/`<script src>`; zlepší udržovatelnost i18n a navigaci v kódu
 
 ---
 
@@ -233,8 +217,8 @@ The primary purpose of this app is **practicing the vocabulary words you enter y
 - **Chat tutor** — conversation in the target language, grammar feedback, translations on demand
 - **Lesson mode** — tutor actively weaves your vocabulary into the dialogue
 - **Vocabulary management** — manual entry, CSV/TXT import, per-language sets
-- **Multi-provider LLM** — Anthropic (Claude), OpenAI (GPT), Google (Gemini), Ollama (local)
-- **CS/EN UI** — switchable interface language
+- **Multi-provider LLM** — Anthropic (Claude), OpenAI (GPT), Google (Gemini), Ollama (local), custom OpenAI-compatible endpoint
+- **CS/EN UI** — switchable interface language including all settings
 - **PWA-ready** — add to iOS/Android home screen
 - **Zero backend** — single HTML file, all data in localStorage
 
@@ -323,16 +307,6 @@ When using multiple devices (phone + computer etc.):
 
 Restore: **Settings → Import backup** → load the JSON file.
 
-### CSV import format
-
-```
-word,translation,optional notes
-hola,hello,informal greeting
-gracias,thank you
-```
-
-Tab-separated is also supported. Duplicates are skipped automatically.
-
 ### What works without an API key
 
 | Feature              | No key | With key |
@@ -366,13 +340,6 @@ In Settings select **Custom (OpenAI-compatible)** and fill in:
   - Any other OpenAI-compatible server
 - **Model** — model name exactly as the endpoint expects (e.g. `meta-llama/llama-3.3-70b-instruct`)
 - **API key** — if required by the endpoint (optional)
-
-### PWA (optional)
-
-To install as a PWA, add these two files alongside `index.html`:
-
-- `manifest.json` (provided in repo)
-- `sw.js` (provided in repo)
 
 ### Estimated token usage
 
@@ -409,7 +376,7 @@ Example for **claude-sonnet-4-6** ($3/M input, $15/M output tokens):
 | 1 hour of active chat (~50 msgs)  | ~35 000 in + ~17 500 out  | ~$0.37  |
 | Quiz session (10 rounds)          | ~3 500 total              | ~$0.04  |
 
-Gemini 1.5 Flash and GPT-4o-mini are significantly cheaper alternatives. Ollama (local) is free.
+Gemini 2.0 Flash and GPT-4o-mini are significantly cheaper alternatives. Ollama (local) is free.
 
 > **Tip:** Lesson mode adds your entire vocabulary list to every request — with a large vocabulary (50 words) this increases chat cost by roughly 30–40 %.
 
@@ -419,6 +386,7 @@ Gemini 1.5 Flash and GPT-4o-mini are significantly cheaper alternatives. Ollama 
 - [ ] Learning goals with progress bar
 - [ ] Tag-based flashcard filtering
 - [ ] Dark mode
+- [ ] Refactor into separate files (`style.css`, `app.js`, `i18n.js`) — no build tool, just `<link>`/`<script src>`; improves i18n maintainability and code navigation
 
 ---
 
