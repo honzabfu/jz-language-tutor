@@ -8,6 +8,20 @@
 
 Samostatná jednostránková aplikace pro učení jazyků s AI tutorem, flashcards (SM-2 algoritmus), kvízovým režimem a správou slovní zásoby.
 
+### Proč tuto aplikaci?
+
+**Oproti jazykovým aplikacím**
+
+Hotové aplikace tě učí svůj slovník — ne tvůj. Pokud se potřebuješ naučit slova ze svého oboru, ze seriálu nebo z knížky, tam tě nepustí. Tato aplikace procvičuje *tvá* slovíčka — nic navíc, nic méně.
+
+**Oproti přímému používání AI chatbotu**
+
+AI chatboty jsou skvělé tutory, ale nemají paměť: příště o tvých slovíčkách nevědí nic a spaced repetition nepodporují. Tato aplikace propojuje *tvůj seznam slovíček* s AI tutorem a SM-2 algoritmem — tutor v Lesson módu aktivně procvičuje přesně ta slova, která ti hrozí zapomenout.
+
+**Cena a soukromí**
+
+Žádný backend, žádný účet, vše lokálně v prohlížeči. Google Gemini je zcela zdarma (15 requestů/min, 1 500/den) — pro běžné procvičování bez jakékoliv platby.
+
 ### Hlavní funkce: opakování slovíček
 
 Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadáš**. Funguje to takto:
@@ -216,6 +230,20 @@ Gemini 2.0 Flash a GPT-4o-mini jsou výrazně levnější alternativy. Ollama (l
 <a name="english"></a>
 
 A standalone single-file language learning app with an AI tutor, flashcards (SM-2 algorithm), quiz mode, and vocabulary management.
+
+### Why this app?
+
+**vs. language learning apps**
+
+Off-the-shelf apps teach you their vocabulary — not yours. If you need words from your field of work, a TV series, or a book you're reading, they can't help. This app drills *your* words — nothing more, nothing less.
+
+**vs. using an AI chat directly**
+
+AI chatbots are great tutors but have no memory: next session they know nothing about your vocabulary and don't support spaced repetition. This app connects *your word list* to an AI tutor and the SM-2 algorithm — in Lesson mode the tutor actively works the words you're most at risk of forgetting into the conversation.
+
+**Cost and privacy**
+
+No backend, no account, everything local in the browser. Google Gemini is completely free (15 req/min, 1 500/day) — enough for regular practice with no payment at all.
 
 ### Core feature: vocabulary repetition
 
