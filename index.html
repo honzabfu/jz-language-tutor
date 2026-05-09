@@ -194,6 +194,41 @@ select:focus{outline:2px solid var(--pri)}
 #sw-update-banner .sw-reload-btn{background:#d97706;color:#fff;border:none;border-radius:var(--rs);padding:6px 12px;font-size:0.87rem;font-weight:600;cursor:pointer;white-space:nowrap}
 #sw-update-banner .sw-reload-btn:hover{background:#b45309}
 #sw-update-banner .sw-dismiss-btn{background:none;border:none;cursor:pointer;color:var(--mut);font-size:1.2rem;line-height:1;padding:2px 4px;flex-shrink:0}
+
+/* ── FEEDBACK INLINE (v chatu) ── */
+.fb-inline{margin-top:6px;border:1px solid var(--bdr);border-radius:var(--rs);background:var(--bg);font-size:0.8rem;overflow:hidden}
+.fb-inline-toggle{width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:5px 10px;color:var(--mut);font-size:0.8rem;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.fb-inline-toggle:hover{background:var(--bdr)}
+.fb-inline-toggle .fb-inline-arrow{font-size:0.67rem;transition:transform .15s;flex-shrink:0}
+.fb-inline-toggle.open .fb-inline-arrow{transform:rotate(90deg)}
+.fb-inline-body{display:none;padding:6px 10px 9px;border-top:1px solid var(--bdr)}
+.fb-inline-section{margin-bottom:7px}
+.fb-inline-section:last-child{margin-bottom:0}
+.fb-inline-section-title{font-size:0.73rem;font-weight:700;color:var(--mut);margin-bottom:3px}
+.fb-inline-item{display:flex;align-items:flex-start;gap:6px;padding:2px 0;line-height:1.45}
+.fb-inline-item span{flex:1;color:var(--txt);font-size:0.82rem}
+.fb-save-btn{background:none;border:none;cursor:pointer;font-size:0.85rem;padding:0 2px;flex-shrink:0;line-height:1;color:var(--mut);transition:color .15s;opacity:.6}
+.fb-save-btn:hover{opacity:1;color:var(--pri)}
+.fb-save-btn.saved{color:var(--ok);cursor:default;opacity:1}
+
+/* ── SAVED TIPS VIEW ── */
+#tips-view{background:var(--bg)}
+.tips-toolbar{display:flex;gap:6px;padding:8px 12px;background:var(--sur);border-bottom:1px solid var(--bdr);flex-wrap:wrap;align-items:center}
+.tips-filter-btn{font-size:0.78rem;padding:4px 10px;border-radius:20px;border:1px solid var(--bdr);background:var(--sur);color:var(--mut);cursor:pointer;font-weight:600;white-space:nowrap;transition:all .15s}
+.tips-filter-btn.active{background:var(--pri);color:#fff;border-color:var(--pri)}
+#tips-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.tips-item{display:flex;align-items:flex-start;gap:8px;padding:10px 13px;background:var(--sur);border-bottom:1px solid var(--bdr);animation:fi .15s ease}
+.tips-item.selected{background:var(--prit)}
+.tips-item-content{flex:1;min-width:0}
+.tips-item-tag{display:inline-block;font-size:0.67rem;font-weight:700;padding:2px 7px;border-radius:10px;margin-bottom:4px}
+.tip-type-positive{background:#dcfce7;color:var(--ok)}
+.tip-type-corrections{background:#fee2e2;color:var(--err)}
+.tip-type-suggestions{background:#dbeafe;color:var(--prid)}
+.tips-item-text{font-size:0.87rem;line-height:1.45;color:var(--txt);word-break:break-word}
+.tips-item-meta{font-size:0.73rem;color:var(--mut);margin-top:3px}
+.tips-delete-btn{background:none;border:none;cursor:pointer;color:var(--mut);font-size:1.2rem;line-height:1;padding:0 4px;flex-shrink:0;transition:color .15s;align-self:center}
+.tips-delete-btn:hover{color:var(--err)}
+#tips-bulk-bar{display:none;align-items:center;gap:8px;padding:10px 12px;background:var(--sur);border-top:2px solid var(--pri);flex-shrink:0}
 </style>
 
 </head>
@@ -305,6 +340,32 @@ select:focus{outline:2px solid var(--pri)}
     <button id="quiz-send-btn" onclick="quizSend()" disabled>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
+  </div>
+</div>
+
+<!-- ═══════ TIPS VIEW ═══════ -->
+
+<div id="tips-view" class="view">
+  <div class="hdr">
+    <h1 id="tips-hdr-title">Uložená doporučení</h1>
+    <div style="display:flex;gap:6px;align-items:center">
+      <select id="tips-lang-select" onchange="onTipsLangChange(this.value)"></select>
+    </div>
+  </div>
+  <div class="tips-toolbar">
+    <button class="tips-filter-btn active" id="tips-filter-all" onclick="setTipsFilter('all',this)">Vše</button>
+    <button class="tips-filter-btn" id="tips-filter-positive" onclick="setTipsFilter('positive',this)">✅ <span id="tips-lbl-positive">Správně</span></button>
+    <button class="tips-filter-btn" id="tips-filter-corrections" onclick="setTipsFilter('corrections',this)">✏️ <span id="tips-lbl-corrections">Opravy</span></button>
+    <button class="tips-filter-btn" id="tips-filter-suggestions" onclick="setTipsFilter('suggestions',this)">💡 <span id="tips-lbl-suggestions">Tipy</span></button>
+    <span id="tips-count" style="font-size:0.8rem;color:var(--mut);margin-left:auto"></span>
+    <button class="btn btn-ghost btn-sm" id="tips-bulk-mode-btn" onclick="toggleTipsBulkMode()">☑ Vybrat</button>
+  </div>
+  <div id="tips-list"></div>
+  <div id="tips-bulk-bar">
+    <span id="tips-bulk-count" style="font-size:0.87rem;flex:1;color:var(--mut)">0 vybráno</span>
+    <button class="btn btn-ghost btn-sm" onclick="tipsSelectAll()">Vybrat vše</button>
+    <button class="btn btn-danger btn-sm" onclick="deleteBulkTips()">Smazat</button>
+    <button class="btn btn-ghost btn-sm" onclick="toggleTipsBulkMode()">Zrušit</button>
   </div>
 </div>
 
@@ -434,6 +495,10 @@ select:focus{outline:2px solid var(--pri)}
   <button class="nav-btn" id="nav-quiz" onclick="navTo('quiz')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
     <span id="nav-lbl-quiz">Quiz</span>
+  </button>
+  <button class="nav-btn" id="nav-tips" onclick="navTo('tips')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+    <span id="nav-lbl-tips">Uložené</span>
   </button>
   <button class="nav-btn" id="nav-settings" onclick="navTo('settings')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -573,11 +638,15 @@ let fcDirection='normal';
 let genWords=[];
 let bulkSelectMode=false;
 const selectedIds=new Set();
+let tipsLang='spanish';
+let tipsFilter='all';
+let tipsBulkSelectMode=false;
+const selectedTipIds=new Set();
 
 // ── I18N ──
 const I18N={
-  cs:{appTitle:'Language Tutor',settingsTitle:'Nastavení',emptyTitle:'Připrav se na procvičování!',emptyDesc:'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',inputPH:l=>`Napiš zprávu v jazyce ${l}…`,fbPositive:'Správně',fbCorrections:'Opravy',fbSuggestions:'Tipy',navChat:'Chat',navVocab:'Slovíčka',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Nastavení',vocabHdr:'Slovní zásoba',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lekce',modeChatDesc:'Volný rozhovor — tutor opravuje chyby a navrhuje zlepšení',modeLessonDesc:'Tutor aktivně procvičuje tvá slovíčka ze seznamu',saveToast:'Uloženo ✓',clearConfirm:'Smazat vše včetně API klíčů a slovní zásoby?',errNoKey:'API klíč není nastaven. Přejdi do Nastavení.',errNetwork:'Chyba sítě nebo CORS.',errGeneric:'Chyba LLM:',err401:'Neplatný API klíč (401). Zkontroluj Nastavení.',err429:'Překročen limit požadavků (429). Zkus to za chvíli.',err500:'Výpadek serveru poskytovatele. Zkus to za chvíli.',apiKeySet:'API klíč nastaven',noApiKey:'API klíč není nastaven',apiKeyStorageWarn:'Klíč je uložen v prohlížeči (LocalStorage). Nepoužívej sdílená zařízení.',translationLabel:'Překlad',translateBtn:'přeložit',hideTranslation:'skrýt překlad',fcTap:'Klikni pro zobrazení překladu',fcRateQ:'Jak dobře sis vzpomněl/a?',fcDoneTitle:'Hotovo na dnes!',fcDoneDesc:n=>`Prošel jsi ${n} karet. Vrať se zítra.`,fcEmptyTitle:'Žádné karty k procvičení',fcEmptyDesc:'Přidej slovíčka v záložce Slovíčka.',fcPendingFn:n=>n+(n===1?' slovo':n>=2&&n<=4?' slova':' slov')+' ještě nevyšlo',fcNextDue:'Nejbližší opakování:',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Opakování',sortNew:'↕ Nejnovější',fcDirNormal:'⇄ Cizí → Mateřský',fcDirReverse:'⇄ Mateřský → Cizí',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Poskytovatel',sProviderLabel:'Poskytovatel',sOllamaOption:'Ollama (lokální)',sCustomOption:'Vlastní / Custom (OpenAI-kompatibilní)',sModelLabel:'Model',sCustomModelLabel:'Model (název)',sApiKeyLabel:'API klíč',sOllamaHint:'Ollama musí mít povoleno CORS pro tuto doménu.',sCustomUrlHint:'OpenAI-compatible endpoint (bez /chat/completions). API klíč výše je volitelný.',sGenerateAt:h=>`Vygeneruj na ${h}`,sTutorTitle:'Chování tutora',sLangLabel:'Jazyk',sLevelLabel:'Úroveň studenta',sLevelBeginner:'Začátečník (A1–A2)',sLevelIntermediate:'Mírně pokročilý (B1–B2)',sLevelAdvanced:'Pokročilý (C1–C2)',sFeedbackLabel:'Styl zpětné vazby',sFeedbackGentle:'Jemný (povzbuzující)',sFeedbackBalanced:'Vyvážený',sFeedbackStrict:'Přísný (každá chyba)',sUiLangLabel:'Jazyk rozhraní',sFontSizeLabel:'Velikost písma',sFontSizeSmall:'Malé (13px)',sFontSizeMedium:'Střední (15px)',sFontSizeLarge:'Velké (17px)',sFontSizeXl:'Extra velké (20px)',sDataTitle:'Data & záloha',sDataDesc:'Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.',sExportApiKeyWarning:'Záloha obsahuje tvůj API klíč. Uchovej soubor na bezpečném místě a nesdílej ho s nikým. Pokračovat?',sSaveBtn:'Uložit',sExportBtn:'Export zálohy',sImportBtn:'Import zálohy',sClearBtn:'Smazat vše',sAddToHome:'přidej do plochy',sHelpLink:'Nápověda',quizEmptyTitle:'Připraven na kvíz?',quizEmptyDesc:'Přidej slovíčka v záložce Slovíčka a stiskni tlačítko ↺ pro spuštění kvízu.',fcRate0:'Zapomněl/a',fcRate3:'Těžce',fcRate4:'Dobře',fcRate5:'Perfektně',fcAgain:'Znovu',badgeNew:'Nové',badgeToday:'Dnes',badgeTomorrow:'Zítra',vocabSearchPH:'Hledat…',deleteLearnedBtn:'🗑 Naučená',bulkModeOn:'☑ Vybrat',bulkModeOff:'✕ Výběr',bulkCountFn:n=>`${n} vybráno`,bulkSelectAll:'Vybrat vše',bulkDeleteBtn:'Smazat',bulkCancelBtn:'Zrušit',vocabEmptyNoMatch:'Žádné shody',vocabEmptyBlank:'Zatím prázdné',vocabEmptyNoMatchHint:'Zkus jiné hledání',vocabEmptyAddHint:'Přidej první slovíčko tlačítkem +',vocabCountSuffix:'slov',vocabCountWarning:'V Lesson módu se odesílá až 50 slovíček s každým dotazem — vyšší cena',modalAddTitle:'Přidat slovo',modalEditTitle:'Upravit slovo',modalWordLabel:'Slovo / fráze *',modalTransLabel:'Překlad *',modalNoteLabel:'Poznámka',modalTagsLabel:'Tagy',modalSaveBtn:'Uložit',modalCancelBtn:'Zrušit',modalDeleteBtn:'Smazat',modalSm2Title:'Statistiky opakování',sm2NextReview:'Příští opakování',sm2Interval:'Interval',sm2Reps:'Počet opakování',sm2Difficulty:'Obtížnost',sm2Day1:'1 den',sm2DaysFn:n=>`${n} dní`,sm2Hard:'Těžké',sm2Medium:'Střední',sm2Easy:'Snadné',importTitle:'Import slovní zásoby',importDesc:'CSV nebo TXT: každý řádek = <code>slovo,překlad,poznámka(volitelné)</code><br>Nebo vlož JSON ze zálohy.',importContentLabel:'Obsah souboru',importLangLabel:'Cílový jazyk',importColLabel:'Pořadí sloupců',importColNormal:'Cizí jazyk, Překlad (výchozí)',importColReverse:'Překlad, Cizí jazyk',importBtn:'Importovat',importCancelBtn:'Zrušit',importFromFile:'📂 Ze souboru',importPreviewBackup:'Detekováno: záloha (JSON). Importuje všechny jazyky.',importPreviewLinesFn:n=>`Detekováno ${n} řádků (CSV/TXT).`,backupImportTitle:'Import zálohy',backupImportDesc:'Vlož JSON zálohu nebo ji načti ze souboru.',backupImportLabel:'JSON záloha',backupImportBtn:'Importovat',backupCancelBtn:'Zrušit',backupFromFile:'📂 Ze souboru',vocabGenBtn:'✨ Generovat',modalTransPH:'ahoj',modalNotesPH:'příklad použití, kontext…',modalTagsPH:'pozdravy, B1 (čárkou oddělené)',importTextPH:'hola,ahoj,pozdrav\ngracias,děkuji',genTopicPH:'cestování, jídlo, rodina…',genTitle:'✨ Generovat slovíčka',genTopicLabel:'Téma *',genCountLabel:'Počet slov',genLevelLabel:'Úroveň',genApiNoteWithKey:'Slovíčka vygeneruje nakonfigurovaný LLM.',genApiNoteNoKey:'API klíč není nastaven – zkopíruje prompt do schránky pro použití ve vlastním AI nástroji (ChatGPT, Claude.ai…).',genBtn:'Generovat',genCopyBtn:'📋 Kopírovat prompt',genCancelBtn:'Zrušit',genLoading:'Generuji…',genTopicRequired:'Zadej téma.',genPreviewHint:'Zaškrtni slovíčka, která chceš importovat:',genImportSelectedBtn:'Importovat vybrané',genBackBtn:'← Zpět',alertInvalidJson:'Neplatný JSON',alertBackupRestored:'Záloha obnovena.',alertImportDoneFn:(a,s)=>`Import dokončen: ${a} přidáno, ${s} přeskočeno (duplicity).`,alertPromptCopied:'Prompt zkopírován!\n\nVlož ho do svého AI nástroje, výsledné CSV pak importuj tlačítkem ⬆ Import.',errLlmFn:msg=>'Chyba: '+msg,errWordRequired:'Slovo a překlad jsou povinné.',confirmDeleteWord:'Smazat toto slovo?',alertNoLearned:'Žádná naučená slovíčka (interval opakování ≥ 21 dní).',confirmDeleteLearnedFn:n=>`Smazat ${n} naučených slovíček (interval ≥ 21 dní)?`,alertNoSelection:'Nejsou vybrána žádná slovíčka.',confirmDeleteSelectedFn:n=>`Smazat ${n} vybraných slovíček?`,errParseLlm:'Nepodařilo se zparsovat odpověď LLM.',errLlmNoWords:'LLM nevrátil žádná slovíčka.',quizAnswerPH:'Tvoje odpověď…',pwaBannerText:'📲 Přidat Language Tutor na plochu',pwaInstallBtn:'Přidat',swUpdateText:'🔄 Nová verze je k dispozici',swReloadBtn:'Obnovit',addWordTitle:'Přidat slovo'},
-  en:{appTitle:'Language Tutor',settingsTitle:'Settings',emptyTitle:'Ready to practice!',emptyDesc:'Type anything and the tutor will respond with feedback.',inputPH:l=>`Type a message in ${l}…`,fbPositive:'Correct',fbCorrections:'Corrections',fbSuggestions:'Tips',navChat:'Chat',navVocab:'Vocab',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Settings',vocabHdr:'Vocabulary',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lesson',modeChatDesc:'Free conversation — tutor corrects mistakes and suggests improvements',modeLessonDesc:'Tutor actively practises your vocabulary list',saveToast:'Saved ✓',clearConfirm:'Delete everything including API keys and vocabulary?',errNoKey:'API key not set. Go to Settings.',errNetwork:'Network error or CORS issue.',errGeneric:'LLM error:',err401:'Invalid API key (401). Check Settings.',err429:'Rate limit exceeded (429). Try again in a moment.',err500:'Provider server error. Try again in a moment.',apiKeySet:'API key set',noApiKey:'API key not set',apiKeyStorageWarn:'Key is stored in your browser (LocalStorage). Avoid using shared devices.',translationLabel:'Translation',translateBtn:'translate',hideTranslation:'hide',fcTap:'Tap to reveal translation',fcRateQ:'How well did you remember?',fcDoneTitle:'All done for today!',fcDoneDesc:n=>`Reviewed ${n} cards. Come back tomorrow.`,fcEmptyTitle:'No cards to review',fcEmptyDesc:'Add words in the Vocabulary tab.',fcPendingFn:n=>n+(n===1?' word':' words')+' not yet due',fcNextDue:'Next review:',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Due',sortNew:'↕ Newest',fcDirNormal:'⇄ Foreign → Native',fcDirReverse:'⇄ Native → Foreign',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Provider',sProviderLabel:'Provider',sOllamaOption:'Ollama (local)',sCustomOption:'Custom (OpenAI-compatible)',sModelLabel:'Model',sCustomModelLabel:'Model (name)',sApiKeyLabel:'API key',sOllamaHint:'Ollama must have CORS enabled for this domain.',sCustomUrlHint:'OpenAI-compatible endpoint (without /chat/completions). API key above is optional.',sGenerateAt:h=>`Generate at ${h}`,sTutorTitle:'Tutor behaviour',sLangLabel:'Language',sLevelLabel:'Student level',sLevelBeginner:'Beginner (A1–A2)',sLevelIntermediate:'Intermediate (B1–B2)',sLevelAdvanced:'Advanced (C1–C2)',sFeedbackLabel:'Feedback style',sFeedbackGentle:'Gentle (encouraging)',sFeedbackBalanced:'Balanced',sFeedbackStrict:'Strict (every mistake)',sUiLangLabel:'Interface language',sFontSizeLabel:'Font size',sFontSizeSmall:'Small (13px)',sFontSizeMedium:'Medium (15px)',sFontSizeLarge:'Large (17px)',sFontSizeXl:'Extra large (20px)',sDataTitle:'Data & backup',sDataDesc:'Export includes configuration, all vocabulary (all languages) and SM-2 data.',sExportApiKeyWarning:'The backup contains your API key. Keep the file in a safe place and do not share it with anyone. Continue?',sSaveBtn:'Save',sExportBtn:'Export backup',sImportBtn:'Import backup',sClearBtn:'Delete all',sAddToHome:'add to home screen',sHelpLink:'Help',quizEmptyTitle:'Ready to quiz?',quizEmptyDesc:'Add vocabulary in the Vocab tab, then press ↺ to start a quiz.',fcRate0:'Forgot',fcRate3:'Hard',fcRate4:'Good',fcRate5:'Perfect',fcAgain:'Again',badgeNew:'New',badgeToday:'Today',badgeTomorrow:'Tomorrow',vocabSearchPH:'Search…',deleteLearnedBtn:'🗑 Learned',bulkModeOn:'☑ Select',bulkModeOff:'✕ Cancel',bulkCountFn:n=>`${n} selected`,bulkSelectAll:'Select all',bulkDeleteBtn:'Delete',bulkCancelBtn:'Cancel',vocabEmptyNoMatch:'No matches',vocabEmptyBlank:'Empty so far',vocabEmptyNoMatchHint:'Try a different search',vocabEmptyAddHint:'Add your first word with the + button',vocabCountSuffix:'words',vocabCountWarning:'In Lesson mode, up to 50 words are sent with each query — higher cost',modalAddTitle:'Add word',modalEditTitle:'Edit word',modalWordLabel:'Word / phrase *',modalTransLabel:'Translation *',modalNoteLabel:'Note',modalTagsLabel:'Tags',modalSaveBtn:'Save',modalCancelBtn:'Cancel',modalDeleteBtn:'Delete',modalSm2Title:'Review statistics',sm2NextReview:'Next review',sm2Interval:'Interval',sm2Reps:'Repetitions',sm2Difficulty:'Difficulty',sm2Day1:'1 day',sm2DaysFn:n=>`${n} days`,sm2Hard:'Hard',sm2Medium:'Medium',sm2Easy:'Easy',importTitle:'Import vocabulary',importDesc:'CSV or TXT: each row = <code>word,translation,note(optional)</code><br>Or paste JSON from a backup.',importContentLabel:'File content',importLangLabel:'Target language',importColLabel:'Column order',importColNormal:'Foreign language, Translation (default)',importColReverse:'Translation, Foreign language',importBtn:'Import',importCancelBtn:'Cancel',importFromFile:'📂 From file',importPreviewBackup:'Detected: backup (JSON). Will import all languages.',importPreviewLinesFn:n=>`Detected ${n} rows (CSV/TXT).`,backupImportTitle:'Import backup',backupImportDesc:'Paste JSON backup or load from file.',backupImportLabel:'JSON backup',backupImportBtn:'Import',backupCancelBtn:'Cancel',backupFromFile:'📂 From file',vocabGenBtn:'✨ Generate',modalTransPH:'hello',modalNotesPH:'usage example, context…',modalTagsPH:'greetings, B1 (comma-separated)',importTextPH:'hola,hello,greeting\ngracias,thank you',genTopicPH:'travel, food, family…',genTitle:'✨ Generate vocabulary',genTopicLabel:'Topic *',genCountLabel:'Word count',genLevelLabel:'Level',genApiNoteWithKey:'Vocabulary will be generated by the configured LLM.',genApiNoteNoKey:'API key not set – will copy prompt to clipboard for use in your own AI tool (ChatGPT, Claude.ai…).',genBtn:'Generate',genCopyBtn:'📋 Copy prompt',genCancelBtn:'Cancel',genLoading:'Generating…',genTopicRequired:'Enter a topic.',genPreviewHint:'Check the words you want to import:',genImportSelectedBtn:'Import selected',genBackBtn:'← Back',alertInvalidJson:'Invalid JSON',alertBackupRestored:'Backup restored.',alertImportDoneFn:(a,s)=>`Import complete: ${a} added, ${s} skipped (duplicates).`,alertPromptCopied:'Prompt copied!\n\nPaste it into your AI tool, then import the resulting CSV using the ⬆ Import button.',errLlmFn:msg=>'Error: '+msg,errWordRequired:'Word and translation are required.',confirmDeleteWord:'Delete this word?',alertNoLearned:'No learned words (repetition interval ≥ 21 days).',confirmDeleteLearnedFn:n=>`Delete ${n} learned words (interval ≥ 21 days)?`,alertNoSelection:'No words selected.',confirmDeleteSelectedFn:n=>`Delete ${n} selected words?`,errParseLlm:'Failed to parse LLM response.',errLlmNoWords:'LLM returned no words.',quizAnswerPH:'Your answer…',pwaBannerText:'📲 Add Language Tutor to home screen',pwaInstallBtn:'Add',swUpdateText:'🔄 New version available',swReloadBtn:'Reload',addWordTitle:'Add word'}
+  cs:{appTitle:'Language Tutor',settingsTitle:'Nastavení',emptyTitle:'Připrav se na procvičování!',emptyDesc:'Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.',inputPH:l=>`Napiš zprávu v jazyce ${l}…`,fbPositive:'Správně',fbCorrections:'Opravy',fbSuggestions:'Tipy',navChat:'Chat',navVocab:'Slovíčka',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Nastavení',vocabHdr:'Slovní zásoba',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lekce',modeChatDesc:'Volný rozhovor — tutor opravuje chyby a navrhuje zlepšení',modeLessonDesc:'Tutor aktivně procvičuje tvá slovíčka ze seznamu',saveToast:'Uloženo ✓',clearConfirm:'Smazat vše včetně API klíčů a slovní zásoby?',errNoKey:'API klíč není nastaven. Přejdi do Nastavení.',errNetwork:'Chyba sítě nebo CORS.',errGeneric:'Chyba LLM:',err401:'Neplatný API klíč (401). Zkontroluj Nastavení.',err429:'Překročen limit požadavků (429). Zkus to za chvíli.',err500:'Výpadek serveru poskytovatele. Zkus to za chvíli.',apiKeySet:'API klíč nastaven',noApiKey:'API klíč není nastaven',apiKeyStorageWarn:'Klíč je uložen v prohlížeči (LocalStorage). Nepoužívej sdílená zařízení.',translationLabel:'Překlad',translateBtn:'přeložit',hideTranslation:'skrýt překlad',fcTap:'Klikni pro zobrazení překladu',fcRateQ:'Jak dobře sis vzpomněl/a?',fcDoneTitle:'Hotovo na dnes!',fcDoneDesc:n=>`Prošel jsi ${n} karet. Vrať se zítra.`,fcEmptyTitle:'Žádné karty k procvičení',fcEmptyDesc:'Přidej slovíčka v záložce Slovíčka.',fcPendingFn:n=>n+(n===1?' slovo':n>=2&&n<=4?' slova':' slov')+' ještě nevyšlo',fcNextDue:'Nejbližší opakování:',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Opakování',sortNew:'↕ Nejnovější',fcDirNormal:'⇄ Cizí → Mateřský',fcDirReverse:'⇄ Mateřský → Cizí',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Poskytovatel',sProviderLabel:'Poskytovatel',sOllamaOption:'Ollama (lokální)',sCustomOption:'Vlastní / Custom (OpenAI-kompatibilní)',sModelLabel:'Model',sCustomModelLabel:'Model (název)',sApiKeyLabel:'API klíč',sOllamaHint:'Ollama musí mít povoleno CORS pro tuto doménu.',sCustomUrlHint:'OpenAI-compatible endpoint (bez /chat/completions). API klíč výše je volitelný.',sGenerateAt:h=>`Vygeneruj na ${h}`,sTutorTitle:'Chování tutora',sLangLabel:'Jazyk',sLevelLabel:'Úroveň studenta',sLevelBeginner:'Začátečník (A1–A2)',sLevelIntermediate:'Mírně pokročilý (B1–B2)',sLevelAdvanced:'Pokročilý (C1–C2)',sFeedbackLabel:'Styl zpětné vazby',sFeedbackGentle:'Jemný (povzbuzující)',sFeedbackBalanced:'Vyvážený',sFeedbackStrict:'Přísný (každá chyba)',sUiLangLabel:'Jazyk rozhraní',sFontSizeLabel:'Velikost písma',sFontSizeSmall:'Malé (13px)',sFontSizeMedium:'Střední (15px)',sFontSizeLarge:'Velké (17px)',sFontSizeXl:'Extra velké (20px)',sDataTitle:'Data & záloha',sDataDesc:'Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.',sExportApiKeyWarning:'Záloha obsahuje tvůj API klíč. Uchovej soubor na bezpečném místě a nesdílej ho s nikým. Pokračovat?',sSaveBtn:'Uložit',sExportBtn:'Export zálohy',sImportBtn:'Import zálohy',sClearBtn:'Smazat vše',sAddToHome:'přidej do plochy',sHelpLink:'Nápověda',quizEmptyTitle:'Připraven na kvíz?',quizEmptyDesc:'Přidej slovíčka v záložce Slovíčka a stiskni tlačítko ↺ pro spuštění kvízu.',fcRate0:'Zapomněl/a',fcRate3:'Těžce',fcRate4:'Dobře',fcRate5:'Perfektně',fcAgain:'Znovu',badgeNew:'Nové',badgeToday:'Dnes',badgeTomorrow:'Zítra',vocabSearchPH:'Hledat…',deleteLearnedBtn:'🗑 Naučená',bulkModeOn:'☑ Vybrat',bulkModeOff:'✕ Výběr',bulkCountFn:n=>`${n} vybráno`,bulkSelectAll:'Vybrat vše',bulkDeleteBtn:'Smazat',bulkCancelBtn:'Zrušit',vocabEmptyNoMatch:'Žádné shody',vocabEmptyBlank:'Zatím prázdné',vocabEmptyNoMatchHint:'Zkus jiné hledání',vocabEmptyAddHint:'Přidej první slovíčko tlačítkem +',vocabCountSuffix:'slov',vocabCountWarning:'V Lesson módu se odesílá až 50 slovíček s každým dotazem — vyšší cena',modalAddTitle:'Přidat slovo',modalEditTitle:'Upravit slovo',modalWordLabel:'Slovo / fráze *',modalTransLabel:'Překlad *',modalNoteLabel:'Poznámka',modalTagsLabel:'Tagy',modalSaveBtn:'Uložit',modalCancelBtn:'Zrušit',modalDeleteBtn:'Smazat',modalSm2Title:'Statistiky opakování',sm2NextReview:'Příští opakování',sm2Interval:'Interval',sm2Reps:'Počet opakování',sm2Difficulty:'Obtížnost',sm2Day1:'1 den',sm2DaysFn:n=>`${n} dní`,sm2Hard:'Těžké',sm2Medium:'Střední',sm2Easy:'Snadné',importTitle:'Import slovní zásoby',importDesc:'CSV nebo TXT: každý řádek = <code>slovo,překlad,poznámka(volitelné)</code><br>Nebo vlož JSON ze zálohy.',importContentLabel:'Obsah souboru',importLangLabel:'Cílový jazyk',importColLabel:'Pořadí sloupců',importColNormal:'Cizí jazyk, Překlad (výchozí)',importColReverse:'Překlad, Cizí jazyk',importBtn:'Importovat',importCancelBtn:'Zrušit',importFromFile:'📂 Ze souboru',importPreviewBackup:'Detekováno: záloha (JSON). Importuje všechny jazyky.',importPreviewLinesFn:n=>`Detekováno ${n} řádků (CSV/TXT).`,backupImportTitle:'Import zálohy',backupImportDesc:'Vlož JSON zálohu nebo ji načti ze souboru.',backupImportLabel:'JSON záloha',backupImportBtn:'Importovat',backupCancelBtn:'Zrušit',backupFromFile:'📂 Ze souboru',vocabGenBtn:'✨ Generovat',modalTransPH:'ahoj',modalNotesPH:'příklad použití, kontext…',modalTagsPH:'pozdravy, B1 (čárkou oddělené)',importTextPH:'hola,ahoj,pozdrav\ngracias,děkuji',genTopicPH:'cestování, jídlo, rodina…',genTitle:'✨ Generovat slovíčka',genTopicLabel:'Téma *',genCountLabel:'Počet slov',genLevelLabel:'Úroveň',genApiNoteWithKey:'Slovíčka vygeneruje nakonfigurovaný LLM.',genApiNoteNoKey:'API klíč není nastaven – zkopíruje prompt do schránky pro použití ve vlastním AI nástroji (ChatGPT, Claude.ai…).',genBtn:'Generovat',genCopyBtn:'📋 Kopírovat prompt',genCancelBtn:'Zrušit',genLoading:'Generuji…',genTopicRequired:'Zadej téma.',genPreviewHint:'Zaškrtni slovíčka, která chceš importovat:',genImportSelectedBtn:'Importovat vybrané',genBackBtn:'← Zpět',alertInvalidJson:'Neplatný JSON',alertBackupRestored:'Záloha obnovena.',alertImportDoneFn:(a,s)=>`Import dokončen: ${a} přidáno, ${s} přeskočeno (duplicity).`,alertPromptCopied:'Prompt zkopírován!\n\nVlož ho do svého AI nástroje, výsledné CSV pak importuj tlačítkem ⬆ Import.',errLlmFn:msg=>'Chyba: '+msg,errWordRequired:'Slovo a překlad jsou povinné.',confirmDeleteWord:'Smazat toto slovo?',alertNoLearned:'Žádná naučená slovíčka (interval opakování ≥ 21 dní).',confirmDeleteLearnedFn:n=>`Smazat ${n} naučených slovíček (interval ≥ 21 dní)?`,alertNoSelection:'Nejsou vybrána žádná slovíčka.',confirmDeleteSelectedFn:n=>`Smazat ${n} vybraných slovíček?`,errParseLlm:'Nepodařilo se zparsovat odpověď LLM.',errLlmNoWords:'LLM nevrátil žádná slovíčka.',quizAnswerPH:'Tvoje odpověď…',pwaBannerText:'📲 Přidat Language Tutor na plochu',pwaInstallBtn:'Přidat',swUpdateText:'🔄 Nová verze je k dispozici',swReloadBtn:'Obnovit',addWordTitle:'Přidat slovo',tipsHdr:'Uložená doporučení',navTips:'Uložené',tipsSave:'Uložit',tipsFilterAll:'Vše',tipsEmpty:'Žádná uložená doporučení',tipsEmptyHint:'Ukládej doporučení z chatové zpětné vazby tlačítkem 🔖'},
+  en:{appTitle:'Language Tutor',settingsTitle:'Settings',emptyTitle:'Ready to practice!',emptyDesc:'Type anything and the tutor will respond with feedback.',inputPH:l=>`Type a message in ${l}…`,fbPositive:'Correct',fbCorrections:'Corrections',fbSuggestions:'Tips',navChat:'Chat',navVocab:'Vocab',navFc:'Flashcards',navQuiz:'Quiz',navSettings:'Settings',vocabHdr:'Vocabulary',fcHdr:'Flashcards',quizHdr:'Quiz',modeChat:'Chat',modeLesson:'Lesson',modeChatDesc:'Free conversation — tutor corrects mistakes and suggests improvements',modeLessonDesc:'Tutor actively practises your vocabulary list',saveToast:'Saved ✓',clearConfirm:'Delete everything including API keys and vocabulary?',errNoKey:'API key not set. Go to Settings.',errNetwork:'Network error or CORS issue.',errGeneric:'LLM error:',err401:'Invalid API key (401). Check Settings.',err429:'Rate limit exceeded (429). Try again in a moment.',err500:'Provider server error. Try again in a moment.',apiKeySet:'API key set',noApiKey:'API key not set',apiKeyStorageWarn:'Key is stored in your browser (LocalStorage). Avoid using shared devices.',translationLabel:'Translation',translateBtn:'translate',hideTranslation:'hide',fcTap:'Tap to reveal translation',fcRateQ:'How well did you remember?',fcDoneTitle:'All done for today!',fcDoneDesc:n=>`Reviewed ${n} cards. Come back tomorrow.`,fcEmptyTitle:'No cards to review',fcEmptyDesc:'Add words in the Vocabulary tab.',fcPendingFn:n=>n+(n===1?' word':' words')+' not yet due',fcNextDue:'Next review:',fcProgress:(i,n)=>`${i} / ${n}`,sortAlpha:'↕ A–Z',sortDue:'↕ Due',sortNew:'↕ Newest',fcDirNormal:'⇄ Foreign → Native',fcDirReverse:'⇄ Native → Foreign',apiHints:{anthropic:'console.anthropic.com',openai:'platform.openai.com/api-keys',gemini:'aistudio.google.com',ollama:'',custom:''},sProviderTitle:'LLM Provider',sProviderLabel:'Provider',sOllamaOption:'Ollama (local)',sCustomOption:'Custom (OpenAI-compatible)',sModelLabel:'Model',sCustomModelLabel:'Model (name)',sApiKeyLabel:'API key',sOllamaHint:'Ollama must have CORS enabled for this domain.',sCustomUrlHint:'OpenAI-compatible endpoint (without /chat/completions). API key above is optional.',sGenerateAt:h=>`Generate at ${h}`,sTutorTitle:'Tutor behaviour',sLangLabel:'Language',sLevelLabel:'Student level',sLevelBeginner:'Beginner (A1–A2)',sLevelIntermediate:'Intermediate (B1–B2)',sLevelAdvanced:'Advanced (C1–C2)',sFeedbackLabel:'Feedback style',sFeedbackGentle:'Gentle (encouraging)',sFeedbackBalanced:'Balanced',sFeedbackStrict:'Strict (every mistake)',sUiLangLabel:'Interface language',sFontSizeLabel:'Font size',sFontSizeSmall:'Small (13px)',sFontSizeMedium:'Medium (15px)',sFontSizeLarge:'Large (17px)',sFontSizeXl:'Extra large (20px)',sDataTitle:'Data & backup',sDataDesc:'Export includes configuration, all vocabulary (all languages) and SM-2 data.',sExportApiKeyWarning:'The backup contains your API key. Keep the file in a safe place and do not share it with anyone. Continue?',sSaveBtn:'Save',sExportBtn:'Export backup',sImportBtn:'Import backup',sClearBtn:'Delete all',sAddToHome:'add to home screen',sHelpLink:'Help',quizEmptyTitle:'Ready to quiz?',quizEmptyDesc:'Add vocabulary in the Vocab tab, then press ↺ to start a quiz.',fcRate0:'Forgot',fcRate3:'Hard',fcRate4:'Good',fcRate5:'Perfect',fcAgain:'Again',badgeNew:'New',badgeToday:'Today',badgeTomorrow:'Tomorrow',vocabSearchPH:'Search…',deleteLearnedBtn:'🗑 Learned',bulkModeOn:'☑ Select',bulkModeOff:'✕ Cancel',bulkCountFn:n=>`${n} selected`,bulkSelectAll:'Select all',bulkDeleteBtn:'Delete',bulkCancelBtn:'Cancel',vocabEmptyNoMatch:'No matches',vocabEmptyBlank:'Empty so far',vocabEmptyNoMatchHint:'Try a different search',vocabEmptyAddHint:'Add your first word with the + button',vocabCountSuffix:'words',vocabCountWarning:'In Lesson mode, up to 50 words are sent with each query — higher cost',modalAddTitle:'Add word',modalEditTitle:'Edit word',modalWordLabel:'Word / phrase *',modalTransLabel:'Translation *',modalNoteLabel:'Note',modalTagsLabel:'Tags',modalSaveBtn:'Save',modalCancelBtn:'Cancel',modalDeleteBtn:'Delete',modalSm2Title:'Review statistics',sm2NextReview:'Next review',sm2Interval:'Interval',sm2Reps:'Repetitions',sm2Difficulty:'Difficulty',sm2Day1:'1 day',sm2DaysFn:n=>`${n} days`,sm2Hard:'Hard',sm2Medium:'Medium',sm2Easy:'Easy',importTitle:'Import vocabulary',importDesc:'CSV or TXT: each row = <code>word,translation,note(optional)</code><br>Or paste JSON from a backup.',importContentLabel:'File content',importLangLabel:'Target language',importColLabel:'Column order',importColNormal:'Foreign language, Translation (default)',importColReverse:'Translation, Foreign language',importBtn:'Import',importCancelBtn:'Cancel',importFromFile:'📂 From file',importPreviewBackup:'Detected: backup (JSON). Will import all languages.',importPreviewLinesFn:n=>`Detected ${n} rows (CSV/TXT).`,backupImportTitle:'Import backup',backupImportDesc:'Paste JSON backup or load from file.',backupImportLabel:'JSON backup',backupImportBtn:'Import',backupCancelBtn:'Cancel',backupFromFile:'📂 From file',vocabGenBtn:'✨ Generate',modalTransPH:'hello',modalNotesPH:'usage example, context…',modalTagsPH:'greetings, B1 (comma-separated)',importTextPH:'hola,hello,greeting\ngracias,thank you',genTopicPH:'travel, food, family…',genTitle:'✨ Generate vocabulary',genTopicLabel:'Topic *',genCountLabel:'Word count',genLevelLabel:'Level',genApiNoteWithKey:'Vocabulary will be generated by the configured LLM.',genApiNoteNoKey:'API key not set – will copy prompt to clipboard for use in your own AI tool (ChatGPT, Claude.ai…).',genBtn:'Generate',genCopyBtn:'📋 Copy prompt',genCancelBtn:'Cancel',genLoading:'Generating…',genTopicRequired:'Enter a topic.',genPreviewHint:'Check the words you want to import:',genImportSelectedBtn:'Import selected',genBackBtn:'← Back',alertInvalidJson:'Invalid JSON',alertBackupRestored:'Backup restored.',alertImportDoneFn:(a,s)=>`Import complete: ${a} added, ${s} skipped (duplicates).`,alertPromptCopied:'Prompt copied!\n\nPaste it into your AI tool, then import the resulting CSV using the ⬆ Import button.',errLlmFn:msg=>'Error: '+msg,errWordRequired:'Word and translation are required.',confirmDeleteWord:'Delete this word?',alertNoLearned:'No learned words (repetition interval ≥ 21 days).',confirmDeleteLearnedFn:n=>`Delete ${n} learned words (interval ≥ 21 days)?`,alertNoSelection:'No words selected.',confirmDeleteSelectedFn:n=>`Delete ${n} selected words?`,errParseLlm:'Failed to parse LLM response.',errLlmNoWords:'LLM returned no words.',quizAnswerPH:'Your answer…',pwaBannerText:'📲 Add Language Tutor to home screen',pwaInstallBtn:'Add',swUpdateText:'🔄 New version available',swReloadBtn:'Reload',addWordTitle:'Add word',tipsHdr:'Saved Tips',navTips:'Saved',tipsSave:'Save',tipsFilterAll:'All',tipsEmpty:'No saved tips',tipsEmptyHint:'Save tips from chat feedback using the 🔖 button'}
 };
 let t=I18N.cs;
 
@@ -586,7 +655,7 @@ let t=I18N.cs;
 // ══════════════════════════════════════════════
 function populateLangSelects(){
   const opts=Object.entries(LANG_META).map(([k,m])=>`<option value="${k}">${m.flag} ${m.native}</option>`).join('');
-  ['lang-select','vocab-lang-select','fc-lang-select','quiz-lang-select','import-lang-sel'].forEach(id=>{document.getElementById(id).innerHTML=opts;});
+  ['lang-select','vocab-lang-select','fc-lang-select','quiz-lang-select','import-lang-sel','tips-lang-select'].forEach(id=>{document.getElementById(id).innerHTML=opts;});
 }
 (function init(){
   try{Object.assign(cfg,JSON.parse(localStorage.getItem('lt-cfg')||'{}'));}catch{}
@@ -607,6 +676,8 @@ function populateLangSelects(){
   document.getElementById('quiz-lang-select').value=currentLang;
   document.getElementById('import-lang-sel').value=currentLang;
   document.getElementById('fc-dir-btn').textContent=t.fcDirNormal;
+  tipsLang=currentLang;
+  document.getElementById('tips-lang-select').value=currentLang;
   updateEmptyState();
   updateInputPlaceholder();
 })();
@@ -624,6 +695,7 @@ function navTo(name){
   if(name==='quiz'){document.getElementById('quiz-lang-select').value=currentLang;startQuiz();}
   if(name==='settings'){updateApiKeyStatus();}
   if(name==='chat'){updateProviderBadge();updateInputPlaceholder();}
+  if(name==='tips'){tipsLang=currentLang;document.getElementById('tips-lang-select').value=tipsLang;renderTipsList();}
 }
 
 // ══════════════════════════════════════════════
@@ -751,6 +823,14 @@ function applyI18n(){
   document.getElementById('sw-update-banner-text').textContent=t.swUpdateText;
   document.getElementById('sw-reload-btn').textContent=t.swReloadBtn;
   document.getElementById('add-word-btn').title=t.addWordTitle;
+  // tips view
+  document.getElementById('tips-hdr-title').textContent=t.tipsHdr;
+  document.getElementById('nav-lbl-tips').textContent=t.navTips;
+  document.getElementById('tips-lbl-positive').textContent=t.fbPositive;
+  document.getElementById('tips-lbl-corrections').textContent=t.fbCorrections;
+  document.getElementById('tips-lbl-suggestions').textContent=t.fbSuggestions;
+  document.getElementById('tips-filter-all').textContent=t.tipsFilterAll;
+  document.getElementById('tips-bulk-mode-btn').textContent=tipsBulkSelectMode?t.bulkModeOff:t.bulkModeOn;
 }
 function updateInputPlaceholder(){const m=LANG_META[currentLang];document.getElementById('msg-input').placeholder=t.inputPH(m?m.name:currentLang);}
 function updateEmptyState(){const m=LANG_META[currentLang];if(m)document.getElementById('empty-flag').textContent=m.flag;}
@@ -817,8 +897,8 @@ function updateProviderBadge(){const el=document.getElementById('provider-badge'
 // ── Export / Import full backup ──
 function exportAll(){
   if(cfg.apiKey&&cfg.apiKey.length>8&&!confirm(t.sExportApiKeyWarning))return;
-  const data={version:2,cfg,langLevels,vocab:{},exported:new Date().toISOString()};
-  Object.keys(LANG_META).forEach(l=>{const v=getVocab(l);if(v.length)data.vocab[l]=v;});
+  const data={version:2,cfg,langLevels,vocab:{},tips:{},exported:new Date().toISOString()};
+  Object.keys(LANG_META).forEach(l=>{const v=getVocab(l);if(v.length)data.vocab[l]=v;const tp=getSavedTips(l);if(tp.length)data.tips[l]=tp;});
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`langtutor-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();
 }
@@ -844,6 +924,7 @@ function applyBackup(data){
   if(data.cfg)Object.assign(cfg,data.cfg);
   if(data.langLevels)Object.assign(langLevels,data.langLevels);
   if(data.vocab)Object.keys(data.vocab).forEach(l=>setVocab(l,data.vocab[l]));
+  if(data.tips)Object.keys(data.tips).forEach(l=>setSavedTips(l,data.tips[l]));
   localStorage.setItem('lt-cfg',JSON.stringify(cfg));
   localStorage.setItem('lt-levels',JSON.stringify(langLevels));
   t=I18N[cfg.uiLang]||I18N.cs;
@@ -1358,6 +1439,7 @@ function appendMsg(role,text,translation){
     wrap.appendChild(btn);wrap.appendChild(td);
   }
   list.insertBefore(wrap,typingRow);scrollBottom();
+  return wrap;
 }
 
 function buildSystemPrompt(){
@@ -1399,12 +1481,14 @@ async function sendMessage(){
     setTyping(false);
     let parsed;
     try{parsed=JSON.parse(clean(raw));}catch{parsed={reply:displayedText||raw,translation:null,feedback:{positive:[],corrections:[],suggestions:[]}};}
-    if(streamingBubble){streamingBubble.finalize(parsed.reply,parsed.translation);}
-    else{appendMsg('tutor',parsed.reply,parsed.translation);}
+    let msgWrap;
+    if(streamingBubble){streamingBubble.finalize(parsed.reply,parsed.translation);msgWrap=streamingBubble.wrap;}
+    else{msgWrap=appendMsg('tutor',parsed.reply,parsed.translation);}
     chatHistory.push({role:'assistant',content:parsed.reply});
     if(chatHistory.length>24)chatHistory=chatHistory.slice(-24);
     currentFbData=parsed.feedback;renderFeedback(activeFbTab);
     document.getElementById('feedback-bar').classList.add('visible');
+    if(msgWrap)attachFeedbackCard(msgWrap,parsed.feedback);
   }catch(err){
     setTyping(false);
     if(err.name==='AbortError'){if(streamingBubble&&displayedText)streamingBubble.finalize(displayedText,null);return;}
@@ -1415,6 +1499,112 @@ async function sendMessage(){
 
 function switchFbTab(tab,btn){activeFbTab=tab;document.querySelectorAll('.fb-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderFeedback(tab);}
 function renderFeedback(tab){const el=document.getElementById('fb-content');if(!currentFbData){el.textContent='';return;}const items=currentFbData[tab]||[];el.innerHTML=items.length?`<ul>${items.map(i=>`<li>${i}</li>`).join('')}</ul>`:'<em style="color:var(--mut)">–</em>';}
+
+// ══════════════════════════════════════════════
+// SAVED TIPS
+// ══════════════════════════════════════════════
+function getSavedTips(lang){try{return JSON.parse(localStorage.getItem('lt-tips-'+lang)||'[]');}catch{return[];}}
+function setSavedTips(lang,arr){localStorage.setItem('lt-tips-'+(lang||currentLang),JSON.stringify(arr));}
+function onTipsLangChange(l){tipsLang=l;renderTipsList();}
+function setTipsFilter(filter,btn){tipsFilter=filter;document.querySelectorAll('.tips-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTipsList();}
+function saveTip(btn,text,type){
+  const tips=getSavedTips(currentLang);
+  if(!tips.some(tp=>tp.text===text&&tp.type===type)){
+    tips.unshift({id:uid(),text,type,lang:currentLang,date:Date.now()});
+    setSavedTips(currentLang,tips);
+  }
+  btn.textContent='✓';btn.classList.add('saved');btn.disabled=true;
+}
+function renderTipsList(){
+  let arr=getSavedTips(tipsLang);
+  if(tipsFilter!=='all')arr=arr.filter(tp=>tp.type===tipsFilter);
+  const list=document.getElementById('tips-list');
+  const total=getSavedTips(tipsLang).length;
+  document.getElementById('tips-count').textContent=tipsFilter!=='all'?`${arr.length} / ${total}`:String(total);
+  if(!arr.length){
+    list.innerHTML=`<div class="vocab-empty"><div style="font-size:2.67rem">🔖</div><h2>${t.tipsEmpty}</h2><p>${t.tipsEmptyHint}</p></div>`;
+    return;
+  }
+  const typeConf={positive:{icon:'✅',label:t.fbPositive,cls:'tip-type-positive'},corrections:{icon:'✏️',label:t.fbCorrections,cls:'tip-type-corrections'},suggestions:{icon:'💡',label:t.fbSuggestions,cls:'tip-type-suggestions'}};
+  list.innerHTML='';
+  arr.forEach(tip=>{
+    const tc=typeConf[tip.type]||typeConf.suggestions;
+    const date=new Date(tip.date).toLocaleDateString(cfg.uiLang==='en'?'en-US':'cs-CZ',{day:'numeric',month:'short'});
+    const sel=tipsBulkSelectMode&&selectedTipIds.has(tip.id);
+    const el=document.createElement('div');el.className='tips-item'+(sel?' selected':'');
+    const content=document.createElement('div');content.className='tips-item-content';
+    content.innerHTML=`<div class="tips-item-tag ${tc.cls}">${tc.icon} ${tc.label}</div><div class="tips-item-text">${esc(tip.text)}</div><div class="tips-item-meta">${date}</div>`;
+    if(tipsBulkSelectMode){
+      const cb=document.createElement('input');cb.type='checkbox';cb.className='cb';cb.checked=sel;
+      el.appendChild(cb);el.appendChild(content);
+      el.addEventListener('click',()=>toggleTipSelect(tip.id));
+    }else{
+      el.appendChild(content);
+      const delBtn=document.createElement('button');delBtn.className='tips-delete-btn';delBtn.textContent='×';delBtn.title=t.modalDeleteBtn;
+      delBtn.onclick=e=>{e.stopPropagation();deleteTip(tip.id);};
+      el.appendChild(delBtn);
+    }
+    list.appendChild(el);
+  });
+}
+function deleteTip(id){setSavedTips(tipsLang,getSavedTips(tipsLang).filter(tp=>tp.id!==id));renderTipsList();}
+function toggleTipSelect(id){
+  if(selectedTipIds.has(id))selectedTipIds.delete(id);else selectedTipIds.add(id);
+  document.getElementById('tips-bulk-count').textContent=t.bulkCountFn(selectedTipIds.size);
+  renderTipsList();
+}
+function toggleTipsBulkMode(){
+  tipsBulkSelectMode=!tipsBulkSelectMode;selectedTipIds.clear();
+  document.getElementById('tips-bulk-bar').style.display=tipsBulkSelectMode?'flex':'none';
+  document.getElementById('tips-bulk-mode-btn').textContent=tipsBulkSelectMode?t.bulkModeOff:t.bulkModeOn;
+  renderTipsList();
+}
+function tipsSelectAll(){
+  getSavedTips(tipsLang).filter(tp=>tipsFilter==='all'||tp.type===tipsFilter).forEach(tp=>selectedTipIds.add(tp.id));
+  document.getElementById('tips-bulk-count').textContent=t.bulkCountFn(selectedTipIds.size);
+  renderTipsList();
+}
+function deleteBulkTips(){
+  if(!selectedTipIds.size)return;
+  setSavedTips(tipsLang,getSavedTips(tipsLang).filter(tp=>!selectedTipIds.has(tp.id)));
+  selectedTipIds.clear();tipsBulkSelectMode=false;
+  document.getElementById('tips-bulk-bar').style.display='none';
+  document.getElementById('tips-bulk-mode-btn').textContent=t.bulkModeOn;
+  renderTipsList();
+}
+function attachFeedbackCard(wrap,feedback){
+  if(!feedback)return;
+  const types=[
+    {key:'positive',icon:'✅',label:t.fbPositive},
+    {key:'corrections',icon:'✏️',label:t.fbCorrections},
+    {key:'suggestions',icon:'💡',label:t.fbSuggestions},
+  ];
+  const parts=types.filter(tp=>(feedback[tp.key]||[]).length>0).map(tp=>`${tp.icon} ${(feedback[tp.key]||[]).length}`);
+  if(!parts.length)return;
+  const card=document.createElement('div');card.className='fb-inline';
+  const toggle=document.createElement('button');toggle.className='fb-inline-toggle';
+  const label=document.createElement('span');label.textContent=parts.join(' · ');
+  const arrow=document.createElement('span');arrow.className='fb-inline-arrow';arrow.textContent='▸';
+  toggle.appendChild(label);toggle.appendChild(arrow);
+  const body=document.createElement('div');body.className='fb-inline-body';
+  types.forEach(tp=>{
+    const items=feedback[tp.key]||[];if(!items.length)return;
+    const sec=document.createElement('div');sec.className='fb-inline-section';
+    const title=document.createElement('div');title.className='fb-inline-section-title';title.textContent=`${tp.icon} ${tp.label}`;
+    sec.appendChild(title);
+    items.forEach(itemText=>{
+      const row=document.createElement('div');row.className='fb-inline-item';
+      const span=document.createElement('span');span.textContent=itemText;
+      const btn=document.createElement('button');btn.className='fb-save-btn';btn.textContent='🔖';btn.title=t.tipsSave;
+      btn.onclick=()=>saveTip(btn,itemText,tp.key);
+      row.appendChild(span);row.appendChild(btn);sec.appendChild(row);
+    });
+    body.appendChild(sec);
+  });
+  toggle.onclick=()=>{const open=body.style.display==='block';body.style.display=open?'none':'block';toggle.classList.toggle('open',!open);};
+  card.appendChild(toggle);card.appendChild(body);
+  wrap.appendChild(card);
+}
 
 // ══════════════════════════════════════════════
 // LLM PROVIDERS
@@ -1618,6 +1808,7 @@ function appendStreamingMsg(){
   bubble.appendChild(textNode);wrap.appendChild(bubble);
   list.insertBefore(wrap,typingRow);scrollBottom();
   return{
+    wrap,
     append(text){textNode.textContent+=text;scrollBottom();},
     finalize(fullText,translation){
       bubble.innerHTML=renderMarkdown(fullText);
