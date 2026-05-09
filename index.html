@@ -693,7 +693,7 @@ function navTo(name){
   document.getElementById('nav-'+name).classList.add('active');
   if(name==='vocab'){renderVocabList();}
   if(name==='fc'){document.getElementById('fc-lang-select').value=currentLang;startFlashcards(currentLang);}
-  if(name==='quiz'){document.getElementById('quiz-lang-select').value=currentLang;startQuiz();}
+  if(name==='quiz'){document.getElementById('quiz-lang-select').value=currentLang;if(!quizHistory.length)startQuiz();}
   if(name==='settings'){updateApiKeyStatus();}
   if(name==='chat'){updateProviderBadge();updateInputPlaceholder();}
   if(name==='tips'){tipsLang=currentLang;document.getElementById('tips-lang-select').value=tipsLang;renderTipsList();}
