@@ -42,6 +42,7 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
 - **Quiz mód** — AI tě zkouší ze tvých slovíček interaktivně (otázka → odpověď → zpětná vazba)
 - **Chat tutor** — konverzace v cílovém jazyce, zpětná vazba ke gramatice, překlady na požádání
 - **Lesson mód** — tutor aktivně zapracovává tvá slovíčka do rozhovoru
+- **Slovník** — překryvný panel ve správě slovíček; zadáš slovo a LLM vrátí stručný slovníkový záznam (překlady s gramatickými kategoriemi + příklady použití); jedním kliknutím přidáš slovo do svého seznamu
 - **Správa slovní zásoby** — ruční zadávání, import z CSV/TXT, generování slovíček přes AI, sady per jazyk
 - **Více AI poskytovatelů** — Anthropic (Claude), OpenAI (GPT), Google (Gemini), Ollama (lokálně), vlastní OpenAI-compatible endpoint
 - **CS/EN rozhraní** — přepínatelný jazyk celého rozhraní včetně nastavení
@@ -84,6 +85,18 @@ buenos días,dobré ráno
 - Třetí sloupec (poznámka) je nepovinný
 - Prázdné řádky a duplicity jsou automaticky přeskočeny
 - **Pořadí sloupců**: v importním modalu lze přepnout na `Překlad, Cizí jazyk` — hodí se, pokud máš soubory v opačném pořadí sloupců
+
+#### Vyhledání v integrovaném slovníku
+
+Na záložce **Slovíčka** klikni na **📖 Slovník** → zadej slovo (Enter nebo tlačítko Hledat). LLM vrátí stručný slovníkový záznam, například:
+
+```
+odvaha:
+coraje m, valor m, valentía f
+dodat odvahy komu = animar, alentar a algn
+```
+
+Tlačítkem **+ Přidat do slovíček** předvyplníš formulář (slovo, překlad, poznámka) a slovíčko jedním krokem uložíš do svého seznamu. Funkce vyžaduje nakonfigurovaný API klíč nebo Ollama.
 
 #### Generování slovíček přímo v aplikaci
 
@@ -155,6 +168,7 @@ Obnova: **Nastavení → Import zálohy** → nahraj JSON soubor.
 | Flashcards (SM-2)         | ✅                     | ✅       |
 | Import/export zálohy      | ✅                     | ✅       |
 | Generování slovíček       | ⚡ kopíruje prompt     | ✅       |
+| Slovník                   | ❌                     | ✅       |
 | Chat tutor                | ❌                     | ✅       |
 | Quiz mód                  | ❌                     | ✅       |
 
@@ -271,6 +285,7 @@ The primary purpose of this app is **practicing the vocabulary words you enter y
 - **Quiz mode** — AI tests your vocabulary interactively (question → answer → feedback)
 - **Chat tutor** — conversation in the target language, grammar feedback, translations on demand
 - **Lesson mode** — tutor actively weaves your vocabulary into the dialogue
+- **Dictionary** — overlay panel inside the Vocabulary tab; type any word and the LLM returns a concise dictionary entry (translations with grammatical categories + usage examples); add the word to your list in one click
 - **Vocabulary management** — manual entry, CSV/TXT import, in-app AI generation, per-language sets
 - **Multi-provider LLM** — Anthropic (Claude), OpenAI (GPT), Google (Gemini), Ollama (local), custom OpenAI-compatible endpoint
 - **CS/EN UI** — switchable interface language including all settings
@@ -313,6 +328,18 @@ buenos días,good morning
 - Third column (note) is optional
 - Empty lines and duplicates are skipped automatically
 - **Column order**: the import modal lets you switch to `Translation, Foreign word` — useful if your CSV files have the columns in reverse order
+
+#### Built-in dictionary lookup
+
+In the **Vocab** tab click **📖 Dictionary** → type a word (press Enter or click Look up). The LLM returns a concise dictionary entry, for example:
+
+```
+odvaha:
+coraje m, valor m, valentía f
+dodat odvahy komu = animar, alentar a algn
+```
+
+Click **+ Add to vocabulary** to pre-fill the word form (word, translation, note) and save it to your list in one step. Requires a configured API key or Ollama.
 
 #### In-app AI generation
 
@@ -384,6 +411,7 @@ Restore: **Settings → Import backup** → load the JSON file.
 | Flashcards (SM-2)        | ✅                     | ✅       |
 | Backup import/export     | ✅                     | ✅       |
 | Vocabulary generation    | ⚡ copies prompt       | ✅       |
+| Dictionary               | ❌                     | ✅       |
 | Chat tutor               | ❌                     | ✅       |
 | Quiz mode                | ❌                     | ✅       |
 
