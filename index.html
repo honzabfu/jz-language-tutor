@@ -1184,7 +1184,7 @@ async function dictLookup(){
   const targetMeta=LANG_META[vocabLang];
   const targetLang=targetMeta?targetMeta.name:vocabLang;
   const nativeLang=cfg.uiLang==='en'?'English':'Czech';
-  const sys=`You are a concise bilingual ${nativeLang}–${targetLang} dictionary. Reply with ONLY valid JSON, no markdown fences, no extra text.`;
+  const sys=`You are a concise bilingual ${targetLang}–${nativeLang} dictionary. Reply with ONLY valid JSON, no markdown fences, no extra text.`;
   const userPrompt=`Look up: "${word}"\nReturn JSON with fields:\n- "entry": plain-text dictionary entry (word on line 1 followed by colon, translations with grammatical categories on line 2, 1-2 usage examples on further lines)\n- "word": the word as given\n- "translation": main translations as short comma-separated string\n- "notes": short usage example string (empty if none)`;
   try{
     const raw=await safeLLM([{role:'user',content:userPrompt}],sys,400);
