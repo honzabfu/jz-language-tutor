@@ -1162,7 +1162,7 @@ function renderFC(){
   const _locale=cfg.uiLang==='en'?'en-US':'cs-CZ';
   const _pendingStr=fcPending.length?`<p style="color:var(--mut);font-size:0.87rem;margin-top:8px">${t.fcPendingFn(fcPending.length)} · ${t.fcNextDue} ${new Date(Math.min(...fcPending.map(w=>w.sm2.due))).toLocaleDateString(_locale,{day:'numeric',month:'long'})}</p>`:'';
   if(!fcQueue.length){
-    if(fcPending.length){body.innerHTML=`<div class="fc-done"><div class="big">🎉</div><h2>${t.fcDoneTitle}</h2>${_pendingStr}</div>`;}
+    if(fcPending.length){body.innerHTML=`<div class="fc-done"><div class="big">🎉</div><h2>${t.fcDoneTitle}</h2>${_pendingStr}<button class="btn btn-secondary" onclick="navTo('vocab')">${t.navVocab}</button></div>`;}
     else{body.innerHTML=`<div class="fc-done"><div class="big">📚</div><h2>${t.fcEmptyTitle}</h2><p>${t.fcEmptyDesc}</p><button class="btn btn-primary" onclick="navTo('vocab')">${t.navVocab}</button></div>`;}
     return;
   }
