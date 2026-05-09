@@ -63,7 +63,8 @@ select:focus{outline:2px solid var(--pri)}
 .fb-tab.active{color:var(--pri);border-bottom-color:var(--pri)}
 .fb-content{padding:8px 13px;font-size:0.87rem;line-height:1.5;max-height:80px;overflow-y:auto}
 .fb-content ul{padding-left:16px}
-.fb-content li{margin-bottom:2px}
+.fb-content li{margin-bottom:2px;display:flex;align-items:flex-start;gap:6px}
+.fb-content li span{flex:1}
 
 /* MODE TOGGLE */
 .mode-toggle{display:flex;background:#e2e8f0;border-radius:20px;padding:2px;gap:0}
@@ -1498,7 +1499,23 @@ async function sendMessage(){
 }
 
 function switchFbTab(tab,btn){activeFbTab=tab;document.querySelectorAll('.fb-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderFeedback(tab);}
-function renderFeedback(tab){const el=document.getElementById('fb-content');if(!currentFbData){el.textContent='';return;}const items=currentFbData[tab]||[];el.innerHTML=items.length?`<ul>${items.map(i=>`<li>${i}</li>`).join('')}</ul>`:'<em style="color:var(--mut)">–</em>';}
+function renderFeedback(tab){
+  const el=document.getElementById('fb-content');
+  if(!currentFbData){el.textContent='';return;}
+  const items=currentFbData[tab]||[];
+  if(!items.length){el.innerHTML='<em style="color:var(--mut)">–</em>';return;}
+  el.innerHTML='';
+  const ul=document.createElement('ul');
+  items.forEach(itemText=>{
+    const li=document.createElement('li');
+    li.style.display='flex';li.style.alignItems='flex-start';li.style.gap='6px';
+    const span=document.createElement('span');span.style.flex='1';span.textContent=itemText;
+    const btn=document.createElement('button');btn.className='fb-save-btn';btn.textContent='🔖';btn.title=t.tipsSave;
+    btn.onclick=()=>saveTip(btn,itemText,tab);
+    li.appendChild(span);li.appendChild(btn);ul.appendChild(li);
+  });
+  el.appendChild(ul);
+}
 
 // ══════════════════════════════════════════════
 // SAVED TIPS
