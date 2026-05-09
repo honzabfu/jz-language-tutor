@@ -554,6 +554,7 @@ const LANG_META={english:{name:'English',native:'English',flag:'🇬🇧'},spani
 const SORT_MODES=['alpha','due','new'];
 let sortIdx=0;
 
+let _abortCtrl=null;
 let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',uiLang:navigator.language.startsWith('cs')?'cs':'en',lessonMode:false,fontSize:'medium'};
 let langLevels={};
 function getLangLevel(lang){return langLevels[lang]||'beginner';}
@@ -1061,7 +1062,7 @@ function openGenerateModal(){
   document.getElementById('gen-modal').classList.add('open');
   setTimeout(()=>document.getElementById('gen-topic').focus(),100);
 }
-function closeGenModal(){document.getElementById('gen-modal').classList.remove('open');}
+function closeGenModal(){abortPending();document.getElementById('gen-modal').classList.remove('open');}
 function closeGenModalOutside(e){if(e.target===document.getElementById('gen-modal'))closeGenModal();}
 function showGenForm(){
   document.getElementById('gen-form').style.display='';
@@ -1086,6 +1087,8 @@ async function generateVocab(){
     alert(t.alertPromptCopied);
     return;
   }
+  abortPending();
+  _abortCtrl=new AbortController();
   const btn=document.getElementById('gen-action-btn');
   const origText=btn.textContent;
   btn.textContent=t.genLoading;btn.disabled=true;
@@ -1093,7 +1096,7 @@ async function generateVocab(){
 Return ONLY a JSON array, no preamble, no markdown:
 [{"word":"<word in ${meta.name}>","translation":"<translation in ${nativeLang}>","notes":"<brief usage note or example, or empty string>"}]`;
   try{
-    const raw=await safeLLM([{role:'user',content:prompt}],'',Math.max(1024,count*80));
+    const raw=await safeLLM([{role:'user',content:prompt}],'',Math.max(1024,count*80),_abortCtrl.signal);
     let arr;
     try{
       const s=raw.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
@@ -1104,7 +1107,7 @@ Return ONLY a JSON array, no preamble, no markdown:
     genWords=arr.filter(w=>w.word&&w.translation);
     renderGenPreview();
   }catch(err){
-    alert(resolveErr(err));
+    if(err.name!=='AbortError')alert(resolveErr(err));
   }finally{
     btn.textContent=origText;btn.disabled=false;
   }
@@ -1254,10 +1257,12 @@ Ask a question that tests one of these words naturally (e.g. fill-in-the-blank, 
 Respond ONLY with JSON: {"question":"<question text in ${meta.name} and/or ${cfg.uiLang==='cs'?'Czech':'English'}>","targetWord":"<the word being tested>"}`;
   if(cfg.provider==='custom'&&(!cfg.customUrl||!cfg.customModel)){appendQuizMsg('tutor',t.errNoKey);return;}
   if(cfg.provider!=='ollama'&&cfg.provider!=='custom'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendQuizMsg('tutor',t.errNoKey);return;}
+  abortPending();
+  _abortCtrl=new AbortController();
   setQuizTyping(true);
   let raw;
-  try{raw=await safeLLM([{role:'user',content:prompt}],'');}
-  catch(err){setQuizTyping(false);appendQuizMsg('tutor',resolveErr(err));return;}
+  try{raw=await safeLLM([{role:'user',content:prompt}],'',1024,_abortCtrl.signal);}
+  catch(err){setQuizTyping(false);if(err.name==='AbortError')return;appendQuizMsg('tutor',resolveErr(err));return;}
   setQuizTyping(false);
   try{const p=JSON.parse(clean(raw));appendQuizMsg('tutor',p.question);quizHistory.push({role:'assistant-question',word:p.targetWord,content:p.question});}
   catch{appendQuizMsg('tutor',clean(raw));}
@@ -1270,6 +1275,8 @@ async function quizSend(){
   document.getElementById('quiz-send-btn').disabled=true;
   appendQuizMsg('user',txt);
   quizHistory.push({role:'user',content:txt});
+  abortPending();
+  _abortCtrl=new AbortController();
   setQuizTyping(true);
   const lang=document.getElementById('quiz-lang-select').value;
   const meta=LANG_META[lang];
@@ -1282,8 +1289,8 @@ Target word: "${targetWord}"
 Student answer: "${txt}"
 Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief feedback in ${cfg.uiLang==='cs'?'Czech':'English'}>","nextQuestion":"<next question testing a different word or same if failed>","nextTargetWord":"<word being tested next>"}`;
   let raw;
-  try{raw=await safeLLM([{role:'user',content:evalPrompt}],'');}
-  catch(err){setQuizTyping(false);appendQuizMsg('tutor',resolveErr(err));document.getElementById('quiz-send-btn').disabled=false;return;}
+  try{raw=await safeLLM([{role:'user',content:evalPrompt}],'',1024,_abortCtrl.signal);}
+  catch(err){setQuizTyping(false);if(err.name==='AbortError'){document.getElementById('quiz-send-btn').disabled=false;return;}appendQuizMsg('tutor',resolveErr(err));document.getElementById('quiz-send-btn').disabled=false;return;}
   setQuizTyping(false);
   try{
     const p=JSON.parse(clean(raw));
@@ -1318,7 +1325,7 @@ function updateModeBadge(){
   lesson.classList.toggle('active',cfg.lessonMode);
   document.getElementById('vocab-cost-warn').style.display=(cfg.lessonMode&&getVocab(currentLang).length>40)?'block':'none';
 }
-function clearChat(){chatHistory=[];currentFbData=null;const list=document.getElementById('msg-list');[...list.children].forEach(el=>{if(el.id!=='empty'&&el.id!=='typing-row')el.remove();});document.getElementById('empty').style.display='';document.getElementById('feedback-bar').classList.remove('visible');document.getElementById('typing-row').style.display='none';}
+function clearChat(){abortPending();chatHistory=[];currentFbData=null;const list=document.getElementById('msg-list');[...list.children].forEach(el=>{if(el.id!=='empty'&&el.id!=='typing-row')el.remove();});document.getElementById('empty').style.display='';document.getElementById('feedback-bar').classList.remove('visible');document.getElementById('typing-row').style.display='none';document.getElementById('send-btn').disabled=true;}
 function onLangChange(l){currentLang=l;localStorage.setItem('lt-lang',l);document.getElementById('vocab-lang-select').value=l;vocabLang=l;updateEmptyState();updateInputPlaceholder();updateModeBadge();clearChat();const lls=document.getElementById('cfg-level-lang-select');if(lls){lls.value=l;document.getElementById('cfg-level').value=getLangLevel(l);}}
 function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
@@ -1374,12 +1381,14 @@ async function sendMessage(){
   const input=document.getElementById('msg-input');
   const text=input.value.trim();if(!text)return;
   if(cfg.provider!=='ollama'&&cfg.provider!=='custom'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendMsg('tutor',t.errNoKey,null);return;}
+  abortPending();
+  _abortCtrl=new AbortController();
   input.value='';input.style.height='auto';document.getElementById('send-btn').disabled=true;
   appendMsg('user',text,null);
   chatHistory.push({role:'user',content:text});
   setTyping(true);
   try{
-    const raw=await safeLLM(chatHistory,buildSystemPrompt());
+    const raw=await safeLLM(chatHistory,buildSystemPrompt(),1024,_abortCtrl.signal);
     setTyping(false);
     let parsed;
     try{parsed=JSON.parse(clean(raw));}catch{parsed={reply:raw,translation:null,feedback:{positive:[],corrections:[],suggestions:[]}};}
@@ -1390,6 +1399,7 @@ async function sendMessage(){
     document.getElementById('feedback-bar').classList.add('visible');
   }catch(err){
     setTyping(false);
+    if(err.name==='AbortError')return;
     appendMsg('tutor',resolveErr(err),null);
   }
 }
@@ -1403,52 +1413,53 @@ function renderFeedback(tab){const el=document.getElementById('fb-content');if(!
 function clean(s){s=(s||'').trim();s=s.replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();if(!s.startsWith('{')){const m=s.match(/\{[\s\S]*\}/);if(m)s=m[0];}return s;}
 async function httpErr(res){if(res.status===401)throw new Error('ERR_401');if(res.status===429)throw new Error('ERR_429');if(res.status>=500)throw new Error('ERR_500');throw new Error(await res.text());}
 function resolveErr(err){const m=err.message;if(m==='NO_KEY')return t.errNoKey;if(m==='ERR_401')return t.err401;if(m==='ERR_429')return t.err429;if(m==='ERR_500')return t.err500;if(m?.includes('fetch'))return t.errNetwork;return`${t.errGeneric} ${m}`;}
+function abortPending(){if(_abortCtrl){_abortCtrl.abort();_abortCtrl=null;}}
 
-async function safeLLM(msgs,sys,maxTokens=1024){
-  if(cfg.provider==='anthropic')return callAnthropic(msgs,sys,maxTokens);
-  if(cfg.provider==='openai')return callOpenAI(msgs,sys,maxTokens);
-  if(cfg.provider==='gemini')return callGemini(msgs,sys,maxTokens);
-  if(cfg.provider==='ollama')return callOllama(msgs,sys);
-  if(cfg.provider==='custom')return callCustom(msgs,sys,maxTokens);
+async function safeLLM(msgs,sys,maxTokens=1024,signal){
+  if(cfg.provider==='anthropic')return callAnthropic(msgs,sys,maxTokens,signal);
+  if(cfg.provider==='openai')return callOpenAI(msgs,sys,maxTokens,signal);
+  if(cfg.provider==='gemini')return callGemini(msgs,sys,maxTokens,signal);
+  if(cfg.provider==='ollama')return callOllama(msgs,sys,signal);
+  if(cfg.provider==='custom')return callCustom(msgs,sys,maxTokens,signal);
   throw new Error('Unknown provider');
 }
-async function callAnthropic(msgs,sys,maxTokens=1024){
+async function callAnthropic(msgs,sys,maxTokens=1024,signal){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const filteredMsgs=msgs.filter(m=>m.role==='user'||m.role==='assistant');
-  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,system:sys||undefined,messages:filteredMsgs})});
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,system:sys||undefined,messages:filteredMsgs}),signal});
   if(!res.ok)await httpErr(res);
   return(await res.json()).content[0].text;
 }
-async function callOpenAI(msgs,sys,maxTokens=1024){
+async function callOpenAI(msgs,sys,maxTokens=1024,signal){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
-  const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${cfg.apiKey}`},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,messages:m})});
+  const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${cfg.apiKey}`},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,messages:m}),signal});
   if(!res.ok)await httpErr(res);
   return(await res.json()).choices[0].message.content;
 }
-async function callGemini(msgs,sys,maxTokens=1024){
+async function callGemini(msgs,sys,maxTokens=1024,signal){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const gm=msgs.filter(x=>x.role==='user'||x.role==='assistant').map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
   const body={contents:gm,generationConfig:{maxOutputTokens:maxTokens}};
   if(sys)body.system_instruction={parts:[{text:sys}]};
-  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:generateContent?key=${cfg.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:generateContent?key=${cfg.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal});
   if(!res.ok)await httpErr(res);
   return(await res.json()).candidates[0].content.parts[0].text;
 }
-async function callOllama(msgs,sys){
+async function callOllama(msgs,sys,signal){
   const base=(cfg.ollamaUrl||'http://localhost:11434').replace(/\/$/,'');
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
-  const res=await fetch(`${base}/api/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,stream:false,messages:m})});
+  const res=await fetch(`${base}/api/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,stream:false,messages:m}),signal});
   if(!res.ok)await httpErr(res);
   return(await res.json()).message.content;
 }
-async function callCustom(msgs,sys,maxTokens=1024){
+async function callCustom(msgs,sys,maxTokens=1024,signal){
   const base=(cfg.customUrl||'').replace(/\/$/,'');
   if(!base||!cfg.customModel)throw new Error('NO_KEY');
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
   const headers={'Content-Type':'application/json'};
   if(cfg.apiKey)headers['Authorization']=`Bearer ${cfg.apiKey}`;
-  const res=await fetch(`${base}/chat/completions`,{method:'POST',headers,body:JSON.stringify({model:cfg.customModel,max_tokens:maxTokens,messages:m})});
+  const res=await fetch(`${base}/chat/completions`,{method:'POST',headers,body:JSON.stringify({model:cfg.customModel,max_tokens:maxTokens,messages:m}),signal});
   if(!res.ok)await httpErr(res);
   return(await res.json()).choices[0].message.content;
 }
