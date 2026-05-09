@@ -1148,10 +1148,10 @@ function sm2Update(sm,q){
 // FLASHCARD VIEW
 // ══════════════════════════════════════════════
 function startFlashcards(lang){
-  const now=Date.now();
+  const todayEnd=new Date();todayEnd.setHours(23,59,59,999);const cutoff=todayEnd.getTime();
   const all=getVocab(lang);
-  fcQueue=all.filter(w=>!w.sm2||w.sm2.due<=now);
-  fcPending=all.filter(w=>w.sm2&&w.sm2.due>now);
+  fcQueue=all.filter(w=>!w.sm2||w.sm2.due<=cutoff);
+  fcPending=all.filter(w=>w.sm2&&w.sm2.due>cutoff);
   // shuffle
   for(let i=fcQueue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[fcQueue[i],fcQueue[j]]=[fcQueue[j],fcQueue[i]];}
   fcIdx=0;fcRevealed=false;
