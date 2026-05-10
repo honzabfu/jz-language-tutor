@@ -734,6 +734,8 @@ let langLevels={};
 function getLangLevel(lang){return langLevels[lang]||'beginner';}
 let chatHistory=[];
 let quizHistory=[];
+let quizQueue=[];
+let quizCurrentWord=null;
 let currentLang='spanish';
 let vocabLang='spanish';
 let currentFbData=null;
@@ -1491,28 +1493,32 @@ function rateFC(q){
 // ══════════════════════════════════════════════
 function startQuiz(){
   quizHistory=[];
+  quizQueue=[];
+  quizCurrentWord=null;
   const qList=document.getElementById('quiz-msg-list');
   [...qList.children].forEach(el=>{if(el.id!=='quiz-typing-row'&&el.id!=='quiz-empty')el.remove();});
   document.getElementById('quiz-empty').style.display='none';
   const lang=document.getElementById('quiz-lang-select').value;
   const arr=getVocab(lang);
   if(!arr.length){document.getElementById('quiz-empty').style.display='';return;}
-  const sample=arr.sort(()=>Math.random()-.5).slice(0,10);
-  const wordList=sample.map(w=>w.word).join(', ');
-  const sysContext=`Vocabulary to test: ${wordList}`;
-  quizHistory=[{role:'system-note',content:sysContext}];
-  // kick off with tutor question
-  quizAsk(lang,sample);
+  // Proper Fisher-Yates shuffle
+  const shuffled=[...arr];
+  for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}
+  quizQueue=shuffled.slice(0,10);
+  quizHistory=[{role:'system-note',content:`Vocabulary to test: ${quizQueue.map(w=>w.word).join(', ')}`}];
+  quizAsk(lang);
 }
-async function quizAsk(lang,sample){
+async function quizAsk(lang){
+  if(!quizQueue.length)return;
+  quizCurrentWord=quizQueue[0];
+  const word=quizCurrentWord;
   const meta=LANG_META[lang];
   const levelMap={beginner:'A1-A2',intermediate:'B1-B2',advanced:'C1-C2'};
-  const wordList=sample.map(w=>`${w.word} (${w.translation})`).join('; ');
-  const prompt=`You are a language quiz tutor testing the student on ${meta.name}. 
+  const prompt=`You are a language quiz tutor testing the student on ${meta.name}.
 Level: ${levelMap[getLangLevel(lang)]||'A1-A2'}.
-Words to test (use them, don't show translations): ${wordList}.
-Ask a question that tests one of these words naturally (e.g. fill-in-the-blank, translate, use in a sentence). 
-Respond ONLY with JSON: {"question":"<question text in ${meta.name} and/or ${cfg.uiLang==='cs'?'Czech':'English'}>","targetWord":"<the word being tested>"}`;
+Test this specific word: ${word.word} (meaning: ${word.translation}). Do NOT reveal the translation to the student.
+Ask a question that tests this word naturally (e.g. fill-in-the-blank, translate, use in a sentence).
+Respond ONLY with JSON: {"question":"<question text in ${meta.name} and/or ${cfg.uiLang==='cs'?'Czech':'English'}>","targetWord":"${word.word}"}`;
   if(cfg.provider==='custom'&&(!cfg.customUrl||!cfg.customModel)){appendQuizMsg('tutor',t.errNoKey);return;}
   if(cfg.provider!=='ollama'&&cfg.provider!=='custom'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendQuizMsg('tutor',t.errNoKey);return;}
   abortPending();
@@ -1545,7 +1551,7 @@ async function quizSend(){
 Question asked: "${question}"
 Target word: "${targetWord}"
 Student answer: "${txt}"
-Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief feedback in ${cfg.uiLang==='cs'?'Czech':'English'}>","nextQuestion":"<next question testing a different word or same if failed>","nextTargetWord":"<word being tested next>"}`;
+Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief feedback in ${cfg.uiLang==='cs'?'Czech':'English'}>"}`;
   let raw;
   try{raw=await safeLLM([{role:'user',content:evalPrompt}],'',1024,_abortCtrl.signal);}
   catch(err){setQuizTyping(false);if(err.name==='AbortError'){document.getElementById('quiz-send-btn').disabled=false;return;}appendQuizMsg('tutor',resolveErr(err));document.getElementById('quiz-send-btn').disabled=false;return;}
@@ -1554,9 +1560,16 @@ Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief fe
     const p=JSON.parse(clean(raw));
     const icon=p.correct?'✅':'❌';
     appendQuizMsg('tutor',`${icon} ${p.feedback}`);
-    quizHistory.push({role:'assistant-feedback',content:p.feedback});
-    if(p.nextQuestion){
-      setTimeout(()=>{appendQuizMsg('tutor',p.nextQuestion);quizHistory.push({role:'assistant-question',word:p.nextTargetWord,content:p.nextQuestion});},600);
+    quizHistory.push({role:'assistant-feedback',correct:p.correct,content:p.feedback});
+    if(p.correct){
+      quizQueue.shift();
+    } else {
+      quizQueue.push(quizQueue.shift());
+    }
+    if(!quizQueue.length){
+      setTimeout(()=>appendQuizMsg('tutor',cfg.uiLang==='cs'?'🎉 Kvíz dokončen! Všechna slova byla správně zodpovězena.':'🎉 Quiz complete! All words answered correctly.'),600);
+    } else {
+      setTimeout(()=>quizAsk(lang),600);
     }
   }catch{appendQuizMsg('tutor',t.errGeneric+' '+clean(raw));}
   document.getElementById('quiz-send-btn').disabled=false;
