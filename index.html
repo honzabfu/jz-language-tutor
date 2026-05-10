@@ -646,7 +646,83 @@ select:focus{outline:2px solid var(--pri)}
 // ══════════════════════════════════════════════
 // CONSTANTS & STATE
 // ══════════════════════════════════════════════
-const MODELS={anthropic:['claude-sonnet-4-6','claude-opus-4-7','claude-haiku-4-5-20251001'],openai:['gpt-5.5','gpt-5.4-mini','gpt-5.4-nano','gpt-4o'],gemini:['gemini-2.5-flash','gemini-2.5-pro','gemini-3.1-flash-lite','gemini-2.5-flash-lite'],ollama:['llama3.3','llama3.2','mistral','phi4','gemma3','qwen2.5'],custom:[]};
+// Structured model metadata with capabilities and cost tiers
+const MODELS_METADATA={
+  anthropic:[
+    {id:'claude-haiku-4-5-20251001',name:'Claude Haiku 4.5',tier:'budget',capability:'general',speed:'fast',recommended:true,costEstimate:{input:1,output:5},features:['1M context','fast']},
+    {id:'claude-sonnet-4-6',name:'Claude Sonnet 4.6',tier:'standard',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:3,output:15},features:['1M context','balanced']},
+    {id:'claude-opus-4-7',name:'Claude Opus 4.7',tier:'premium',capability:'advanced',speed:'slow',recommended:true,costEstimate:{input:5,output:25},features:['1M context','most capable']}
+  ],
+  openai:[
+    {id:'gpt-5-nano',name:'GPT-5 Nano',tier:'budget',capability:'basic',speed:'fast',recommended:false,costEstimate:{input:0.2,output:1.25},features:['ultra-cheap']},
+    {id:'gpt-5-mini',name:'GPT-5 Mini',tier:'budget',capability:'general',speed:'fast',recommended:true,costEstimate:{input:0.75,output:4.5},features:['budget-friendly']},
+    {id:'gpt-5',name:'GPT-5',tier:'standard',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:2.5,output:15},features:['standard','balanced']},
+    {id:'gpt-5.5',name:'GPT-5.5',tier:'premium',capability:'advanced',speed:'slow',recommended:true,costEstimate:{input:5,output:30},features:['newest','most capable']}
+  ],
+  gemini:[
+    {id:'gemini-2.5-flash-lite',name:'Gemini 2.5 Flash-Lite',tier:'budget',capability:'general',speed:'fast',recommended:true,costEstimate:{input:0.1,output:0.4},features:['ultra-cheap','balanced']},
+    {id:'gemini-2.5-flash',name:'Gemini 2.5 Flash',tier:'standard',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:0.5,output:1.5},features:['balanced','fast']},
+    {id:'gemini-2.5-pro',name:'Gemini 2.5 Pro',tier:'standard',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:1.25,output:10},features:['capable','200k context']},
+    {id:'gemini-3.1-flash-lite',name:'Gemini 3.1 Flash-Lite',tier:'budget',capability:'general',speed:'fast',recommended:true,costEstimate:{input:0.075,output:0.3},features:['ultra-cheap','newest','high performance']},
+    {id:'gemini-3.1-pro',name:'Gemini 3.1 Pro',tier:'premium',capability:'advanced',speed:'slow',recommended:true,costEstimate:{input:2,output:12},features:['newest','most capable']}
+  ],
+  ollama:[
+    {id:'llama3.2',name:'Llama 3.2',tier:'budget',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:0,output:0},features:['local','free']},
+    {id:'llama3.3',name:'Llama 3.3',tier:'budget',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:0,output:0},features:['local','free','newest']},
+    {id:'mistral',name:'Mistral',tier:'budget',capability:'general',speed:'fast',recommended:true,costEstimate:{input:0,output:0},features:['local','free']},
+    {id:'phi4',name:'Phi-4',tier:'budget',capability:'general',speed:'fast',recommended:false,costEstimate:{input:0,output:0},features:['local','free']},
+    {id:'qwen2.5',name:'Qwen 2.5',tier:'budget',capability:'general',speed:'balanced',recommended:false,costEstimate:{input:0,output:0},features:['local','free']}
+  ],
+  custom:[]
+};
+
+// Helper: get model list for provider (backward compatibility)
+function getModelsForProvider(provider){
+  return (MODELS_METADATA[provider]||[]).map(m=>m.id);
+}
+
+// Helper: get model metadata by ID
+function getModelMetadata(id){
+  for(const provider of Object.keys(MODELS_METADATA)){
+    const model=MODELS_METADATA[provider].find(m=>m.id===id);
+    if(model)return{...model,provider};
+  }
+  return null;
+}
+
+// Helper: get models for provider filtered by tier (budget/standard/premium)
+function getModelsByTier(provider,tier){
+  return (MODELS_METADATA[provider]||[]).filter(m=>m.tier===tier).map(m=>m.id);
+}
+
+// Helper: get models for provider filtered by capability
+function getModelsByCapability(provider,capability){
+  return (MODELS_METADATA[provider]||[]).filter(m=>m.capability===capability).map(m=>m.id);
+}
+
+// Helper: get only recommended models for provider
+function getRecommendedModels(provider){
+  return (MODELS_METADATA[provider]||[]).filter(m=>m.recommended).map(m=>m.id);
+}
+
+// Helper: get appropriate models based on student level
+// Beginners: budget tier only, Intermediate: budget+standard, Advanced: all
+function getModelsForLevel(provider,level){
+  const all=(MODELS_METADATA[provider]||[]);
+  const tierFilter=level==='advanced'?['budget','standard','premium']
+                   :level==='intermediate'?['budget','standard']
+                   :['budget'];
+  return all.filter(m=>tierFilter.includes(m.tier)&&m.recommended).map(m=>m.id);
+}
+
+// For backward compatibility with existing code
+const MODELS={
+  anthropic:getModelsForProvider('anthropic'),
+  openai:getModelsForProvider('openai'),
+  gemini:getModelsForProvider('gemini'),
+  ollama:getModelsForProvider('ollama'),
+  custom:[]
+};
 const LANG_META={english:{name:'English',native:'English',flag:'🇬🇧'},spanish:{name:'Spanish',native:'Español',flag:'🇪🇸'},french:{name:'French',native:'Français',flag:'🇫🇷'},german:{name:'German',native:'Deutsch',flag:'🇩🇪'},italian:{name:'Italian',native:'Italiano',flag:'🇮🇹'},portuguese:{name:'Portuguese',native:'Português',flag:'🇵🇹'},dutch:{name:'Dutch',native:'Nederlands',flag:'🇳🇱'},swedish:{name:'Swedish',native:'Svenska',flag:'🇸🇪'},polish:{name:'Polish',native:'Polski',flag:'🇵🇱'},czech:{name:'Czech',native:'Čeština',flag:'🇨🇿'},slovak:{name:'Slovak',native:'Slovenčina',flag:'🇸🇰'},hungarian:{name:'Hungarian',native:'Magyar',flag:'🇭🇺'},ukrainian:{name:'Ukrainian',native:'Українська',flag:'🇺🇦'},arabic:{name:'Arabic',native:'العربية',flag:'🇸🇦'},turkish:{name:'Turkish',native:'Türkçe',flag:'🇹🇷'},hindi:{name:'Hindi',native:'हिन्दी',flag:'🇮🇳'},japanese:{name:'Japanese',native:'日本語',flag:'🇯🇵'},chinese:{name:'Chinese',native:'中文',flag:'🇨🇳'},korean:{name:'Korean',native:'한국어',flag:'🇰🇷'}};
 const SORT_MODES=['alpha','due','new'];
 let sortIdx=0;
@@ -897,7 +973,22 @@ function populateSettingsUI(){
   updateApiKeyStatus();
 }
 function onProviderChange(p){cfg.provider=p;rebuildModelList(p);toggleProviderFields(p);updateApiKeyHint();updateApiKeyStatus();}
-function rebuildModelList(p){const s=document.getElementById('cfg-model');s.innerHTML='';(MODELS[p]||[]).forEach(m=>{const o=document.createElement('option');o.value=o.textContent=m;s.appendChild(o);});if((MODELS[p]||[]).includes(cfg.model))s.value=cfg.model;}
+function rebuildModelList(p){
+  const s=document.getElementById('cfg-model');
+  s.innerHTML='';
+  const models=MODELS_METADATA[p]||[];
+  models.forEach(m=>{
+    const o=document.createElement('option');
+    o.value=m.id;
+    // Display: Model Name (Tier, Speed) with recommended marker
+    const tierLabel=m.tier==='budget'?'⭐':m.tier==='standard'?'⭐⭐':'⭐⭐⭐';
+    const speedLabel=m.speed==='fast'?'⚡':m.speed==='balanced'?'⚙':'🐢';
+    const recommended=m.recommended?' ✓':'';
+    o.textContent=`${m.name} ${tierLabel} ${speedLabel}${recommended}`;
+    s.appendChild(o);
+  });
+  if(models.some(m=>m.id===cfg.model))s.value=cfg.model;
+}
 function toggleProviderFields(p){
   const isOllama=p==='ollama',isCustom=p==='custom';
   document.getElementById('field-apikey').style.display=isOllama?'none':'';
