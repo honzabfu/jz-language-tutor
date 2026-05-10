@@ -1286,7 +1286,7 @@ async function dictLookup(){
   const userPrompt=`Look up: "${word}"\nReturn JSON with fields:\n- "entry": plain-text dictionary entry (word on line 1 followed by colon, translations with grammatical categories on line 2, 1-2 usage examples on further lines)\n- "word": the word as given\n- "translation": main translations as short comma-separated string\n- "notes": short usage example string (empty if none)`;
   try{
     const raw=await safeLLM([{role:'user',content:userPrompt}],sys,1024);
-    const json=JSON.parse(clean(raw));
+    let json;try{json=JSON.parse(clean(raw));}catch{throw new Error(t.errParseLlm);}
     dictResult=json;
     resEl.innerHTML=`<div class="dict-entry">${esc(json.entry)}</div>`;
     document.getElementById('dict-add-btn').style.display='';
@@ -1833,14 +1833,18 @@ async function callAnthropic(msgs,sys,maxTokens=1024,signal){
   const filteredMsgs=msgs.filter(m=>m.role==='user'||m.role==='assistant');
   const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,system:sys||undefined,messages:filteredMsgs}),signal});
   if(!res.ok)await httpErr(res);
-  return(await res.json()).content[0].text;
+  const d1=await res.json();
+  if(d1.stop_reason==='max_tokens')throw new Error('MAX_TOKENS');
+  return d1.content[0].text;
 }
 async function callOpenAI(msgs,sys,maxTokens=1024,signal){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
   const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${cfg.apiKey}`},body:JSON.stringify({model:cfg.model,max_completion_tokens:maxTokens,messages:m}),signal});
   if(!res.ok)await httpErr(res);
-  return(await res.json()).choices[0].message.content;
+  const d2=await res.json();
+  if(d2.choices[0].finish_reason==='length')throw new Error('MAX_TOKENS');
+  return d2.choices[0].message.content;
 }
 async function callGemini(msgs,sys,maxTokens=1024,signal){
   if(!cfg.apiKey)throw new Error('NO_KEY');
@@ -1850,10 +1854,10 @@ async function callGemini(msgs,sys,maxTokens=1024,signal){
   const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:generateContent?key=${cfg.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal});
   if(!res.ok)await httpErr(res);
   const data=await res.json();
+  if(data.candidates?.[0]?.finishReason==='MAX_TOKENS')throw new Error('MAX_TOKENS');
   const text=data.candidates?.[0]?.content?.parts?.[0]?.text;
   if(text==null){
     const reason=data.candidates?.[0]?.finishReason||data.promptFeedback?.blockReason||'empty response';
-    // MAX_TOKENS means model ran out of output budget (common with thinking models); surface friendly error
     throw new Error(reason);
   }
   return text;
@@ -1873,7 +1877,9 @@ async function callCustom(msgs,sys,maxTokens=1024,signal){
   if(cfg.apiKey)headers['Authorization']=`Bearer ${cfg.apiKey}`;
   const res=await fetch(`${base}/chat/completions`,{method:'POST',headers,body:JSON.stringify({model:cfg.customModel,max_tokens:maxTokens,messages:m}),signal});
   if(!res.ok)await httpErr(res);
-  return(await res.json()).choices[0].message.content;
+  const d3=await res.json();
+  if(d3.choices[0].finish_reason==='length')throw new Error('MAX_TOKENS');
+  return d3.choices[0].message.content;
 }
 
 // ══════════════════════════════════════════════
