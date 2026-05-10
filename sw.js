@@ -1,11 +1,10 @@
-const CACHE = ‘langtutor-v2’;
+const CACHE = 'langtutor-v2';
 const ASSETS = [
-‘./’,
-‘./index.html’
+'./',
+'./index.html'
 ];
 
-// Install: cache shell
-self.addEventListener(‘install’, e => {
+self.addEventListener('install', e => {
 e.waitUntil(
 caches.open(CACHE)
 .then(c => c.addAll(ASSETS))
@@ -13,8 +12,7 @@ caches.open(CACHE)
 );
 });
 
-// Activate: remove old caches
-self.addEventListener(‘activate’, e => {
+self.addEventListener('activate', e => {
 e.waitUntil(
 caches.keys().then(keys =>
 Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
@@ -22,34 +20,29 @@ Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
 );
 });
 
-// Fetch: cache-first pro app shell, network-only pro API volání
-self.addEventListener(‘fetch’, e => {
+self.addEventListener('fetch', e => {
 const url = new URL(e.request.url);
 
-// API volání nikdy necachovat
 const apiHosts = [
-‘api.anthropic.com’,
-‘api.openai.com’,
-‘generativelanguage.googleapis.com’
+'api.anthropic.com',
+'api.openai.com',
+'generativelanguage.googleapis.com'
 ];
-if (apiHosts.some(h => url.hostname.includes(h)) || url.hostname === self.location.hostname && url.port !== ‘’) {
+if (apiHosts.some(h => url.hostname.includes(h)) || url.hostname === self.location.hostname && url.port !== '') {
 e.respondWith(fetch(e.request));
 return;
 }
 
-// Ollama (localhost) — vždy síť
-if (url.hostname === ‘localhost’ || url.hostname === ‘127.0.0.1’) {
-e.respondWith(fetch(e.request).catch(() => new Response(‘Ollama nedostupný’, { status: 503 })));
+if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+e.respondWith(fetch(e.request).catch(() => new Response('Ollama nedostupny', { status: 503 })));
 return;
 }
 
-// App shell — cache first, fallback network
 e.respondWith(
 caches.match(e.request).then(cached => {
 if (cached) return cached;
 return fetch(e.request).then(resp => {
-// Cachovat jen úspěšné GET requesty na vlastní origin
-if (e.request.method === ‘GET’ && resp.status === 200 && url.origin === self.location.origin) {
+if (e.request.method === 'GET' && resp.status === 200 && url.origin === self.location.origin) {
 const clone = resp.clone();
 caches.open(CACHE).then(c => c.put(e.request, clone));
 }
