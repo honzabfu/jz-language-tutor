@@ -1,27 +1,27 @@
 {
-“name”: “Language Tutor”,
-“short_name”: “LangTutor”,
-“description”: “AI language tutor with flashcards, quiz and vocabulary management”,
-“start_url”: “/”,
-“display”: “standalone”,
-“orientation”: “portrait”,
-“background_color”: “#f8f9fa”,
-“theme_color”: “#3b82f6”,
-“lang”: “cs”,
-“icons”: [
-{
-“src”: “icons/icon-192.png”,
-“sizes”: “192x192”,
-“type”: “image/png”,
-“purpose”: “any maskable”
-},
-{
-“src”: “icons/icon-512.png”,
-“sizes”: “512x512”,
-“type”: “image/png”,
-“purpose”: “any maskable”
-}
-],
-“screenshots”: [],
-“categories”: [“education”, “productivity”]
+  "name": "Language Tutor",
+  "short_name": "LangTutor",
+  "description": "AI language tutor with flashcards, quiz and vocabulary management",
+  "start_url": "/jz-language-tutor/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8f9fa",
+  "theme_color": "#3b82f6",
+  "lang": "cs",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["education", "productivity"]
 }
