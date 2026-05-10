@@ -1849,7 +1849,13 @@ async function callGemini(msgs,sys,maxTokens=1024,signal){
   if(sys)body.system_instruction={parts:[{text:sys}]};
   const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:generateContent?key=${cfg.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal});
   if(!res.ok)await httpErr(res);
-  return(await res.json()).candidates[0].content.parts[0].text;
+  const data=await res.json();
+  const text=data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if(text==null){
+    const reason=data.candidates?.[0]?.finishReason||data.promptFeedback?.blockReason||'empty response';
+    throw new Error(reason);
+  }
+  return text;
 }
 async function callOllama(msgs,sys,signal){
   const base=(cfg.ollamaUrl||'http://localhost:11434').replace(/\/$/,'');
