@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="LangTutor">
@@ -2054,8 +2055,8 @@ function appendStreamingMsg(){
 // ══════════════════════════════════════════════
 let _pwaPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();
   if(localStorage.getItem('lt-pwa-dismissed')||window.matchMedia('(display-mode: standalone)').matches)return;
+  e.preventDefault();
   _pwaPrompt=e;
   document.getElementById('pwa-banner').classList.add('visible');
 });
@@ -2085,7 +2086,7 @@ function playWord(word,lang){
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     const hadController=!!navigator.serviceWorker.controller;
-    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
       if(hadController){
         document.getElementById('sw-update-banner').classList.add('visible');

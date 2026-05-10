@@ -1,7 +1,7 @@
 const CACHE = ‘langtutor-v2’;
 const ASSETS = [
-‘/’,
-‘/index.html’
+‘./’,
+‘./index.html’
 ];
 
 // Install: cache shell
