@@ -1816,7 +1816,7 @@ function attachFeedbackCard(wrap,feedback){
 // ══════════════════════════════════════════════
 function clean(s){s=(s||'').trim();s=s.replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();if(!s.startsWith('{')){const m=s.match(/\{[\s\S]*\}/);if(m)s=m[0];}return s;}
 async function httpErr(res){if(res.status===401)throw new Error('ERR_401');if(res.status===429)throw new Error('ERR_429');if(res.status>=500)throw new Error('ERR_500');throw new Error(await res.text());}
-function resolveErr(err){const m=err.message;if(m==='NO_KEY')return t.errNoKey;if(m==='ERR_401')return t.err401;if(m==='ERR_429')return t.err429;if(m==='ERR_500')return t.err500;if(m==='MAX_TOKENS')return t.errMaxTokens;if(m?.includes('fetch'))return t.errNetwork;return`${t.errGeneric} ${m}`;}
+function resolveErr(err){const m=err.message;if(m==='NO_KEY')return t.errNoKey;if(m==='ERR_401')return t.err401;if(m==='ERR_429')return t.err429;if(m==='ERR_500')return t.err500;if(m==='MAX_TOKENS')return t.errMaxTokens;if(m?.includes('fetch')||m==='Load failed'||m?.includes('NetworkError'))return t.errNetwork;return`${t.errGeneric} ${m}`;}
 function abortPending(){if(_abortCtrl){_abortCtrl.abort();_abortCtrl=null;}}
 
 async function safeLLM(msgs,sys,maxTokens=1024,signal){
