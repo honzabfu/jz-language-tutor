@@ -181,7 +181,7 @@ Obnova: **Nastavení → Import zálohy** → nahraj JSON soubor.
 
 | Poskytovatel  | Zdroj API klíče              | Poznámky                                                      |
 |---------------|------------------------------|---------------------------------------------------------------|
-| Anthropic     | console.anthropic.com        | Vyžaduje povolení `anthropic-dangerous-direct-browser-calls`  |
+| Anthropic     | console.anthropic.com        | Vyžaduje povolení `anthropic-dangerous-direct-browser-calls`; při problémech zkontroluj CORS chyby v konzoli prohlížeče (F12), ad blocker nebo firewall |
 | OpenAI        | platform.openai.com/api-keys | Standardní bearer token                                       |
 | Google Gemini | aistudio.google.com          | **Zdarma** s limitem (15 req/min, 1 500/den); bez kreditů     |
 | Ollama        | —                            | Lokální, bez klíče; URL nastav v Nastavení                    |
@@ -427,7 +427,7 @@ Restore: **Settings → Import backup** → load the JSON file.
 
 | Provider      | API key source               | Notes                                                         |
 |---------------|------------------------------|---------------------------------------------------------------|
-| Anthropic     | console.anthropic.com        | Requires `anthropic-dangerous-direct-browser-calls` enabled   |
+| Anthropic     | console.anthropic.com        | Requires `anthropic-dangerous-direct-browser-calls` enabled; if it fails check for CORS errors in the browser console (F12), ad blocker, or firewall |
 | OpenAI        | platform.openai.com/api-keys | Standard bearer token                                         |
 | Google Gemini | aistudio.google.com          | **Free** with limits (15 req/min, 1 500/day); no credits needed |
 | Ollama        | —                            | Local, no key needed; configure URL in Settings               |
