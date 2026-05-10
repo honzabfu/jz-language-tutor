@@ -1816,7 +1816,7 @@ function attachFeedbackCard(wrap,feedback){
 // ══════════════════════════════════════════════
 function clean(s){s=(s||'').trim();s=s.replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();if(!s.startsWith('{')){const m=s.match(/\{[\s\S]*\}/);if(m)s=m[0];}return s;}
 async function httpErr(res){if(res.status===401)throw new Error('ERR_401');if(res.status===429)throw new Error('ERR_429');if(res.status>=500)throw new Error('ERR_500');throw new Error(await res.text());}
-function resolveErr(err){const m=err.message;if(m==='NO_KEY')return t.errNoKey;if(m==='ERR_401')return t.err401;if(m==='ERR_429')return t.err429;if(m==='ERR_500')return t.err500;if(m==='MAX_TOKENS')return t.errMaxTokens;if(m?.includes('fetch'))return t.errNetwork;return`${t.errGeneric} ${m}`;}
+function resolveErr(err){const m=err.message;if(m==='NO_KEY')return t.errNoKey;if(m==='ERR_401')return t.err401;if(m==='ERR_429')return t.err429;if(m==='ERR_500')return t.err500;if(m==='MAX_TOKENS')return t.errMaxTokens;if(m?.includes('fetch')||m==='Load failed'||m?.includes('NetworkError'))return t.errNetwork;return`${t.errGeneric} ${m}`;}
 function abortPending(){if(_abortCtrl){_abortCtrl.abort();_abortCtrl=null;}}
 
 async function safeLLM(msgs,sys,maxTokens=1024,signal){
@@ -1838,7 +1838,7 @@ async function callAnthropic(msgs,sys,maxTokens=1024,signal){
 async function callOpenAI(msgs,sys,maxTokens=1024,signal){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
-  const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${cfg.apiKey}`},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,messages:m}),signal});
+  const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${cfg.apiKey}`},body:JSON.stringify({model:cfg.model,max_completion_tokens:maxTokens,messages:m}),signal});
   if(!res.ok)await httpErr(res);
   return(await res.json()).choices[0].message.content;
 }
@@ -1912,7 +1912,7 @@ async function callAnthropicStream(msgs,sys,maxTokens,signal,onChunk){
 async function callOpenAIStream(msgs,sys,maxTokens,signal,onChunk){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
-  const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${cfg.apiKey}`},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,stream:true,messages:m}),signal});
+  const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${cfg.apiKey}`},body:JSON.stringify({model:cfg.model,max_completion_tokens:maxTokens,stream:true,messages:m}),signal});
   if(!res.ok)await httpErr(res);
   let full='';
   await readSSE(res,data=>{
