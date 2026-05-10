@@ -39,6 +39,7 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
 ### Funkce
 
 - **Flashcards** — SM-2 spaced repetition: karty se ti zobrazují přesně ve chvíli, kdy je potřeba je zopakovat; přepínač směru (Cizí→Mateřský / Mateřský→Cizí)
+- **Předčítání slov** — 🔊 poslouchej správnou výslovnost přímo v seznamu slovíček, na flashcardech i v modálním okně; používá webový prohlížečový API bez nutnosti klíče
 - **Quiz mód** — AI tě zkouší ze tvých slovíček interaktivně (otázka → odpověď → zpětná vazba)
 - **Chat tutor** — konverzace v cílovém jazyce, zpětná vazba ke gramatice, překlady na požádání
 - **Lesson mód** — tutor aktivně zapracovává tvá slovíčka do rozhovoru
@@ -166,13 +167,15 @@ Obnova: **Nastavení → Import zálohy** → nahraj JSON soubor.
 |---------------------------|------------------------|----------|
 | Správa slovíčků           | ✅                     | ✅       |
 | Flashcards (SM-2)         | ✅                     | ✅       |
+| Předčítání (🔊)           | ✅                     | ✅       |
 | Import/export zálohy      | ✅                     | ✅       |
 | Generování slovíček       | ⚡ kopíruje prompt     | ✅       |
 | Slovník                   | ❌                     | ✅       |
 | Chat tutor                | ❌                     | ✅       |
 | Quiz mód                  | ❌                     | ✅       |
 
-> Výjimka: **Ollama** (lokální) a **vlastní provider** nevyžadují klíč — stačí URL.
+> Výjimka: **Ollama** (lokální) a **vlastní provider** nevyžadují klíč — stačí URL.  
+> **Předčítání** používá Web Speech API prohlížeče (bez připojení k internetu), takže funguje vždy.
 
 ### Poskytovatelé AI
 
@@ -282,6 +285,7 @@ The primary purpose of this app is **practicing the vocabulary words you enter y
 ### Features
 
 - **Flashcards** — SM-2 spaced repetition: cards surface at precisely the right time; direction toggle (Foreign→Native / Native→Foreign)
+- **Pronunciation** — 🔊 hear correct pronunciation directly in the vocabulary list, on flashcards, and in the word modal; uses native browser web speech API with no API key needed
 - **Quiz mode** — AI tests your vocabulary interactively (question → answer → feedback)
 - **Chat tutor** — conversation in the target language, grammar feedback, translations on demand
 - **Lesson mode** — tutor actively weaves your vocabulary into the dialogue
@@ -409,13 +413,15 @@ Restore: **Settings → Import backup** → load the JSON file.
 |--------------------------|------------------------|----------|
 | Vocabulary management    | ✅                     | ✅       |
 | Flashcards (SM-2)        | ✅                     | ✅       |
+| Pronunciation (🔊)       | ✅                     | ✅       |
 | Backup import/export     | ✅                     | ✅       |
 | Vocabulary generation    | ⚡ copies prompt       | ✅       |
 | Dictionary               | ❌                     | ✅       |
 | Chat tutor               | ❌                     | ✅       |
 | Quiz mode                | ❌                     | ✅       |
 
-> Exception: **Ollama** (local) and **custom provider** don't require a key — just a URL.
+> Exception: **Ollama** (local) and **custom provider** don't require a key — just a URL.  
+> **Pronunciation** uses the browser's native Web Speech API (no internet required), so it always works.
 
 ### Providers
 
