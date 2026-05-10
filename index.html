@@ -662,9 +662,7 @@ const MODELS_METADATA={
   gemini:[
     {id:'gemini-2.5-flash-lite',name:'Gemini 2.5 Flash-Lite',tier:'budget',capability:'general',speed:'fast',recommended:true,costEstimate:{input:0.1,output:0.4},features:['ultra-cheap','balanced']},
     {id:'gemini-2.5-flash',name:'Gemini 2.5 Flash',tier:'standard',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:0.5,output:1.5},features:['balanced','fast']},
-    {id:'gemini-2.5-pro',name:'Gemini 2.5 Pro',tier:'standard',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:1.25,output:10},features:['capable','200k context']},
-    {id:'gemini-3.1-flash-lite',name:'Gemini 3.1 Flash-Lite',tier:'budget',capability:'general',speed:'fast',recommended:true,costEstimate:{input:0.075,output:0.3},features:['ultra-cheap','newest','high performance']},
-    {id:'gemini-3.1-pro',name:'Gemini 3.1 Pro',tier:'premium',capability:'advanced',speed:'slow',recommended:true,costEstimate:{input:2,output:12},features:['newest','most capable']}
+    {id:'gemini-2.5-pro',name:'Gemini 2.5 Pro',tier:'standard',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:1.25,output:10},features:['capable','200k context']}
   ],
   ollama:[
     {id:'llama3.2',name:'Llama 3.2',tier:'budget',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:0,output:0},features:['local','free']},
@@ -1851,7 +1849,13 @@ async function callGemini(msgs,sys,maxTokens=1024,signal){
   if(sys)body.system_instruction={parts:[{text:sys}]};
   const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:generateContent?key=${cfg.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal});
   if(!res.ok)await httpErr(res);
-  return(await res.json()).candidates[0].content.parts[0].text;
+  const data=await res.json();
+  const text=data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if(text==null){
+    const reason=data.candidates?.[0]?.finishReason||data.promptFeedback?.blockReason||'empty response';
+    throw new Error(reason);
+  }
+  return text;
 }
 async function callOllama(msgs,sys,signal){
   const base=(cfg.ollamaUrl||'http://localhost:11434').replace(/\/$/,'');
