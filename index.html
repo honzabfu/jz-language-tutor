@@ -1286,7 +1286,7 @@ async function dictLookup(){
   const userPrompt=`Look up: "${word}"\nReturn JSON with fields:\n- "entry": plain-text dictionary entry (word on line 1 followed by colon, translations with grammatical categories on line 2, 1-2 usage examples on further lines)\n- "word": the word as given\n- "translation": main translations as short comma-separated string\n- "notes": short usage example string (empty if none)`;
   try{
     const raw=await safeLLM([{role:'user',content:userPrompt}],sys,1024);
-    const json=JSON.parse(raw.replace(/^```json?\r?\n?|```\s*$/gm,'').trim());
+    const json=JSON.parse(clean(raw));
     dictResult=json;
     resEl.innerHTML=`<div class="dict-entry">${esc(json.entry)}</div>`;
     document.getElementById('dict-add-btn').style.display='';
