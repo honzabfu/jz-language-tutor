@@ -980,10 +980,10 @@ function rebuildModelList(p){
   models.forEach(m=>{
     const o=document.createElement('option');
     o.value=m.id;
-    // Display: Model Name with tier and speed icons
-    const tierLabel=m.tier==='budget'?'⭐':m.tier==='standard'?'⭐⭐':'⭐⭐⭐';
+    // Display: Model Name with price tier and speed
+    const priceLabel=m.tier==='budget'?'$':m.tier==='standard'?'$$':'$$$';
     const speedLabel=m.speed==='fast'?'⚡':m.speed==='balanced'?'⚖️':'🐢';
-    o.textContent=`${m.name} ${tierLabel} ${speedLabel}`;
+    o.textContent=`${m.name} ${priceLabel} ${speedLabel}`;
     s.appendChild(o);
   });
   if(models.some(m=>m.id===cfg.model))s.value=cfg.model;
