@@ -1503,8 +1503,8 @@ function startQuiz(){
   if(!arr.length){document.getElementById('quiz-empty').style.display='';return;}
   const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
   const today=new Date().setHours(23,59,59,999);
-  const due=shuffle(arr.filter(w=>w.sm2.due<=today));
-  const rest=shuffle(arr.filter(w=>w.sm2.due>today));
+  const due=shuffle(arr.filter(w=>!w.sm2||w.sm2.due<=today));
+  const rest=shuffle(arr.filter(w=>w.sm2&&w.sm2.due>today));
   quizQueue=[...due,...rest].slice(0,10);
   quizHistory=[{role:'system-note',content:`Vocabulary to test: ${quizQueue.map(w=>w.word).join(', ')}`}];
   quizAsk(lang);
