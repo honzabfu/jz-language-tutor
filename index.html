@@ -689,6 +689,31 @@ function getModelMetadata(id){
   return null;
 }
 
+// Helper: get models for provider filtered by tier (budget/standard/premium)
+function getModelsByTier(provider,tier){
+  return (MODELS_METADATA[provider]||[]).filter(m=>m.tier===tier).map(m=>m.id);
+}
+
+// Helper: get models for provider filtered by capability
+function getModelsByCapability(provider,capability){
+  return (MODELS_METADATA[provider]||[]).filter(m=>m.capability===capability).map(m=>m.id);
+}
+
+// Helper: get only recommended models for provider
+function getRecommendedModels(provider){
+  return (MODELS_METADATA[provider]||[]).filter(m=>m.recommended).map(m=>m.id);
+}
+
+// Helper: get appropriate models based on student level
+// Beginners: budget tier only, Intermediate: budget+standard, Advanced: all
+function getModelsForLevel(provider,level){
+  const all=(MODELS_METADATA[provider]||[]);
+  const tierFilter=level==='advanced'?['budget','standard','premium']
+                   :level==='intermediate'?['budget','standard']
+                   :['budget'];
+  return all.filter(m=>tierFilter.includes(m.tier)&&m.recommended).map(m=>m.id);
+}
+
 // For backward compatibility with existing code
 const MODELS={
   anthropic:getModelsForProvider('anthropic'),
