@@ -746,7 +746,7 @@ let fcQueue=[];
 let fcPending=[];
 let fcIdx=0;
 let fcRevealed=false;
-let fcDirection='normal';
+let fcDirection='reverse';
 let genWords=[];
 let bulkSelectMode=false;
 const selectedIds=new Set();
@@ -787,7 +787,7 @@ function populateLangSelects(){
   document.getElementById('fc-lang-select').value=currentLang;
   document.getElementById('quiz-lang-select').value=currentLang;
   document.getElementById('import-lang-sel').value=currentLang;
-  document.getElementById('fc-dir-btn').textContent=t.fcDirNormal;
+  const _fcDirBtn=document.getElementById('fc-dir-btn');_fcDirBtn.textContent=fcDirection==='normal'?t.fcDirNormal:t.fcDirReverse;_fcDirBtn.classList.toggle('rev',fcDirection==='reverse');
   tipsLang=currentLang;
   document.getElementById('tips-lang-select').value=currentLang;
   updateEmptyState();
@@ -1460,7 +1460,7 @@ function renderFC(){
     <div class="fc-card" onclick="revealFC()">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
         <div class="fc-word">${esc(_front)}</div>
-        <button class="speak-btn" onclick="event.stopPropagation();playWord('${_front.replace(/'/g,"\\'")}','${document.getElementById('fc-lang-select').value}')" title="${t.pronounceBtn||'Hear pronunciation'}">🔊</button>
+        <button class="speak-btn" onclick="event.stopPropagation();playWord('${w.word.replace(/'/g,"\\'")}','${document.getElementById('fc-lang-select').value}')" title="${t.pronounceBtn||'Hear pronunciation'}">🔊</button>
       </div>
       ${_frontNotes}
       <div class="fc-translation" id="fc-trans">${esc(_back)}${_backNotes}</div>
