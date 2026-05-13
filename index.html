@@ -1376,7 +1376,7 @@ async function generateVocab(){
   const level=levelMap[selectedLevel]||'A1-A2';
   const nativeLang=cfg.uiLang==='cs'?'Czech':'English';
   if(!hasApiAccess()){
-    const prompt=`Vygeneruj ${count} slovíček v jazyce ${meta.name} na téma "${topic}" pro úroveň ${level}.\nOdpověz POUZE jako CSV (bez záhlaví, jedno slovíčko na řádek):\nslovo v ${meta.name},překlad do ${nativeLang},poznámka nebo příklad (volitelné)\n\nPříklad výstupu pro ${meta.name}:\nto travel,cestovat,to travel by train\nairport,letiště,go to the airport`;
+    const prompt=`Vygeneruj ${count} slovíček v jazyce ${meta.name} na téma "${topic}" pro úroveň ${level}.\nOdpověz POUZE jako CSV (bez záhlaví, jedno slovíčko na řádek):\nslovo v ${meta.name},překlad do ${nativeLang},poznámka nebo příklad (volitelné)\n\nPříklad výstupu pro angličtinu:\nto travel,cestovat,to travel by train\nairport,letiště,go to the airport`;
     try{await navigator.clipboard.writeText(prompt);}
     catch{const ta=document.createElement('textarea');ta.value=prompt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
     closeGenModal();
