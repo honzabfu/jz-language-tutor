@@ -796,9 +796,10 @@ function _loadProviderSettings(p){
   Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{
     if(!cfg.providerSettings[p])cfg.providerSettings[p]={...DEFAULT_PROVIDER_SETTINGS[p]};
   });
-  // Migrate legacy apiKey/model into current provider's slot if not yet set
+  // Migrate legacy apiKey into ALL cloud provider slots that are still empty
+  if(cfg.apiKey)['anthropic','openai','gemini','custom'].forEach(p=>{if(!cfg.providerSettings[p].apiKey)cfg.providerSettings[p].apiKey=cfg.apiKey;});
+  // Migrate model/url for current provider slot
   const _ps=cfg.providerSettings[cfg.provider];
-  if(!_ps.apiKey&&cfg.apiKey)_ps.apiKey=cfg.apiKey;
   if(cfg.provider!=='custom'&&!_ps.model&&cfg.model)_ps.model=cfg.model;
   if(cfg.provider==='ollama'&&!_ps.url&&cfg.ollamaUrl)_ps.url=cfg.ollamaUrl;
   if(cfg.provider==='custom'){if(!_ps.url&&cfg.customUrl)_ps.url=cfg.customUrl;if(!_ps.model&&cfg.customModel)_ps.model=cfg.customModel;}
@@ -989,6 +990,7 @@ function updateEmptyState(){const m=LANG_META[currentLang];if(m)document.getElem
 // SETTINGS
 // ══════════════════════════════════════════════
 function populateSettingsUI(){
+  _loadProviderSettings(cfg.provider);
   document.getElementById('cfg-provider').value=cfg.provider;
   document.getElementById('cfg-ui-lang').value=cfg.uiLang;
   const lls=document.getElementById('cfg-level-lang-select');
@@ -1062,7 +1064,8 @@ function updateProviderBadge(){const el=document.getElementById('provider-badge'
 
 // ── Export / Import full backup ──
 function exportAll(){
-  if(cfg.apiKey&&cfg.apiKey.length>8&&!confirm(t.sExportApiKeyWarning))return;
+  const _hasKey=cfg.apiKey&&cfg.apiKey.length>8||Object.values(cfg.providerSettings||{}).some(ps=>ps.apiKey&&ps.apiKey.length>8);
+  if(_hasKey&&!confirm(t.sExportApiKeyWarning))return;
   const data={version:2,cfg,langLevels,vocab:{},tips:{},exported:new Date().toISOString()};
   Object.keys(LANG_META).forEach(l=>{const v=getVocab(l);if(v.length)data.vocab[l]=v;const tp=getSavedTips(l);if(tp.length)data.tips[l]=tp;});
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
