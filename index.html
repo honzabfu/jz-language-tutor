@@ -724,13 +724,14 @@ const MODELS={
   ollama:getModelsForProvider('ollama'),
   custom:[]
 };
+const DEFAULT_PROVIDER_SETTINGS={anthropic:{apiKey:'',model:''},openai:{apiKey:'',model:''},gemini:{apiKey:'',model:''},ollama:{model:'',url:'http://localhost:11434'},custom:{apiKey:'',model:'',url:''}};
 const LANG_META={english:{name:'English',native:'English',flag:'🇬🇧'},spanish:{name:'Spanish',native:'Español',flag:'🇪🇸'},french:{name:'French',native:'Français',flag:'🇫🇷'},german:{name:'German',native:'Deutsch',flag:'🇩🇪'},italian:{name:'Italian',native:'Italiano',flag:'🇮🇹'},portuguese:{name:'Portuguese',native:'Português',flag:'🇵🇹'},dutch:{name:'Dutch',native:'Nederlands',flag:'🇳🇱'},swedish:{name:'Swedish',native:'Svenska',flag:'🇸🇪'},polish:{name:'Polish',native:'Polski',flag:'🇵🇱'},czech:{name:'Czech',native:'Čeština',flag:'🇨🇿'},slovak:{name:'Slovak',native:'Slovenčina',flag:'🇸🇰'},hungarian:{name:'Hungarian',native:'Magyar',flag:'🇭🇺'},ukrainian:{name:'Ukrainian',native:'Українська',flag:'🇺🇦'},arabic:{name:'Arabic',native:'العربية',flag:'🇸🇦'},turkish:{name:'Turkish',native:'Türkçe',flag:'🇹🇷'},hindi:{name:'Hindi',native:'हिन्दी',flag:'🇮🇳'},japanese:{name:'Japanese',native:'日本語',flag:'🇯🇵'},chinese:{name:'Chinese',native:'中文',flag:'🇨🇳'},korean:{name:'Korean',native:'한국어',flag:'🇰🇷'}};
 const SORT_MODES=['alpha','due','new'];
 let sortIdx=0;
 
 // Shared across all views — starting a new request or switching views cancels any in-flight LLM call.
 let _abortCtrl=null;
-let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',uiLang:navigator.language.startsWith('cs')?'cs':'en',lessonMode:false,fontSize:'medium'};
+let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',uiLang:navigator.language.startsWith('cs')?'cs':'en',lessonMode:false,fontSize:'medium',providerSettings:{}};
 let langLevels={};
 function getLangLevel(lang){return langLevels[lang]||'beginner';}
 let chatHistory=[];
@@ -769,9 +770,38 @@ function populateLangSelects(){
   const opts=Object.entries(LANG_META).map(([k,m])=>`<option value="${k}">${m.flag} ${m.native}</option>`).join('');
   ['lang-select','vocab-lang-select','fc-lang-select','quiz-lang-select','import-lang-sel','tips-lang-select'].forEach(id=>{document.getElementById(id).innerHTML=opts;});
 }
+function _saveProviderSettings(p){
+  const ps=cfg.providerSettings[p]||(cfg.providerSettings[p]={});
+  if(p!=='ollama')ps.apiKey=(document.getElementById('cfg-apikey')?.value||'').trim();
+  if(p==='ollama')ps.url=(document.getElementById('cfg-ollama-url')?.value||'').trim();
+  if(p==='custom'){ps.url=(document.getElementById('cfg-custom-url')?.value||'').trim();ps.model=(document.getElementById('cfg-custom-model')?.value||'').trim();}
+  else ps.model=document.getElementById('cfg-model')?.value||'';
+}
+function _loadProviderSettings(p){
+  const ps=cfg.providerSettings[p]||{};
+  if(p!=='ollama')cfg.apiKey=ps.apiKey||'';
+  if(p==='ollama')cfg.ollamaUrl=ps.url||'http://localhost:11434';
+  if(p==='custom'){cfg.customUrl=ps.url||'';cfg.customModel=ps.model||'';}
+  else cfg.model=ps.model||(MODELS[p]?.[0]||'');
+  const _g=id=>document.getElementById(id);
+  if(_g('cfg-apikey'))_g('cfg-apikey').value=cfg.apiKey;
+  if(_g('cfg-ollama-url'))_g('cfg-ollama-url').value=cfg.ollamaUrl;
+  if(_g('cfg-custom-url'))_g('cfg-custom-url').value=cfg.customUrl;
+  if(_g('cfg-custom-model'))_g('cfg-custom-model').value=cfg.customModel;
+}
 (function init(){
   try{Object.assign(cfg,JSON.parse(localStorage.getItem('lt-cfg')||'{}'));}catch{}
   try{Object.assign(langLevels,JSON.parse(localStorage.getItem('lt-levels')||'{}'));}catch{}
+  // Ensure providerSettings has all provider keys
+  Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{
+    if(!cfg.providerSettings[p])cfg.providerSettings[p]={...DEFAULT_PROVIDER_SETTINGS[p]};
+  });
+  // Migrate legacy apiKey/model into current provider's slot if not yet set
+  const _ps=cfg.providerSettings[cfg.provider];
+  if(!_ps.apiKey&&cfg.apiKey)_ps.apiKey=cfg.apiKey;
+  if(cfg.provider!=='custom'&&!_ps.model&&cfg.model)_ps.model=cfg.model;
+  if(cfg.provider==='ollama'&&!_ps.url&&cfg.ollamaUrl)_ps.url=cfg.ollamaUrl;
+  if(cfg.provider==='custom'){if(!_ps.url&&cfg.customUrl)_ps.url=cfg.customUrl;if(!_ps.model&&cfg.customModel)_ps.model=cfg.customModel;}
   applyFontSize(cfg.fontSize||'medium');
   populateLangSelects();
   const sl=localStorage.getItem('lt-lang');
@@ -977,7 +1007,7 @@ function populateSettingsUI(){
   updateApiKeyHint();
   updateApiKeyStatus();
 }
-function onProviderChange(p){cfg.provider=p;rebuildModelList(p);toggleProviderFields(p);updateApiKeyHint();updateApiKeyStatus();}
+function onProviderChange(p){_saveProviderSettings(cfg.provider);cfg.provider=p;_loadProviderSettings(p);rebuildModelList(p);document.getElementById('cfg-model').value=cfg.model;toggleProviderFields(p);updateApiKeyHint();updateApiKeyStatus();}
 function rebuildModelList(p){
   const s=document.getElementById('cfg-model');
   s.innerHTML='';
@@ -1013,6 +1043,7 @@ function saveSettings(){
   cfg.ollamaUrl=document.getElementById('cfg-ollama-url').value.trim();
   cfg.customUrl=document.getElementById('cfg-custom-url').value.trim();
   cfg.customModel=document.getElementById('cfg-custom-model').value.trim();
+  _saveProviderSettings(cfg.provider);
   const settingsLang=document.getElementById('cfg-level-lang-select').value;
   langLevels[settingsLang]=document.getElementById('cfg-level').value;
   localStorage.setItem('lt-levels',JSON.stringify(langLevels));
