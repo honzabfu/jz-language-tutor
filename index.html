@@ -26,7 +26,9 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 
 /* HEADER */
 .hdr{background:var(--sur);border-bottom:1px solid var(--bdr);padding:10px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;box-shadow:var(--sh)}
-.hdr h1{font-size:1.07rem;font-weight:700;flex:1}
+.hdr h1{font-size:1.07rem;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hdr-right{flex-shrink:1;min-width:0}
+@media(max-width:480px){.mode-opt span{display:none}#provider-badge{display:none}#lang-select,#fc-lang-select{max-width:110px}.fc-dir-btn{max-width:72px;overflow:hidden;text-overflow:ellipsis}}
 .icon-btn{background:none;border:none;cursor:pointer;padding:6px;border-radius:var(--rs);color:var(--mut);display:flex;align-items:center;justify-content:center}
 .icon-btn:hover{background:var(--bg);color:var(--txt)}
 .icon-btn svg{width:20px;height:20px}
@@ -256,7 +258,7 @@ select:focus{outline:2px solid var(--pri)}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.68"/></svg>
     </button>
     <h1 id="hdr-title">Language Tutor</h1>
-    <div style="display:flex;gap:6px;align-items:center">
+    <div class="hdr-right" style="display:flex;gap:6px;align-items:center">
       <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" class="icon-btn" title="Nápověda">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       </a>
@@ -330,7 +332,7 @@ select:focus{outline:2px solid var(--pri)}
 <div id="fc-view" class="view">
   <div class="hdr">
     <h1 id="fc-hdr-title">Flashcards</h1>
-    <div style="display:flex;gap:6px;align-items:center">
+    <div class="hdr-right" style="display:flex;gap:6px;align-items:center">
       <select id="fc-lang-select" onchange="startFlashcards(this.value)"></select>
       <button class="fc-dir-btn" id="fc-dir-btn" onclick="toggleFcDirection()">⇄ Cizí</button>
     </div>
