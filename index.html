@@ -725,7 +725,7 @@ const MODELS={
   custom:[]
 };
 const DEFAULT_PROVIDER_SETTINGS={anthropic:{apiKey:'',model:''},openai:{apiKey:'',model:''},gemini:{apiKey:'',model:''},ollama:{model:'',url:'http://localhost:11434'},custom:{apiKey:'',model:'',url:''}};
-const LANG_META={english:{name:'English',native:'English',flag:'🇬🇧'},spanish:{name:'Spanish',native:'Español',flag:'🇪🇸'},french:{name:'French',native:'Français',flag:'🇫🇷'},german:{name:'German',native:'Deutsch',flag:'🇩🇪'},italian:{name:'Italian',native:'Italiano',flag:'🇮🇹'},portuguese:{name:'Portuguese',native:'Português',flag:'🇵🇹'},dutch:{name:'Dutch',native:'Nederlands',flag:'🇳🇱'},swedish:{name:'Swedish',native:'Svenska',flag:'🇸🇪'},polish:{name:'Polish',native:'Polski',flag:'🇵🇱'},czech:{name:'Czech',native:'Čeština',flag:'🇨🇿'},slovak:{name:'Slovak',native:'Slovenčina',flag:'🇸🇰'},hungarian:{name:'Hungarian',native:'Magyar',flag:'🇭🇺'},ukrainian:{name:'Ukrainian',native:'Українська',flag:'🇺🇦'},arabic:{name:'Arabic',native:'العربية',flag:'🇸🇦'},turkish:{name:'Turkish',native:'Türkçe',flag:'🇹🇷'},hindi:{name:'Hindi',native:'हिन्दी',flag:'🇮🇳'},japanese:{name:'Japanese',native:'日本語',flag:'🇯🇵'},chinese:{name:'Chinese',native:'中文',flag:'🇨🇳'},korean:{name:'Korean',native:'한국어',flag:'🇰🇷'}};
+const LANG_META={english:{name:'English',native:'English',flag:'🇬🇧',lang:'en'},spanish:{name:'Spanish',native:'Español',flag:'🇪🇸',lang:'es'},french:{name:'French',native:'Français',flag:'🇫🇷',lang:'fr'},german:{name:'German',native:'Deutsch',flag:'🇩🇪',lang:'de'},italian:{name:'Italian',native:'Italiano',flag:'🇮🇹',lang:'it'},portuguese:{name:'Portuguese',native:'Português',flag:'🇵🇹',lang:'pt'},dutch:{name:'Dutch',native:'Nederlands',flag:'🇳🇱',lang:'nl'},swedish:{name:'Swedish',native:'Svenska',flag:'🇸🇪',lang:'sv'},polish:{name:'Polish',native:'Polski',flag:'🇵🇱',lang:'pl'},czech:{name:'Czech',native:'Čeština',flag:'🇨🇿',lang:'cs'},slovak:{name:'Slovak',native:'Slovenčina',flag:'🇸🇰',lang:'sk'},hungarian:{name:'Hungarian',native:'Magyar',flag:'🇭🇺',lang:'hu'},ukrainian:{name:'Ukrainian',native:'Українська',flag:'🇺🇦',lang:'uk'},arabic:{name:'Arabic',native:'العربية',flag:'🇸🇦',lang:'ar'},turkish:{name:'Turkish',native:'Türkçe',flag:'🇹🇷',lang:'tr'},hindi:{name:'Hindi',native:'हिन्दी',flag:'🇮🇳',lang:'hi'},japanese:{name:'Japanese',native:'日本語',flag:'🇯🇵',lang:'ja'},chinese:{name:'Chinese',native:'中文',flag:'🇨🇳',lang:'zh'},korean:{name:'Korean',native:'한국어',flag:'🇰🇷',lang:'ko'}};
 const SORT_MODES=['alpha','due','new'];
 let sortIdx=0;
 
@@ -2110,7 +2110,7 @@ function playWord(word,lang){
   if(!word)return;
   if(window.speechSynthesis.speaking)window.speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(word);
-  u.lang=lang;u.rate=0.9;
+  u.lang=LANG_META[lang]?.lang||lang;u.rate=0.9;
   window.speechSynthesis.speak(u);
 }
 
