@@ -1378,7 +1378,7 @@ async function generateVocab(){
   if(!hasApiAccess()){
     const prompt=cfg.uiLang==='cs'
       ?`Vygeneruj ${count} slovíček v jazyce ${meta.name} na téma "${topic}" pro úroveň ${level}.\nOdpověz POUZE jako CSV (bez záhlaví, jedno slovíčko na řádek):\nslovo v ${meta.name},překlad do ${nativeLang},poznámka nebo příklad (volitelné)\n\nPříklad výstupu pro angličtinu:\nto travel,cestovat,to travel by train\nairport,letiště,go to the airport`
-      :`Generate ${count} ${meta.name} vocabulary words on the topic "${topic}" for ${level} level.\nReply ONLY as CSV (no header, one word per line):\nword in ${meta.name},translation in ${nativeLang},note or example (optional)\n\nExample output for English:\nto travel,travel,to travel by train\nairport,airport,go to the airport`;
+      :`Generate ${count} ${meta.name} vocabulary words on the topic "${topic}" for ${level} level.\nReply ONLY as CSV (no header, one word per line):\nword in ${meta.name},translation in ${nativeLang},note or example (optional)\n\nExample output for Spanish:\nviajar,to travel,viajar en tren\naeropuerto,airport,ir al aeropuerto`;
     try{await navigator.clipboard.writeText(prompt);}
     catch{const ta=document.createElement('textarea');ta.value=prompt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
     closeGenModal();
