@@ -115,7 +115,7 @@ let t=I18N.cs;
 // INIT
 // ══════════════════════════════════════════════
 function populateLangSelects(){
-  const opts=Object.entries(LANG_META).map(([k,m])=>`<option value="${k}">${m.flag} ${m.native}</option>`).join('');
+  const opts=Object.entries(LANG_META).sort(([,a],[,b])=>a.native.localeCompare(b.native)).map(([k,m])=>`<option value="${k}">${m.flag} ${m.native}</option>`).join('');
   ['lang-select','vocab-lang-select','fc-lang-select','quiz-lang-select','import-lang-sel','tips-lang-select'].forEach(id=>{document.getElementById(id).innerHTML=opts;});
 }
 function _saveProviderSettings(p){
@@ -348,7 +348,7 @@ function populateSettingsUI(){
   document.getElementById('cfg-provider').value=cfg.provider;
   document.getElementById('cfg-ui-lang').value=cfg.uiLang;
   const lls=document.getElementById('cfg-level-lang-select');
-  lls.innerHTML=Object.entries(LANG_META).map(([k,m])=>`<option value="${k}">${m.flag} ${m.native}</option>`).join('');
+  lls.innerHTML=Object.entries(LANG_META).sort(([,a],[,b])=>a.native.localeCompare(b.native)).map(([k,m])=>`<option value="${k}">${m.flag} ${m.native}</option>`).join('');
   lls.value=currentLang;
   document.getElementById('cfg-level').value=getLangLevel(currentLang);
   document.getElementById('cfg-feedback-style').value=cfg.feedbackStyle;
