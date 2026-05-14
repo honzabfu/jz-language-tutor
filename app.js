@@ -174,6 +174,8 @@ function _loadProviderSettings(p){
   updateInputPlaceholder();
 })();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(cfg.theme==='auto')applyTheme();});
+// Restore password fields when page is recovered from bfcache (iOS Safari clears them for security)
+window.addEventListener('pageshow',e=>{if(e.persisted){const _ak=document.getElementById('cfg-apikey');if(_ak)_ak.value=cfg.apiKey||'';updateApiKeyStatus();}});
 
 // ══════════════════════════════════════════════
 // NAV
@@ -186,7 +188,7 @@ function navTo(name){
   if(name==='vocab'){renderVocabList();}
   if(name==='fc'){document.getElementById('fc-lang-select').value=currentLang;startFlashcards(currentLang);}
   if(name==='quiz'){document.getElementById('quiz-lang-select').value=currentLang;if(!quizHistory.length)startQuiz();}
-  if(name==='settings'){updateApiKeyStatus();}
+  if(name==='settings'){populateSettingsUI();}
   if(name==='chat'){updateProviderBadge();updateInputPlaceholder();}
   if(name==='tips'){tipsLang=currentLang;document.getElementById('tips-lang-select').value=tipsLang;renderTipsList();}
 }
@@ -428,6 +430,8 @@ function exportAll(){
   Object.keys(LANG_META).forEach(l=>{const v=getVocab(l);if(v.length)data.vocab[l]=v;const tp=getSavedTips(l);if(tp.length)data.tips[l]=tp;});
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`langtutor-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();
+  // Restore the API key input in case the browser cleared it during download (iOS/bfcache behaviour)
+  const _ak=document.getElementById('cfg-apikey');if(_ak)_ak.value=cfg.apiKey||'';
 }
 function importAll(){
   document.getElementById('backup-import-text').value='';
