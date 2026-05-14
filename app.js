@@ -84,7 +84,7 @@ let sortIdx=0;
 
 // Shared across all views — starting a new request or switching views cancels any in-flight LLM call.
 let _abortCtrl=null;
-let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',uiLang:navigator.language.startsWith('cs')?'cs':'en',lessonMode:false,fontSize:'medium',providerSettings:{}};
+let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',uiLang:navigator.language.startsWith('cs')?'cs':'en',lessonMode:false,fontSize:'medium',theme:'auto',providerSettings:{}};
 let langLevels={};
 function getLangLevel(lang){return langLevels[lang]||'beginner';}
 let chatHistory=[];
@@ -152,6 +152,7 @@ function _loadProviderSettings(p){
   if(cfg.provider==='ollama'&&!_ps.url&&cfg.ollamaUrl)_ps.url=cfg.ollamaUrl;
   if(cfg.provider==='custom'){if(!_ps.url&&cfg.customUrl)_ps.url=cfg.customUrl;if(!_ps.model&&cfg.customModel)_ps.model=cfg.customModel;}
   applyFontSize(cfg.fontSize||'medium');
+  applyTheme();
   populateLangSelects();
   const sl=localStorage.getItem('lt-lang');
   if(sl&&LANG_META[sl])currentLang=sl;
@@ -172,6 +173,7 @@ function _loadProviderSettings(p){
   updateEmptyState();
   updateInputPlaceholder();
 })();
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(cfg.theme==='auto')applyTheme();});
 
 // ══════════════════════════════════════════════
 // NAV
@@ -245,6 +247,10 @@ function applyI18n(){
   document.querySelector('#cfg-font-size option[value="medium"]').textContent=t.sFontSizeMedium;
   document.querySelector('#cfg-font-size option[value="large"]').textContent=t.sFontSizeLarge;
   document.querySelector('#cfg-font-size option[value="xl"]').textContent=t.sFontSizeXl;
+  document.getElementById('s-theme-label').textContent=t.sThemeLabel;
+  document.querySelector('#cfg-theme option[value="auto"]').textContent=t.themeAuto;
+  document.querySelector('#cfg-theme option[value="light"]').textContent=t.themeLight;
+  document.querySelector('#cfg-theme option[value="dark"]').textContent=t.themeDark;
   document.getElementById('s-data-title').textContent=t.sDataTitle;
   document.getElementById('s-data-desc').textContent=t.sDataDesc;
   document.getElementById('s-save-btn').textContent=t.sSaveBtn;
@@ -351,6 +357,7 @@ function populateSettingsUI(){
   document.getElementById('cfg-custom-url').value=cfg.customUrl||'';
   document.getElementById('cfg-custom-model').value=cfg.customModel||'';
   document.getElementById('cfg-font-size').value=cfg.fontSize||'medium';
+  document.getElementById('cfg-theme').value=cfg.theme||'auto';
   rebuildModelList(cfg.provider);
   document.getElementById('cfg-model').value=cfg.model;
   toggleProviderFields(cfg.provider);
@@ -386,6 +393,7 @@ function updateApiKeyHint(){const el=document.getElementById('apikey-hint');cons
 function updateApiKeyStatus(){const el=document.getElementById('apikey-status');if(cfg.provider==='ollama'||cfg.provider==='custom'){el.textContent='';return;}const k=document.getElementById('cfg-apikey')?.value||cfg.apiKey||'';el.innerHTML=k.length>8?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:`<span class="status-dot status-empty"></span>${t.noApiKey}`;}
 function onUiLangChange(l){cfg.uiLang=l;t=I18N[l]||I18N.cs;applyI18n();}
 function applyFontSize(size){const m={small:'13px',medium:'15px',large:'17px',xl:'20px'};document.documentElement.style.setProperty('--fs',m[size]||'15px');}
+function applyTheme(){const th=cfg.theme||'auto';if(th==='auto'){document.documentElement.dataset.theme=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}else{document.documentElement.dataset.theme=th;}}
 function saveSettings(){
   cfg.provider=document.getElementById('cfg-provider').value;
   cfg.model=document.getElementById('cfg-model').value;
@@ -401,6 +409,8 @@ function saveSettings(){
   cfg.uiLang=document.getElementById('cfg-ui-lang').value;
   cfg.fontSize=document.getElementById('cfg-font-size').value;
   applyFontSize(cfg.fontSize);
+  cfg.theme=document.getElementById('cfg-theme').value;
+  applyTheme();
   localStorage.setItem('lt-cfg',JSON.stringify(cfg));
   updateProviderBadge();
   const toast=document.getElementById('save-toast');
