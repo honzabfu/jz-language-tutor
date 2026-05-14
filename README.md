@@ -48,11 +48,11 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
 - **Více AI poskytovatelů** — Anthropic (Claude), OpenAI (GPT), Google (Gemini), Ollama (lokálně), vlastní OpenAI-compatible endpoint
 - **CS/EN rozhraní** — přepínatelný jazyk celého rozhraní včetně nastavení
 - **PWA** — lze přidat na domovskou obrazovku iOS/Android
-- **Bez backendu** — jediný HTML soubor, vše uloženo v localStorage
+- **Bez backendu** — žádný server, žádný build, vše uloženo v localStorage
 
 ### Jak začít
 
-1. Otevři aplikaci na **[honzabfu.github.io/jz-language-tutor](https://honzabfu.github.io/jz-language-tutor/)** — nebo stáhni `index.html` a otevři lokálně v prohlížeči.
+1. Otevři aplikaci na **[honzabfu.github.io/jz-language-tutor](https://honzabfu.github.io/jz-language-tutor/)** — nebo stáhni celý repozitář a otevři `index.html` lokálně v prohlížeči.
 2. Získej API klíč (pro Chat a Quiz; Flashcards a správu slovíček klíč nepotřebuješ):
    - **Google Gemini** — [aistudio.google.com](https://aistudio.google.com) — zdarma s limitem (15 requestů/min, 1 500/den)
    - **Anthropic Claude** — [console.anthropic.com](https://console.anthropic.com)
@@ -244,7 +244,7 @@ Gemini 2.0 Flash a GPT-4o-mini jsou výrazně levnější alternativy. Ollama (l
 - [ ] Učební cíle s progress barem
 - [ ] Filtrování flashcards podle tagů
 - [ ] Tmavý režim
-- [ ] Refaktoring do oddělených souborů (`style.css`, `app.js`, `i18n.js`) — bez build nástroje, jen `<link>`/`<script src>`; zlepší udržovatelnost i18n a navigaci v kódu
+- [x] Refaktoring do oddělených souborů (`style.css`, `app.js`, `i18n.js`) — bez build nástroje, jen `<link>`/`<script src>`; zlepší udržovatelnost i18n a navigaci v kódu
 
 ---
 
@@ -294,11 +294,11 @@ The primary purpose of this app is **practicing the vocabulary words you enter y
 - **Multi-provider LLM** — Anthropic (Claude), OpenAI (GPT), Google (Gemini), Ollama (local), custom OpenAI-compatible endpoint
 - **CS/EN UI** — switchable interface language including all settings
 - **PWA-ready** — add to iOS/Android home screen
-- **Zero backend** — single HTML file, all data in localStorage
+- **Zero backend** — no server, no build step, all data in localStorage
 
 ### Getting started
 
-1. Open the app at **[honzabfu.github.io/jz-language-tutor](https://honzabfu.github.io/jz-language-tutor/)** — or download `index.html` and open it locally in any browser.
+1. Open the app at **[honzabfu.github.io/jz-language-tutor](https://honzabfu.github.io/jz-language-tutor/)** — or download the full repository and open `index.html` locally in any browser.
 2. Get an API key (required for Chat and Quiz only; Flashcards and vocabulary management work without one):
    - **Google Gemini** — [aistudio.google.com](https://aistudio.google.com) — free with limits (15 req/min, 1 500/day)
    - **Anthropic Claude** — [console.anthropic.com](https://console.anthropic.com)
@@ -490,7 +490,7 @@ Gemini 2.0 Flash and GPT-4o-mini are significantly cheaper alternatives. Ollama 
 - [ ] Learning goals with progress bar
 - [ ] Tag-based flashcard filtering
 - [ ] Dark mode
-- [ ] Refactor into separate files (`style.css`, `app.js`, `i18n.js`) — no build tool, just `<link>`/`<script src>`; improves i18n maintainability and code navigation
+- [x] Refactor into separate files (`style.css`, `app.js`, `i18n.js`) — no build tool, just `<link>`/`<script src>`; improves i18n maintainability and code navigation
 
 ---
 
