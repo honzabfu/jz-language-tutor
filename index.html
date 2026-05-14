@@ -36,7 +36,7 @@
       <select id="lang-select" onchange="onLangChange(this.value)"></select>
     </div>
   </div>
-  <div id="vocab-cost-warn" style="display:none;background:#fef9c3;color:#854d0e;font-size:0.8rem;padding:6px 14px;border-bottom:1px solid #fde68a">⚠ Slovník obsahuje více než 40 slovíček — v Lesson módu se odesílají s každým dotazem, což zvyšuje cenu.</div>
+  <div id="vocab-cost-warn" style="display:none;font-size:0.8rem;padding:6px 14px;border-bottom:1px solid">⚠ Slovník obsahuje více než 40 slovíček — v Lesson módu se odesílají s každým dotazem, což zvyšuje cenu.</div>
   <div id="msg-list">
     <div id="empty">
       <div class="flag" id="empty-flag">🌍</div>
@@ -225,6 +225,13 @@
           <option value="xl">Extra velké (20px)</option>
         </select>
       </div>
+      <div class="field"><label id="s-theme-label">Vzhled</label>
+        <select id="cfg-theme">
+          <option value="auto">Automaticky (systém)</option>
+          <option value="light">Světlý</option>
+          <option value="dark">Tmavý</option>
+        </select>
+      </div>
     </div>
     <div class="card">
       <h3 id="s-data-title">Data & záloha</h3>
@@ -298,8 +305,8 @@
     <div class="field"><label id="modal-trans-label" style="display:flex;align-items:center;gap:6px">Překlad *<button type="button" class="speak-btn" onclick="const t=document.getElementById('modal-trans').value;if(t)playWord(t,'en')" title="Hear translation pronunciation">🔊</button></label><input type="text" id="modal-trans" placeholder="ahoj"></div>
     <div class="field"><label id="modal-note-label">Poznámka</label><textarea id="modal-notes" placeholder="příklad použití, kontext…"></textarea></div>
     <div class="field"><label id="modal-tags-label">Tagy</label><input type="text" id="modal-tags" placeholder="pozdravy, B1 (čárkou oddělené)"></div>
-    <div id="modal-sm2-info" style="display:none;background:var(--bg2);border-radius:10px;padding:10px 14px;font-size:0.87rem;color:var(--muted);display:none">
-      <div id="modal-sm2-title" style="font-weight:600;margin-bottom:6px;color:var(--fg)">Statistiky opakování</div>
+    <div id="modal-sm2-info" style="display:none;background:var(--bg);border-radius:10px;padding:10px 14px;font-size:0.87rem;color:var(--mut)">
+      <div id="modal-sm2-title" style="font-weight:600;margin-bottom:6px;color:var(--txt)">Statistiky opakování</div>
       <div id="modal-sm2-rows" style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px"></div>
     </div>
     <div class="btn-row">
