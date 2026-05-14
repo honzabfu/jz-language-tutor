@@ -187,6 +187,8 @@ Obnova: **Nastavení → Import zálohy** → nahraj JSON soubor.
 | Ollama        | —                            | Lokální, bez klíče; URL nastav v Nastavení                    |
 | Vlastní       | závisí na provideru          | Libovolný OpenAI-compatible endpoint                          |
 
+> **Míchání jazyků a jiné zvláštnosti chování** (např. část věty v jiném jazyce, neočekávaný styl odpovědi) jsou záležitostí zvoleného AI modelu — aplikace toto chování nemůže přímo ovlivnit. Pokud ti konkrétní model nevyhovuje, zkus jiný model nebo jiného poskytovatele.
+
 ### Vlastní / Custom provider
 
 V Nastavení vyber **Vlastní (OpenAI-compatible)** a zadej:
@@ -432,6 +434,8 @@ Restore: **Settings → Import backup** → load the JSON file.
 | Google Gemini | aistudio.google.com          | **Free** with limits (15 req/min, 1 500/day); no credits needed |
 | Ollama        | —                            | Local, no key needed; configure URL in Settings               |
 | Custom        | depends on provider          | Any OpenAI-compatible endpoint                                |
+
+> **Language mixing and other unexpected behaviours** (e.g. part of a sentence in a different language, unexpected response style) are a characteristic of the selected AI model — the app cannot directly control this behaviour. If a particular model doesn't suit you, try a different model or provider.
 
 ### Custom provider
 
