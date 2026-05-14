@@ -44,7 +44,7 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
 - **Chat tutor** — konverzace v cílovém jazyce, zpětná vazba ke gramatice, překlady na požádání
 - **Lesson mód** — tutor aktivně zapracovává tvá slovíčka do rozhovoru
 - **Slovník** — překryvný panel ve správě slovíček; zadáš slovo a LLM vrátí stručný slovníkový záznam (překlady s gramatickými kategoriemi + příklady použití); jedním kliknutím přidáš slovo do svého seznamu
-- **Správa slovní zásoby** — ruční zadávání, import z CSV/TXT, generování slovíček přes AI, sady per jazyk
+- **Správa slovní zásoby** — ruční zadávání, import z CSV/TXT (s podporou tagů), generování slovíček přes AI (včetně automatického přiřazení tagů), sady per jazyk; tagy se zobrazují jako chipy v seznamu a jsou prohledávatelné
 - **Více AI poskytovatelů** — Anthropic (Claude), OpenAI (GPT), Google (Gemini), Ollama (lokálně), vlastní OpenAI-compatible endpoint
 - **CS/EN rozhraní** — přepínatelný jazyk celého rozhraní včetně nastavení
 - **PWA** — lze přidat na domovskou obrazovku iOS/Android
@@ -67,7 +67,7 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
 
 #### Ruční zadání
 
-Na záložce **Slovíčka** klikni na **+** → zadej slovo, překlad a volitelně poznámku.
+Na záložce **Slovíčka** klikni na **+** → zadej slovo, překlad, volitelně poznámku a tagy (čárkou oddělené, např. `pozdravy, B1`).
 
 #### Import ze souboru
 
@@ -76,14 +76,15 @@ Na záložce **Slovíčka** klikni na **⬆ Import** → vlož obsah souboru neb
 **Formát CSV/TXT** (každý řádek = jedno slovíčko):
 
 ```
-slovo,překlad,poznámka (volitelná)
-hola,ahoj,neformální pozdrav
-gracias,děkuji
+slovo,překlad,poznámka,tagy
+hola,ahoj,neformální pozdrav,pozdravy|A1
+gracias,děkuji,,zdvořilost
 buenos días,dobré ráno
 ```
 
 - Oddělovač: čárka nebo tabulátor
-- Třetí sloupec (poznámka) je nepovinný
+- Třetí sloupec (poznámka) a čtvrtý sloupec (tagy) jsou nepovinné
+- Více tagů v jednom poli odděl znakem `|` (pipe), např. `pozdravy|A1|běžná mluva`
 - Prázdné řádky a duplicity jsou automaticky přeskočeny
 - **Pořadí sloupců**: v importním modalu lze přepnout na `Překlad, Cizí jazyk` — hodí se, pokud máš soubory v opačném pořadí sloupců
 
@@ -258,6 +259,7 @@ Claude Sonnet a GPT-4o jsou výrazně dražší alternativy. Ollama (lokální) 
 - [ ] Filtrování flashcards podle tagů
 - [ ] Tmavý režim
 - [x] Refaktoring do oddělených souborů (`style.css`, `app.js`, `i18n.js`) — bez build nástroje, jen `<link>`/`<script src>`; zlepší udržovatelnost i18n a navigaci v kódu
+- [x] Tagování slovíček — zobrazení jako chipy v seznamu, prohledávatelnost, import/export CSV (4. sloupec s `|`), automatické generování tagů přes LLM
 
 ---
 
@@ -303,7 +305,7 @@ The primary purpose of this app is **practicing the vocabulary words you enter y
 - **Chat tutor** — conversation in the target language, grammar feedback, translations on demand
 - **Lesson mode** — tutor actively weaves your vocabulary into the dialogue
 - **Dictionary** — overlay panel inside the Vocabulary tab; type any word and the LLM returns a concise dictionary entry (translations with grammatical categories + usage examples); add the word to your list in one click
-- **Vocabulary management** — manual entry, CSV/TXT import, in-app AI generation, per-language sets
+- **Vocabulary management** — manual entry, CSV/TXT import (with tag support), in-app AI generation (with automatic tag assignment), per-language sets; tags are displayed as chips in the word list and are searchable
 - **Multi-provider LLM** — Anthropic (Claude), OpenAI (GPT), Google (Gemini), Ollama (local), custom OpenAI-compatible endpoint
 - **CS/EN UI** — switchable interface language including all settings
 - **PWA-ready** — add to iOS/Android home screen
@@ -326,7 +328,7 @@ The primary purpose of this app is **practicing the vocabulary words you enter y
 
 #### Manual entry
 
-In the **Vocab** tab click **+** → enter the word, its translation, and an optional note.
+In the **Vocab** tab click **+** → enter the word, its translation, an optional note, and optional tags (comma-separated, e.g. `greetings, A1`).
 
 #### Import from file
 
@@ -335,14 +337,15 @@ In the **Vocab** tab click **⬆ Import** → paste the file contents or upload 
 **CSV/TXT format** (one word per line):
 
 ```
-word,translation,note (optional)
-hola,hello,informal greeting
-gracias,thank you
+word,translation,note,tags
+hola,hello,informal greeting,greetings|A1
+gracias,thank you,,politeness
 buenos días,good morning
 ```
 
 - Separator: comma or tab
-- Third column (note) is optional
+- Third column (note) and fourth column (tags) are optional
+- Separate multiple tags with `|` (pipe), e.g. `greetings|A1|informal`
 - Empty lines and duplicates are skipped automatically
 - **Column order**: the import modal lets you switch to `Translation, Foreign word` — useful if your CSV files have the columns in reverse order
 
@@ -517,6 +520,7 @@ Claude Sonnet and GPT-4o are significantly more expensive alternatives. Ollama (
 - [ ] Tag-based flashcard filtering
 - [ ] Dark mode
 - [x] Refactor into separate files (`style.css`, `app.js`, `i18n.js`) — no build tool, just `<link>`/`<script src>`; improves i18n maintainability and code navigation
+- [x] Word tagging — chips displayed in the word list, searchable, CSV import/export (4th column with `|`), automatic tag generation via LLM
 
 ---
 
