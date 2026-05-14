@@ -1,7 +1,10 @@
-const CACHE = 'langtutor-v4';
+const CACHE = 'langtutor-v5';
 const ASSETS = [
 './',
-'./index.html'
+'./index.html',
+'./style.css',
+'./i18n.js',
+'./app.js'
 ];
 
 self.addEventListener('install', e => {
