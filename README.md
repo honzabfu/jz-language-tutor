@@ -187,6 +187,8 @@ Obnova: **Nastavení → Import zálohy** → nahraj JSON soubor.
 | Ollama        | —                            | Lokální, bez klíče; URL nastav v Nastavení                    |
 | Vlastní       | závisí na provideru          | Libovolný OpenAI-compatible endpoint                          |
 
+> **Míchání jazyků a jiné zvláštnosti chování** (např. část věty v jiném jazyce, neočekávaný styl odpovědi) jsou záležitostí zvoleného AI modelu — aplikace toto chování nemůže přímo ovlivnit. Pokud ti konkrétní model nevyhovuje, zkus jiný model nebo jiného poskytovatele.
+
 ### Vlastní / Custom provider
 
 V Nastavení vyber **Vlastní (OpenAI-compatible)** a zadej:
@@ -211,7 +213,7 @@ LLM se volá pouze v **Chatu** a **Kvízu**. Flashcards a správa slovíček jso
 | Slovíčka v lesson módu (max 50 slov)     | +250–350       |
 | Historie konverzace (max 24 zpráv)       | 0–1 200        |
 | Zpráva uživatele                         | 10–80          |
-| **Odpověď (výstup, max 1 024)**          | **150–800**    |
+| **Odpověď (výstup, max 8 192)**          | **150–800**    |
 
 Na začátku konverzace: **~300–500 tokenů celkem**.  
 Po 10+ zprávách s lesson módem: **~1 500–2 500 tokenů celkem**.
@@ -226,15 +228,15 @@ Po 10+ zprávách s lesson módem: **~1 500–2 500 tokenů celkem**.
 
 #### Orientační ceny
 
-Příklad pro **claude-sonnet-4-6** ($3/M vstupních, $15/M výstupních tokenů):
+Příklad pro **gemini-2.0-flash** ($0,10/M vstupních, $0,40/M výstupních tokenů):
 
-| Scénář                          | Tokeny                    | Cena    |
-|---------------------------------|---------------------------|---------|
-| 1 chatová zpráva                | ~700 in + ~350 out        | ~$0.007 |
-| Hodina aktivního chatu (~50 zpráv) | ~35 000 in + ~17 500 out | ~$0.37  |
-| Quiz session (10 kol)           | ~3 500 celkem             | ~$0.04  |
+| Scénář                          | Tokeny                    | Cena     |
+|---------------------------------|---------------------------|----------|
+| 1 chatová zpráva                | ~700 in + ~350 out        | ~$0,0002 |
+| Hodina aktivního chatu (~50 zpráv) | ~35 000 in + ~17 500 out | ~$0,01   |
+| Quiz session (10 kol)           | ~3 500 celkem             | ~$0,001  |
 
-Gemini 2.0 Flash a GPT-4o-mini jsou výrazně levnější alternativy. Ollama (lokální) je bez poplatků.
+Claude Sonnet a GPT-4o jsou výrazně dražší alternativy. Ollama (lokální) je bez poplatků.
 
 > **Tip:** Lesson mód přidává celý seznam slovíček do každého requestu — při velké slovní zásobě (50 slov) zdražuje chat přibližně o 30–40 %.
 
@@ -433,6 +435,8 @@ Restore: **Settings → Import backup** → load the JSON file.
 | Ollama        | —                            | Local, no key needed; configure URL in Settings               |
 | Custom        | depends on provider          | Any OpenAI-compatible endpoint                                |
 
+> **Language mixing and other unexpected behaviours** (e.g. part of a sentence in a different language, unexpected response style) are a characteristic of the selected AI model — the app cannot directly control this behaviour. If a particular model doesn't suit you, try a different model or provider.
+
 ### Custom provider
 
 In Settings select **Custom (OpenAI-compatible)** and fill in:
@@ -457,7 +461,7 @@ The LLM is only called in **Chat** and **Quiz**. Flashcards and vocabulary manag
 | Vocabulary in lesson mode (max 50 words)| +250–350       |
 | Conversation history (max 24 messages)  | 0–1 200        |
 | User message                            | 10–80          |
-| **Response (output, max 1 024)**        | **150–800**    |
+| **Response (output, max 8 192)**        | **150–800**    |
 
 At conversation start: **~300–500 tokens total**.  
 After 10+ messages with lesson mode: **~1 500–2 500 tokens total**.
@@ -472,15 +476,15 @@ After 10+ messages with lesson mode: **~1 500–2 500 tokens total**.
 
 #### Indicative pricing
 
-Example for **claude-sonnet-4-6** ($3/M input, $15/M output tokens):
+Example for **gemini-2.0-flash** ($0.10/M input, $0.40/M output tokens):
 
-| Scenario                          | Tokens                    | Cost    |
-|-----------------------------------|---------------------------|---------|
-| 1 chat message                    | ~700 in + ~350 out        | ~$0.007 |
-| 1 hour of active chat (~50 msgs)  | ~35 000 in + ~17 500 out  | ~$0.37  |
-| Quiz session (10 rounds)          | ~3 500 total              | ~$0.04  |
+| Scenario                          | Tokens                    | Cost     |
+|-----------------------------------|---------------------------|----------|
+| 1 chat message                    | ~700 in + ~350 out        | ~$0.0002 |
+| 1 hour of active chat (~50 msgs)  | ~35 000 in + ~17 500 out  | ~$0.01   |
+| Quiz session (10 rounds)          | ~3 500 total              | ~$0.001  |
 
-Gemini 2.0 Flash and GPT-4o-mini are significantly cheaper alternatives. Ollama (local) is free.
+Claude Sonnet and GPT-4o are significantly more expensive alternatives. Ollama (local) is free.
 
 > **Tip:** Lesson mode adds your entire vocabulary list to every request — with a large vocabulary (50 words) this increases chat cost by roughly 30–40 %.
 
