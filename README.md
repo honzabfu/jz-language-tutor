@@ -203,7 +203,7 @@ V Nastavení vyber **Vlastní (OpenAI-compatible)** a zadej:
 
 ### Odhadovaná spotřeba tokenů
 
-LLM se volá pouze v **Chatu** a **Kvízu**. Flashcards a správa slovíček jsou plně lokální — žádná API volání.
+LLM se volá v **Chatu**, **Kvízu** a **Slovníku**. Flashcards a správa slovíček jsou plně lokální — žádná API volání.
 
 #### Chat — jedno odeslání zprávy
 
@@ -226,15 +226,26 @@ Po 10+ zprávách s lesson módem: **~1 500–2 500 tokenů celkem**.
 | Vyhodnocení + další otázka | ~200  | ~200   |
 | **Celkem**                 | **~630 tokenů** |   |
 
+#### Slovník — jedno vyhledání
+
+| Komponenta                               | Tokeny (vstup) |
+|------------------------------------------|----------------|
+| Systémový prompt                         | ~30            |
+| Dotaz na slovo                           | ~80            |
+| **Odpověď (výstup, max 4 096)**          | **~100–150**   |
+
+Celkem: **~200–260 tokenů na jedno vyhledání.**
+
 #### Orientační ceny
 
-Příklad pro **gemini-2.0-flash** ($0,10/M vstupních, $0,40/M výstupních tokenů):
+Příklad pro **gemini-2.5-flash** ($0,50/M vstupních, $1,50/M výstupních tokenů):
 
 | Scénář                          | Tokeny                    | Cena     |
 |---------------------------------|---------------------------|----------|
-| 1 chatová zpráva                | ~700 in + ~350 out        | ~$0,0002 |
-| Hodina aktivního chatu (~50 zpráv) | ~35 000 in + ~17 500 out | ~$0,01   |
-| Quiz session (10 kol)           | ~3 500 celkem             | ~$0,001  |
+| 1 chatová zpráva                | ~700 in + ~350 out        | ~$0,001  |
+| Hodina aktivního chatu (~50 zpráv) | ~35 000 in + ~17 500 out | ~$0,04   |
+| Quiz session (10 kol)           | ~3 500 celkem             | ~$0,003  |
+| 1 vyhledání ve slovníku         | ~110 in + ~150 out        | ~$0,0003 |
 
 Claude Sonnet a GPT-4o jsou výrazně dražší alternativy. Ollama (lokální) je bez poplatků.
 
@@ -451,7 +462,7 @@ In Settings select **Custom (OpenAI-compatible)** and fill in:
 
 ### Estimated token usage
 
-The LLM is only called in **Chat** and **Quiz**. Flashcards and vocabulary management are fully local — no API calls.
+The LLM is called in **Chat**, **Quiz**, and **Dictionary**. Flashcards and vocabulary management are fully local — no API calls.
 
 #### Chat — one message sent
 
@@ -474,15 +485,26 @@ After 10+ messages with lesson mode: **~1 500–2 500 tokens total**.
 | Evaluation + next question  | ~200  | ~200   |
 | **Total**                   | **~630 tokens** |   |
 
+#### Dictionary — one lookup
+
+| Component                               | Tokens (input) |
+|-----------------------------------------|----------------|
+| System prompt                           | ~30            |
+| Word query                              | ~80            |
+| **Response (output, max 4 096)**        | **~100–150**   |
+
+Total: **~200–260 tokens per lookup.**
+
 #### Indicative pricing
 
-Example for **gemini-2.0-flash** ($0.10/M input, $0.40/M output tokens):
+Example for **gemini-2.5-flash** ($0.50/M input, $1.50/M output tokens):
 
 | Scenario                          | Tokens                    | Cost     |
 |-----------------------------------|---------------------------|----------|
-| 1 chat message                    | ~700 in + ~350 out        | ~$0.0002 |
-| 1 hour of active chat (~50 msgs)  | ~35 000 in + ~17 500 out  | ~$0.01   |
-| Quiz session (10 rounds)          | ~3 500 total              | ~$0.001  |
+| 1 chat message                    | ~700 in + ~350 out        | ~$0.001  |
+| 1 hour of active chat (~50 msgs)  | ~35 000 in + ~17 500 out  | ~$0.04   |
+| Quiz session (10 rounds)          | ~3 500 total              | ~$0.003  |
+| 1 dictionary lookup               | ~110 in + ~150 out        | ~$0.0003 |
 
 Claude Sonnet and GPT-4o are significantly more expensive alternatives. Ollama (local) is free.
 
