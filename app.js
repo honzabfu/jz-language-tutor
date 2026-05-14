@@ -499,7 +499,8 @@ function renderVocabList(){
     else{const d=Math.round((due-now)/86400000);badge=`${d}d`;cls='due-ok';}
     const sel=bulkSelectMode&&selectedIds.has(w.id);
     const el=document.createElement('div');el.className='vocab-item'+(sel?' selected':'');
-    const inner=`<div class="wi"><div class="word">${esc(w.word)}</div><div class="trans">${esc(w.translation)}${w.notes?` · <em>${esc(w.notes)}</em>`:''}</div></div><button class="speak-btn" onclick="event.stopPropagation();playWord('${w.word.replace(/'/g,"\\'")}','${vocabLang}')" title="${t.pronounceBtn||'Hear pronunciation'}">🔊</button><span class="sm2-badge ${cls}">${badge}</span>`;
+    const tagsHtml=(w.tags&&w.tags.length)?`<div class="tag-chips">${w.tags.map(tg=>`<span class="tag-chip">${esc(tg)}</span>`).join('')}</div>`:'';
+    const inner=`<div class="wi"><div class="word">${esc(w.word)}</div><div class="trans">${esc(w.translation)}${w.notes?` · <em>${esc(w.notes)}</em>`:''}</div>${tagsHtml}</div><button class="speak-btn" onclick="event.stopPropagation();playWord('${w.word.replace(/'/g,"\\'")}','${vocabLang}')" title="${t.pronounceBtn||'Hear pronunciation'}">🔊</button><span class="sm2-badge ${cls}">${badge}</span>`;
     if(bulkSelectMode){
       el.innerHTML=`<input type="checkbox" class="cb"${sel?' checked':''}>${inner}`;
       el.addEventListener('click',()=>toggleItemSelect(w.id));
@@ -642,7 +643,9 @@ function confirmImport(){
     const word=(parts[rev?1:0]||'').trim();const trans=(parts[rev?0:1]||'').trim();
     if(!word||!trans)return;
     if(existing.has(word.toLowerCase())){skipped++;return;}
-    arr.push({id:uid(),word,translation:trans,notes:(parts[2]||'').trim(),tags:[],sm2:newSM2()});
+    const rawTags=(parts[3]||'').trim();
+    const tags=rawTags?rawTags.split('|').map(s=>s.trim()).filter(Boolean):[];
+    arr.push({id:uid(),word,translation:trans,notes:(parts[2]||'').trim(),tags,sm2:newSM2()});
     existing.add(word.toLowerCase());added++;
   });
   setVocab(lang,arr);
@@ -651,7 +654,7 @@ function confirmImport(){
 }
 function exportVocab(){
   const arr=getVocab(vocabLang);
-  const lines=arr.map(w=>[w.word,w.translation,w.notes||''].join(','));
+  const lines=arr.map(w=>[w.word,w.translation,w.notes||'',(w.tags||[]).join('|')].join(','));
   const blob=new Blob([lines.join('\n')],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`vocab-${vocabLang}-${new Date().toISOString().slice(0,10)}.csv`;a.click();
 }
@@ -748,9 +751,9 @@ async function generateVocab(){
   btn.textContent=t.genLoading;btn.disabled=true;
   const prompt=`Generate exactly ${count} ${meta.name} vocabulary words on the topic "${topic}" for a ${level} level learner. Translations should be in ${nativeLang}.
 Return ONLY a JSON array, no preamble, no markdown:
-[{"word":"<word in ${meta.name}>","translation":"<translation in ${nativeLang}>","notes":"<brief usage note or example, or empty string>"}]`;
+[{"word":"<word in ${meta.name}>","translation":"<translation in ${nativeLang}>","notes":"<brief usage note or example, or empty string>","tags":["<topic category in ${nativeLang}>","<CEFR level, e.g. A1>"]}]`;
   try{
-    const raw=await safeLLM([{role:'user',content:prompt}],'',Math.max(2048,count*80),_abortCtrl.signal);
+    const raw=await safeLLM([{role:'user',content:prompt}],'',Math.max(2048,count*100),_abortCtrl.signal);
     let arr;
     try{
       const s=raw.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
@@ -786,7 +789,7 @@ function confirmGenerateImport(){
   genWords.forEach((w,i)=>{
     if(!document.getElementById('gen-chk-'+i)?.checked)return;
     if(existing.has(w.word.toLowerCase())){skipped++;return;}
-    arr.push({id:uid(),word:w.word,translation:w.translation,notes:w.notes||'',tags:[],sm2:newSM2()});
+    arr.push({id:uid(),word:w.word,translation:w.translation,notes:w.notes||'',tags:Array.isArray(w.tags)?w.tags.map(String).filter(Boolean):[],sm2:newSM2()});
     existing.add(w.word.toLowerCase());added++;
   });
   setVocab(vocabLang,arr);

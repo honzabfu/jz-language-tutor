@@ -85,6 +85,8 @@ select:focus{outline:2px solid var(--pri)}
 .vocab-item .word{font-weight:600;font-size:0.93rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vocab-item .trans{font-size:0.8rem;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .vocab-item .sm2-badge{font-size:0.67rem;padding:2px 6px;border-radius:10px;font-weight:600;flex-shrink:0}
+.tag-chips{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}
+.tag-chip{font-size:0.65rem;padding:1px 5px;border-radius:8px;background:var(--prit);color:var(--pri);font-weight:500;white-space:nowrap}
 .due-now{background:var(--clr-err-bg);color:var(--err)}
 .due-soon{background:var(--clr-warn-bg);color:var(--clr-warn-txt)}
 .due-ok{background:var(--clr-ok-bg);color:var(--ok)}
