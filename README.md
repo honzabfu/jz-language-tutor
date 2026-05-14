@@ -257,9 +257,10 @@ Claude Sonnet a GPT-4o jsou výrazně dražší alternativy. Ollama (lokální) 
 - [ ] Statistiky pokroku (růst slovní zásoby, přesnost v čase)
 - [ ] Učební cíle s progress barem
 - [ ] Filtrování flashcards podle tagů
-- [ ] Tmavý režim
+- [x] Tmavý režim — přepínač Světlý / Tmavý / Automaticky (systém) v Nastavení
 - [x] Refaktoring do oddělených souborů (`style.css`, `app.js`, `i18n.js`) — bez build nástroje, jen `<link>`/`<script src>`; zlepší udržovatelnost i18n a navigaci v kódu
 - [x] Tagování slovíček — zobrazení jako chipy v seznamu, prohledávatelnost, import/export CSV (4. sloupec s `|`), automatické generování tagů přes LLM
+- [x] Oprava limitu tokenů při generování slovíček — zvýšený výstupní budget zabraňuje chybě „odpověď zkrácena" i u verbose modelů
 
 ---
 
@@ -518,9 +519,10 @@ Claude Sonnet and GPT-4o are significantly more expensive alternatives. Ollama (
 - [ ] Progress statistics (vocabulary growth, accuracy over time)
 - [ ] Learning goals with progress bar
 - [ ] Tag-based flashcard filtering
-- [ ] Dark mode
+- [x] Dark mode — Light / Dark / Auto (system) toggle in Settings
 - [x] Refactor into separate files (`style.css`, `app.js`, `i18n.js`) — no build tool, just `<link>`/`<script src>`; improves i18n maintainability and code navigation
 - [x] Word tagging — chips displayed in the word list, searchable, CSV import/export (4th column with `|`), automatic tag generation via LLM
+- [x] Fix token limit in vocabulary generation — increased output budget prevents "response truncated" errors with verbose models
 
 ---
 
