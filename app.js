@@ -753,7 +753,7 @@ async function generateVocab(){
 Return ONLY a JSON array, no preamble, no markdown:
 [{"word":"<word in ${meta.name}>","translation":"<translation in ${nativeLang}>","notes":"<brief usage note or example, or empty string>","tags":["<topic category in ${nativeLang}>","<CEFR level, e.g. A1>"]}]`;
   try{
-    const raw=await safeLLM([{role:'user',content:prompt}],'',Math.max(2048,count*100),_abortCtrl.signal);
+    const raw=await safeLLM([{role:'user',content:prompt}],'',Math.max(4096,count*200),_abortCtrl.signal);
     let arr;
     try{
       const s=raw.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
