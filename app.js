@@ -360,28 +360,104 @@ function populateSettingsUI(){
   document.getElementById('cfg-custom-model').value=cfg.customModel||'';
   document.getElementById('cfg-font-size').value=cfg.fontSize||'medium';
   document.getElementById('cfg-theme').value=cfg.theme||'auto';
-  rebuildModelList(cfg.provider);
+  rebuildModelList(cfg.provider,MODELS_METADATA[cfg.provider]||[]);
   document.getElementById('cfg-model').value=cfg.model;
   toggleProviderFields(cfg.provider);
   updateApiKeyHint();
   updateApiKeyStatus();
+  setModelHint(cfg.provider);
 }
-function onProviderChange(p){_saveProviderSettings(cfg.provider);cfg.provider=p;_loadProviderSettings(p);rebuildModelList(p);document.getElementById('cfg-model').value=cfg.model;toggleProviderFields(p);updateApiKeyHint();updateApiKeyStatus();}
-function rebuildModelList(p){
+function onProviderChange(p){
+  _saveProviderSettings(cfg.provider);cfg.provider=p;_loadProviderSettings(p);
+  rebuildModelList(p,MODELS_METADATA[p]||[]);
+  document.getElementById('cfg-model').value=cfg.model;
+  toggleProviderFields(p);updateApiKeyHint();updateApiKeyStatus();
+  setModelHint(p);
+  if(p==='ollama')fetchAndRebuildModels();
+}
+function rebuildModelList(p,models){
   const s=document.getElementById('cfg-model');
   s.innerHTML='';
-  const models=MODELS_METADATA[p]||[];
   models.forEach(m=>{
     const o=document.createElement('option');
-    o.value=m.id;
-    // Display: Model Name with price tier and speed in parentheses
-    const priceLabel=m.tier==='budget'?'$':m.tier==='standard'?'$$':'$$$';
-    const speedLabel=m.speed==='fast'?'⚡':m.speed==='balanced'?'⚖️':'🐢';
-    o.textContent=`${m.name} (${priceLabel} ${speedLabel})`;
+    o.value=m.id||m;
+    o.textContent=m.name||m.id||m;
     s.appendChild(o);
   });
-  if(models.some(m=>m.id===cfg.model))s.value=cfg.model;
+  const ids=models.map(m=>m.id||m);
+  if(ids.includes(cfg.model))s.value=cfg.model;
+  else if(ids.length)s.value=ids[0];
 }
+function setModelHint(p){
+  const el=document.getElementById('s-model-hint');
+  if(!el)return;
+  const hints={
+    anthropic:t.modelHintAnthropic||'Pro běžné použití doporučujeme Haiku nebo Sonnet — jsou rychlé a výrazně levnější než Opus.',
+    openai:t.modelHintOpenai||'Pro běžné použití doporučujeme modely řady Mini nebo Flash — jsou rychlé a výrazně levnější.',
+    gemini:t.modelHintGemini||'Pro běžné použití doporučujeme modely řady Flash nebo Flash-Lite — jsou rychlé a levné.',
+    ollama:'',custom:''
+  };
+  el.textContent=hints[p]||'';
+}
+async function fetchModels(provider,apiKey,ollamaUrl){
+  if(provider==='anthropic'){
+    const r=await fetch('https://api.anthropic.com/v1/models',{headers:{'x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}});
+    if(!r.ok)throw new Error(r.status);
+    const d=await r.json();
+    return (d.data||[]).filter(m=>/claude/i.test(m.id)).map(m=>({id:m.id,name:m.display_name||m.id}));
+  }
+  if(provider==='openai'){
+    const r=await fetch('https://api.openai.com/v1/models',{headers:{Authorization:`Bearer ${apiKey}`}});
+    if(!r.ok)throw new Error(r.status);
+    const d=await r.json();
+    return (d.data||[])
+      .filter(m=>/^(gpt-|o[0-9]|chatgpt-)/.test(m.id)&&!/(instruct|vision|realtime|audio|preview-\d{4}|0[0-9]{2,})/.test(m.id))
+      .sort((a,b)=>b.created-a.created)
+      .map(m=>({id:m.id,name:m.id}));
+  }
+  if(provider==='gemini'){
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}&pageSize=50`);
+    if(!r.ok)throw new Error(r.status);
+    const d=await r.json();
+    return (d.models||[])
+      .filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent'))
+      .map(m=>({id:m.name.replace('models/',''),name:m.displayName||m.name.replace('models/','')}));
+  }
+  if(provider==='ollama'){
+    const base=(ollamaUrl||'http://localhost:11434').replace(/\/$/,'');
+    const r=await fetch(`${base}/api/tags`);
+    if(!r.ok)throw new Error(r.status);
+    const d=await r.json();
+    return (d.models||[]).map(m=>({id:m.name,name:m.name}));
+  }
+  return [];
+}
+
+async function fetchAndRebuildModels(){
+  const p=document.getElementById('cfg-provider').value;
+  const apiKey=(document.getElementById('cfg-apikey')?.value||'').trim();
+  const ollamaUrl=(document.getElementById('cfg-ollama-url')?.value||'').trim();
+  const statusEl=document.getElementById('model-fetch-status');
+  const btn=document.getElementById('fetch-models-btn');
+  if(p!=='ollama'&&!apiKey){statusEl.textContent=t.fetchModelsNoKey||'Nejdříve zadej API klíč.';return;}
+  statusEl.textContent=t.fetchModelsLoading||'Načítám modely…';
+  if(btn)btn.disabled=true;
+  try{
+    const models=await fetchModels(p,apiKey,ollamaUrl);
+    if(!models.length)throw new Error('empty');
+    rebuildModelList(p,models);
+    const sel=document.getElementById('cfg-model');
+    if(cfg.model&&[...sel.options].some(o=>o.value===cfg.model))sel.value=cfg.model;
+    statusEl.textContent=`✓ ${models.length} ${t.fetchModelsOk||'modelů načteno'}`;
+    setTimeout(()=>{statusEl.textContent='';},3000);
+  }catch(e){
+    rebuildModelList(p,MODELS_METADATA[p]||[]);
+    statusEl.textContent=t.fetchModelsError||'Nepodařilo se načíst modely — používám výchozí seznam.';
+  }finally{
+    if(btn)btn.disabled=false;
+  }
+}
+
 function toggleProviderFields(p){
   const isOllama=p==='ollama',isCustom=p==='custom',isAnthropic=p==='anthropic';
   document.getElementById('field-apikey').style.display=isOllama?'none':'';
