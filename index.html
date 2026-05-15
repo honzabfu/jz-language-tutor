@@ -311,7 +311,7 @@
     <h2 id="modal-title">Přidat slovo</h2>
     <div class="field"><label id="modal-word-label" style="display:flex;align-items:center;gap:6px"><span id="modal-word-label-text">Slovo / fráze *</span><button type="button" class="speak-btn" onclick="const w=document.getElementById('modal-word').value;if(w)playWord(w,vocabLang)" title="Hear word pronunciation">🔊</button></label><input type="text" id="modal-word" placeholder="hola"></div>
     <div style="display:flex;justify-content:center;margin:-4px 0"><button type="button" class="icon-btn" id="modal-swap-btn" onclick="swapWordTrans()" title="Záměna">⇅</button></div>
-    <div class="field"><label id="modal-trans-label" style="display:flex;align-items:center;gap:6px"><span id="modal-trans-label-text">Překlad *</span><button type="button" class="speak-btn" onclick="const t=document.getElementById('modal-trans').value;if(t)playWord(t,'en')" title="Hear translation pronunciation">🔊</button></label><input type="text" id="modal-trans" placeholder="ahoj"></div>
+    <div class="field"><label id="modal-trans-label"><span id="modal-trans-label-text">Překlad *</span></label><input type="text" id="modal-trans" placeholder="ahoj"></div>
     <div class="field"><label id="modal-note-label">Poznámka</label><textarea id="modal-notes" placeholder="příklad použití, kontext…"></textarea></div>
     <div class="field"><label id="modal-tags-label">Tagy</label><input type="text" id="modal-tags" placeholder="pozdravy, B1 (čárkou oddělené)"></div>
     <div id="modal-sm2-info" style="display:none;background:var(--bg);border-radius:10px;padding:10px 14px;font-size:0.87rem;color:var(--mut)">
