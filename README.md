@@ -185,7 +185,7 @@ Obnova: **Nastavení → Import zálohy** → nahraj JSON soubor.
 | Anthropic     | console.anthropic.com        | Vyžaduje povolení `anthropic-dangerous-direct-browser-calls`; při problémech zkontroluj CORS chyby v konzoli prohlížeče (F12), ad blocker nebo firewall |
 | OpenAI        | platform.openai.com/api-keys | Standardní bearer token                                       |
 | Google Gemini | aistudio.google.com          | **Zdarma** s limitem (15 req/min, 1 500/den); bez kreditů     |
-| Ollama        | —                            | Lokální, bez klíče; URL nastav v Nastavení                    |
+| Ollama        | —                            | Lokální; URL nastav v Nastavení; API klíč volitelný (pro `OLLAMA_API_KEY` nebo reverse proxy) |
 | Vlastní       | závisí na provideru          | Libovolný OpenAI-compatible endpoint                          |
 
 > **Míchání jazyků a jiné zvláštnosti chování** (např. část věty v jiném jazyce, neočekávaný styl odpovědi) jsou záležitostí zvoleného AI modelu — aplikace toto chování nemůže přímo ovlivnit. Pokud ti konkrétní model nevyhovuje, zkus jiný model nebo jiného poskytovatele.
@@ -276,6 +276,7 @@ Claude Sonnet a GPT-5 jsou výrazně dražší alternativy. Ollama (lokální) j
 - [x] Refaktoring do oddělených souborů (`style.css`, `app.js`, `i18n.js`) — bez build nástroje, jen `<link>`/`<script src>`; zlepší udržovatelnost i18n a navigaci v kódu
 - [x] Tagování slovíček — zobrazení jako chipy v seznamu, prohledávatelnost, import/export CSV (4. sloupec s `|`), automatické generování tagů přes LLM
 - [x] Oprava limitu tokenů při generování slovíček — zvýšený výstupní budget zabraňuje chybě „odpověď zkrácena" i u verbose modelů
+- [x] Dynamické načítání modelů — tlačítko „Načíst modely" stáhne aktuální seznam přímo z API providera (Anthropic, OpenAI, Gemini, Ollama); statický seznam slouží jako fallback; Ollama načítá automaticky po přepnutí providera; volitelný API klíč pro Ollama (OLLAMA_API_KEY / reverse proxy)
 
 ---
 
@@ -462,7 +463,7 @@ Restore: **Settings → Import backup** → load the JSON file.
 | Anthropic     | console.anthropic.com        | Requires `anthropic-dangerous-direct-browser-calls` enabled; if it fails check for CORS errors in the browser console (F12), ad blocker, or firewall |
 | OpenAI        | platform.openai.com/api-keys | Standard bearer token                                         |
 | Google Gemini | aistudio.google.com          | **Free** with limits (15 req/min, 1 500/day); no credits needed |
-| Ollama        | —                            | Local, no key needed; configure URL in Settings               |
+| Ollama        | —                            | Local; configure URL in Settings; API key optional (for `OLLAMA_API_KEY` or reverse proxy) |
 | Custom        | depends on provider          | Any OpenAI-compatible endpoint                                |
 
 > **Language mixing and other unexpected behaviours** (e.g. part of a sentence in a different language, unexpected response style) are a characteristic of the selected AI model — the app cannot directly control this behaviour. If a particular model doesn't suit you, try a different model or provider.
@@ -553,6 +554,7 @@ Claude Sonnet and GPT-5 are significantly more expensive alternatives. Ollama (l
 - [x] Refactor into separate files (`style.css`, `app.js`, `i18n.js`) — no build tool, just `<link>`/`<script src>`; improves i18n maintainability and code navigation
 - [x] Word tagging — chips displayed in the word list, searchable, CSV import/export (4th column with `|`), automatic tag generation via LLM
 - [x] Fix token limit in vocabulary generation — increased output budget prevents "response truncated" errors with verbose models
+- [x] Dynamic model loading — "Load models" button fetches the current list directly from the provider API (Anthropic, OpenAI, Gemini, Ollama); static list used as fallback; Ollama auto-fetches on provider switch; optional API key for Ollama (OLLAMA_API_KEY / reverse proxy)
 
 ---
 
