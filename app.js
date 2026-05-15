@@ -385,8 +385,17 @@ function rebuildModelList(p,models){
     s.appendChild(o);
   });
   const ids=models.map(m=>m.id||m);
-  if(ids.includes(cfg.model))s.value=cfg.model;
-  else if(ids.length)s.value=ids[0];
+  if(ids.includes(cfg.model)){
+    s.value=cfg.model;
+  }else if(cfg.model){
+    const o=document.createElement('option');
+    o.value=cfg.model;
+    o.textContent=cfg.model;
+    s.insertBefore(o,s.firstChild);
+    s.value=cfg.model;
+  }else if(ids.length){
+    s.value=ids[0];
+  }
 }
 function setModelHint(p){
   const el=document.getElementById('s-model-hint');
