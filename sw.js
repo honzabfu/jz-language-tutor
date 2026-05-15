@@ -1,4 +1,4 @@
-const CACHE = 'langtutor-v9';
+const CACHE = 'langtutor-v10';
 const ASSETS = [
 './',
 './index.html',

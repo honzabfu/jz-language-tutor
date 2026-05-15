@@ -373,7 +373,20 @@ function onProviderChange(p){
   document.getElementById('cfg-model').value=cfg.model;
   toggleProviderFields(p);updateApiKeyHint();updateApiKeyStatus();
   setModelHint(p);
+  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  updateProviderBadge();
   if(p==='ollama')fetchAndRebuildModels();
+}
+function autoSaveProviderCfg(){
+  cfg.apiKey=(document.getElementById('cfg-apikey')?.value||'').trim();
+  cfg.model=document.getElementById('cfg-model')?.value||cfg.model;
+  cfg.ollamaUrl=(document.getElementById('cfg-ollama-url')?.value||'').trim()||'http://localhost:11434';
+  cfg.customUrl=(document.getElementById('cfg-custom-url')?.value||'').trim();
+  cfg.customModel=(document.getElementById('cfg-custom-model')?.value||'').trim();
+  _saveProviderSettings(cfg.provider);
+  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  updateProviderBadge();
+  updateApiKeyStatus();
 }
 function rebuildModelList(p,models){
   const s=document.getElementById('cfg-model');
