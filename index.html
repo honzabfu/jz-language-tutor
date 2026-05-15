@@ -170,18 +170,18 @@
         </select>
       </div>
       <div class="field" id="field-apikey"><label id="s-apikey-label">API klíč</label>
-        <input type="password" id="cfg-apikey" placeholder="sk-…" autocomplete="off" oninput="updateApiKeyStatus()">
+        <input type="password" id="cfg-apikey" placeholder="sk-…" autocomplete="off" oninput="updateApiKeyStatus()" onchange="autoSaveProviderCfg()">
         <div class="hint" id="apikey-hint"></div>
         <div class="provider-status" id="apikey-status"></div>
         <div class="hint" id="apikey-storage-warn" style="margin-top:4px"></div>
       </div>
       <div class="hint" id="s-anthropic-hint" style="display:none"></div>
       <div class="field" id="field-ollama-url" style="display:none"><label>Ollama URL</label>
-        <input type="text" id="cfg-ollama-url" placeholder="http://localhost:11434">
+        <input type="text" id="cfg-ollama-url" placeholder="http://localhost:11434" onchange="autoSaveProviderCfg()">
         <div class="hint" id="s-ollama-hint">Ollama musí mít povoleno CORS pro tuto doménu.</div>
       </div>
       <div class="field" id="field-custom-url" style="display:none"><label>API URL</label>
-        <input type="text" id="cfg-custom-url" placeholder="https://openrouter.ai/api/v1">
+        <input type="text" id="cfg-custom-url" placeholder="https://openrouter.ai/api/v1" onchange="autoSaveProviderCfg()">
         <div class="hint" id="s-custom-url-hint">OpenAI-compatible endpoint (bez /chat/completions). API klíč výše je volitelný.</div>
       </div>
       <div class="field" id="field-model-select">
@@ -189,12 +189,12 @@
           <label id="s-model-label" style="margin:0">Model</label>
           <button class="btn btn-ghost btn-sm" id="fetch-models-btn" onclick="fetchAndRebuildModels()" style="padding:2px 8px;font-size:0.8rem">↻ <span id="fetch-models-lbl">Načíst modely</span></button>
         </div>
-        <select id="cfg-model"></select>
+        <select id="cfg-model" onchange="autoSaveProviderCfg()"></select>
         <div class="hint" id="model-fetch-status" style="margin-top:4px"></div>
         <div class="hint" id="s-model-hint" style="margin-top:4px"></div>
       </div>
       <div class="field" id="field-custom-model" style="display:none"><label id="s-custom-model-label">Model (název)</label>
-        <input type="text" id="cfg-custom-model" placeholder="gpt-4o-mini">
+        <input type="text" id="cfg-custom-model" placeholder="gpt-4o-mini" onchange="autoSaveProviderCfg()">
       </div>
     </div>
     <div class="card">
