@@ -77,7 +77,7 @@ const MODELS={
   ollama:getModelsForProvider('ollama'),
   custom:[]
 };
-const DEFAULT_PROVIDER_SETTINGS={anthropic:{apiKey:'',model:''},openai:{apiKey:'',model:''},gemini:{apiKey:'',model:''},ollama:{model:'',url:'http://localhost:11434'},custom:{apiKey:'',model:'',url:''}};
+const DEFAULT_PROVIDER_SETTINGS={anthropic:{apiKey:'',model:''},openai:{apiKey:'',model:''},gemini:{apiKey:'',model:''},ollama:{apiKey:'',model:'',url:'http://localhost:11434'},custom:{apiKey:'',model:'',url:''}};
 const LANG_META={bulgarian:{name:'Bulgarian',native:'Български',flag:'🇧🇬',lang:'bg'},croatian:{name:'Croatian',native:'Hrvatski',flag:'🇭🇷',lang:'hr'},czech:{name:'Czech',native:'Čeština',flag:'🇨🇿',lang:'cs'},danish:{name:'Danish',native:'Dansk',flag:'🇩🇰',lang:'da'},dutch:{name:'Dutch',native:'Nederlands',flag:'🇳🇱',lang:'nl'},english:{name:'English',native:'English',flag:'🇬🇧',lang:'en'},estonian:{name:'Estonian',native:'Eesti',flag:'🇪🇪',lang:'et'},finnish:{name:'Finnish',native:'Suomi',flag:'🇫🇮',lang:'fi'},french:{name:'French',native:'Français',flag:'🇫🇷',lang:'fr'},german:{name:'German',native:'Deutsch',flag:'🇩🇪',lang:'de'},greek:{name:'Greek',native:'Ελληνικά',flag:'🇬🇷',lang:'el'},hungarian:{name:'Hungarian',native:'Magyar',flag:'🇭🇺',lang:'hu'},italian:{name:'Italian',native:'Italiano',flag:'🇮🇹',lang:'it'},latvian:{name:'Latvian',native:'Latviešu',flag:'🇱🇻',lang:'lv'},lithuanian:{name:'Lithuanian',native:'Lietuvių',flag:'🇱🇹',lang:'lt'},norwegian:{name:'Norwegian',native:'Norsk',flag:'🇳🇴',lang:'no'},polish:{name:'Polish',native:'Polski',flag:'🇵🇱',lang:'pl'},portuguese:{name:'Portuguese',native:'Português',flag:'🇵🇹',lang:'pt'},romanian:{name:'Romanian',native:'Română',flag:'🇷🇴',lang:'ro'},serbian:{name:'Serbian',native:'Srpski',flag:'🇷🇸',lang:'sr'},slovak:{name:'Slovak',native:'Slovenčina',flag:'🇸🇰',lang:'sk'},slovenian:{name:'Slovenian',native:'Slovenščina',flag:'🇸🇮',lang:'sl'},spanish:{name:'Spanish',native:'Español',flag:'🇪🇸',lang:'es'},swedish:{name:'Swedish',native:'Svenska',flag:'🇸🇪',lang:'sv'},ukrainian:{name:'Ukrainian',native:'Українська',flag:'🇺🇦',lang:'uk'},arabic:{name:'Arabic',native:'العربية',flag:'🇸🇦',lang:'ar'},chinese:{name:'Chinese',native:'中文',flag:'🇨🇳',lang:'zh'},hindi:{name:'Hindi',native:'हिन्दी',flag:'🇮🇳',lang:'hi'},japanese:{name:'Japanese',native:'日本語',flag:'🇯🇵',lang:'ja'},korean:{name:'Korean',native:'한국어',flag:'🇰🇷',lang:'ko'},turkish:{name:'Turkish',native:'Türkçe',flag:'🇹🇷',lang:'tr'}};
 const SORT_MODES=['alpha','due','new'];
 let sortIdx=0;
@@ -120,14 +120,14 @@ function populateLangSelects(){
 }
 function _saveProviderSettings(p){
   const ps=cfg.providerSettings[p]||(cfg.providerSettings[p]={});
-  if(p!=='ollama')ps.apiKey=(document.getElementById('cfg-apikey')?.value||'').trim();
+  ps.apiKey=(document.getElementById('cfg-apikey')?.value||'').trim();
   if(p==='ollama')ps.url=(document.getElementById('cfg-ollama-url')?.value||'').trim();
   if(p==='custom'){ps.url=(document.getElementById('cfg-custom-url')?.value||'').trim();ps.model=(document.getElementById('cfg-custom-model')?.value||'').trim();}
   else ps.model=document.getElementById('cfg-model')?.value||'';
 }
 function _loadProviderSettings(p){
   const ps=cfg.providerSettings[p]||{};
-  if(p!=='ollama')cfg.apiKey=ps.apiKey||'';
+  cfg.apiKey=ps.apiKey||'';
   if(p==='ollama')cfg.ollamaUrl=ps.url||'http://localhost:11434';
   if(p==='custom'){cfg.customUrl=ps.url||'';cfg.customModel=ps.model||'';}
   else cfg.model=ps.model||(MODELS[p]?.[0]||'');
@@ -360,39 +360,126 @@ function populateSettingsUI(){
   document.getElementById('cfg-custom-model').value=cfg.customModel||'';
   document.getElementById('cfg-font-size').value=cfg.fontSize||'medium';
   document.getElementById('cfg-theme').value=cfg.theme||'auto';
-  rebuildModelList(cfg.provider);
+  rebuildModelList(cfg.provider,MODELS_METADATA[cfg.provider]||[]);
   document.getElementById('cfg-model').value=cfg.model;
   toggleProviderFields(cfg.provider);
   updateApiKeyHint();
   updateApiKeyStatus();
+  setModelHint(cfg.provider);
 }
-function onProviderChange(p){_saveProviderSettings(cfg.provider);cfg.provider=p;_loadProviderSettings(p);rebuildModelList(p);document.getElementById('cfg-model').value=cfg.model;toggleProviderFields(p);updateApiKeyHint();updateApiKeyStatus();}
-function rebuildModelList(p){
+function onProviderChange(p){
+  _saveProviderSettings(cfg.provider);cfg.provider=p;_loadProviderSettings(p);
+  rebuildModelList(p,MODELS_METADATA[p]||[]);
+  document.getElementById('cfg-model').value=cfg.model;
+  toggleProviderFields(p);updateApiKeyHint();updateApiKeyStatus();
+  setModelHint(p);
+  if(p==='ollama')fetchAndRebuildModels();
+}
+function rebuildModelList(p,models){
   const s=document.getElementById('cfg-model');
   s.innerHTML='';
-  const models=MODELS_METADATA[p]||[];
   models.forEach(m=>{
     const o=document.createElement('option');
-    o.value=m.id;
-    // Display: Model Name with price tier and speed in parentheses
-    const priceLabel=m.tier==='budget'?'$':m.tier==='standard'?'$$':'$$$';
-    const speedLabel=m.speed==='fast'?'⚡':m.speed==='balanced'?'⚖️':'🐢';
-    o.textContent=`${m.name} (${priceLabel} ${speedLabel})`;
+    o.value=m.id||m;
+    o.textContent=m.name||m.id||m;
     s.appendChild(o);
   });
-  if(models.some(m=>m.id===cfg.model))s.value=cfg.model;
+  const ids=models.map(m=>m.id||m);
+  if(ids.includes(cfg.model)){
+    s.value=cfg.model;
+  }else if(cfg.model){
+    const o=document.createElement('option');
+    o.value=cfg.model;
+    o.textContent=cfg.model;
+    s.insertBefore(o,s.firstChild);
+    s.value=cfg.model;
+  }else if(ids.length){
+    s.value=ids[0];
+  }
 }
+function setModelHint(p){
+  const el=document.getElementById('s-model-hint');
+  if(!el)return;
+  const hints={
+    anthropic:t.modelHintAnthropic||'Pro běžné použití doporučujeme Haiku nebo Sonnet — jsou rychlé a výrazně levnější než Opus.',
+    openai:t.modelHintOpenai||'Pro běžné použití doporučujeme modely řady Mini nebo Flash — jsou rychlé a výrazně levnější.',
+    gemini:t.modelHintGemini||'Pro běžné použití doporučujeme modely řady Flash nebo Flash-Lite — jsou rychlé a levné.',
+    ollama:'',custom:''
+  };
+  el.textContent=hints[p]||'';
+}
+async function fetchModels(provider,apiKey,ollamaUrl){
+  if(provider==='anthropic'){
+    const r=await fetch('https://api.anthropic.com/v1/models',{headers:{'x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}});
+    if(!r.ok)throw new Error(r.status);
+    const d=await r.json();
+    return (d.data||[]).filter(m=>/claude/i.test(m.id)).map(m=>({id:m.id,name:m.display_name||m.id}));
+  }
+  if(provider==='openai'){
+    const r=await fetch('https://api.openai.com/v1/models',{headers:{Authorization:`Bearer ${apiKey}`}});
+    if(!r.ok)throw new Error(r.status);
+    const d=await r.json();
+    return (d.data||[])
+      .filter(m=>/^(gpt-|o[0-9]|chatgpt-)/.test(m.id)&&!/(instruct|vision|realtime|audio|preview-\d{4}|0[0-9]{2,})/.test(m.id))
+      .sort((a,b)=>b.created-a.created)
+      .map(m=>({id:m.id,name:m.id}));
+  }
+  if(provider==='gemini'){
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}&pageSize=50`);
+    if(!r.ok)throw new Error(r.status);
+    const d=await r.json();
+    return (d.models||[])
+      .filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent'))
+      .map(m=>({id:m.name.replace('models/',''),name:m.displayName||m.name.replace('models/','')}));
+  }
+  if(provider==='ollama'){
+    const base=(ollamaUrl||'http://localhost:11434').replace(/\/$/,'');
+    const headers={};
+    if(apiKey)headers['Authorization']=`Bearer ${apiKey}`;
+    const r=await fetch(`${base}/api/tags`,{headers});
+    if(!r.ok)throw new Error(r.status);
+    const d=await r.json();
+    return (d.models||[]).map(m=>({id:m.name,name:m.name}));
+  }
+  return [];
+}
+
+async function fetchAndRebuildModels(){
+  const p=document.getElementById('cfg-provider').value;
+  const apiKey=(document.getElementById('cfg-apikey')?.value||'').trim();
+  const ollamaUrl=(document.getElementById('cfg-ollama-url')?.value||'').trim();
+  const statusEl=document.getElementById('model-fetch-status');
+  const btn=document.getElementById('fetch-models-btn');
+  if(p!=='ollama'&&!apiKey){statusEl.textContent=t.fetchModelsNoKey||'Nejdříve zadej API klíč.';return;}
+  statusEl.textContent=t.fetchModelsLoading||'Načítám modely…';
+  if(btn)btn.disabled=true;
+  try{
+    const models=await fetchModels(p,apiKey,ollamaUrl);
+    if(!models.length)throw new Error('empty');
+    rebuildModelList(p,models);
+    const sel=document.getElementById('cfg-model');
+    if(cfg.model&&[...sel.options].some(o=>o.value===cfg.model))sel.value=cfg.model;
+    statusEl.textContent=`✓ ${models.length} ${t.fetchModelsOk||'modelů načteno'}`;
+    setTimeout(()=>{statusEl.textContent='';},3000);
+  }catch(e){
+    rebuildModelList(p,MODELS_METADATA[p]||[]);
+    statusEl.textContent=t.fetchModelsError||'Nepodařilo se načíst modely — používám výchozí seznam.';
+  }finally{
+    if(btn)btn.disabled=false;
+  }
+}
+
 function toggleProviderFields(p){
   const isOllama=p==='ollama',isCustom=p==='custom',isAnthropic=p==='anthropic';
-  document.getElementById('field-apikey').style.display=isOllama?'none':'';
+  document.getElementById('field-apikey').style.display='';
   document.getElementById('field-ollama-url').style.display=isOllama?'':'none';
   document.getElementById('field-custom-url').style.display=isCustom?'':'none';
   document.getElementById('field-custom-model').style.display=isCustom?'':'none';
   document.getElementById('field-model-select').style.display=isCustom?'none':'';
   document.getElementById('s-anthropic-hint').style.display=isAnthropic?'':'none';
 }
-function updateApiKeyHint(){const el=document.getElementById('apikey-hint');const h=t.apiHints[cfg.provider]||'';el.textContent=h?t.sGenerateAt(h):'';document.getElementById('apikey-storage-warn').textContent=cfg.provider!=='ollama'?t.apiKeyStorageWarn:'';}
-function updateApiKeyStatus(){const el=document.getElementById('apikey-status');if(cfg.provider==='ollama'||cfg.provider==='custom'){el.textContent='';return;}const k=document.getElementById('cfg-apikey')?.value||cfg.apiKey||'';el.innerHTML=k.length>8?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:`<span class="status-dot status-empty"></span>${t.noApiKey}`;}
+function updateApiKeyHint(){const el=document.getElementById('apikey-hint');const h=t.apiHints[cfg.provider]||'';el.textContent=cfg.provider==='ollama'?(t.ollamaApiKeyHint||'Volitelné — vyžadováno pouze pokud je Ollama zabezpečena klíčem (OLLAMA_API_KEY) nebo reverse proxy.'):h?t.sGenerateAt(h):'';document.getElementById('apikey-storage-warn').textContent=cfg.provider!=='ollama'?t.apiKeyStorageWarn:'';}
+function updateApiKeyStatus(){const el=document.getElementById('apikey-status');if(cfg.provider==='custom'){el.textContent='';return;}const k=document.getElementById('cfg-apikey')?.value||cfg.apiKey||'';if(cfg.provider==='ollama'){el.innerHTML=k.length>0?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:'';return;}el.innerHTML=k.length>8?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:`<span class="status-dot status-empty"></span>${t.noApiKey}`;}
 function onUiLangChange(l){cfg.uiLang=l;t=I18N[l]||I18N.cs;applyI18n();}
 function applyFontSize(size){const m={small:'13px',medium:'15px',large:'17px',xl:'20px'};document.documentElement.style.setProperty('--fs',m[size]||'15px');}
 function applyTheme(){const th=cfg.theme||'auto';if(th==='auto'){document.documentElement.dataset.theme=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}else{document.documentElement.dataset.theme=th;}}
@@ -1271,7 +1358,9 @@ async function callGemini(msgs,sys,maxTokens=1024,signal){
 async function callOllama(msgs,sys,signal){
   const base=(cfg.ollamaUrl||'http://localhost:11434').replace(/\/$/,'');
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
-  const res=await fetch(`${base}/api/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,stream:false,messages:m}),signal});
+  const headers={'Content-Type':'application/json'};
+  if(cfg.apiKey)headers['Authorization']=`Bearer ${cfg.apiKey}`;
+  const res=await fetch(`${base}/api/chat`,{method:'POST',headers,body:JSON.stringify({model:cfg.model,stream:false,messages:m}),signal});
   if(!res.ok)await httpErr(res);
   return(await res.json()).message.content;
 }
@@ -1350,7 +1439,9 @@ async function callGeminiStream(msgs,sys,maxTokens,signal,onChunk){
 async function callOllamaStream(msgs,sys,signal,onChunk){
   const base=(cfg.ollamaUrl||'http://localhost:11434').replace(/\/$/,'');
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
-  const res=await fetch(`${base}/api/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:cfg.model,stream:true,messages:m}),signal});
+  const headers={'Content-Type':'application/json'};
+  if(cfg.apiKey)headers['Authorization']=`Bearer ${cfg.apiKey}`;
+  const res=await fetch(`${base}/api/chat`,{method:'POST',headers,body:JSON.stringify({model:cfg.model,stream:true,messages:m}),signal});
   if(!res.ok)await httpErr(res);
   const reader=res.body.getReader();
   const decoder=new TextDecoder();
