@@ -276,8 +276,11 @@ function applyI18n(){
   document.getElementById('modal-tags').placeholder=t.modalTagsPH;
   document.getElementById('import-text').placeholder=t.importTextPH;
   document.getElementById('gen-topic').placeholder=t.genTopicPH;
-  document.getElementById('modal-word-label').textContent=t.modalWordLabel;
-  document.getElementById('modal-trans-label').textContent=t.modalTransLabel;
+  const _langCode=LANG_META[vocabLang]?.lang||vocabLang;
+  const _wordBase=t.modalWordLabel.replace(/\s*\*$/,'');
+  document.getElementById('modal-word-label-text').textContent=`${_wordBase} (${_langCode}) *`;
+  document.getElementById('modal-trans-label-text').textContent=t.modalTransLabel;
+  document.getElementById('modal-swap-btn').title=t.swapBtn;
   document.getElementById('modal-note-label').textContent=t.modalNoteLabel;
   document.getElementById('modal-tags-label').textContent=t.modalTagsLabel;
   document.getElementById('modal-sm2-title').textContent=t.modalSm2Title;
@@ -617,9 +620,17 @@ function renderVocabList(){
 }
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
+function swapWordTrans(){
+  const w=document.getElementById('modal-word');
+  const tr=document.getElementById('modal-trans');
+  [w.value,tr.value]=[tr.value,w.value];
+}
 function openWordModal(word){
   editingWordId=word?word.id:null;
   document.getElementById('modal-title').textContent=word?t.modalEditTitle:t.modalAddTitle;
+  const _langCode=LANG_META[vocabLang]?.lang||vocabLang;
+  const _wordBase=t.modalWordLabel.replace(/\s*\*$/,'');
+  document.getElementById('modal-word-label-text').textContent=`${_wordBase} (${_langCode}) *`;
   document.getElementById('modal-word').value=word?word.word:'';
   document.getElementById('modal-trans').value=word?word.translation:'';
   document.getElementById('modal-notes').value=word?word.notes||'':'';
