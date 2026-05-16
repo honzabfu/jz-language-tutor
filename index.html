@@ -18,7 +18,7 @@
 
 <!-- ═══════ CHAT VIEW ═══════ -->
 
-<div id="chat-view" class="view active">
+<div id="chat-view" class="view">
   <div class="hdr">
     <button class="icon-btn" onclick="clearChat()" title="Nový rozhovor">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.68"/></svg>
@@ -155,6 +155,7 @@
 
 <div id="settings-view" class="view">
   <div class="hdr">
+    <div style="font-size:0.72rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--mut);text-align:center;padding-top:2px">Language Tutor</div>
     <h1 id="settings-title">Nastavení</h1>
   </div>
   <div class="settings-body">
@@ -250,6 +251,15 @@
           <option value="dark">Tmavý</option>
         </select>
       </div>
+      <div class="field"><label id="s-default-view-label">Výchozí záložka</label>
+        <select id="cfg-default-view">
+          <option value="chat" id="s-default-view-chat">Chat</option>
+          <option value="vocab" id="s-default-view-vocab">Slovíčka</option>
+          <option value="fc" id="s-default-view-fc">Flashcards</option>
+          <option value="quiz" id="s-default-view-quiz">Quiz</option>
+          <option value="tips" id="s-default-view-tips">Uložené</option>
+        </select>
+      </div>
     </div>
     <div class="card">
       <h3 id="s-data-title">Data & záloha</h3>
@@ -264,7 +274,7 @@
       </div>
       <span id="save-toast" class="save-toast"></span>
     </div>
-    <div style="text-align:center;font-size:0.8rem;color:var(--mut);padding-bottom:4px">Language Tutor v1.1.0 · PWA: <span id="s-add-to-home">Přidat na plochu</span> · <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" style="color:var(--mut)" id="s-help-link">Nápověda</a></div>
+    <div style="text-align:center;font-size:0.8rem;color:var(--mut);padding-bottom:4px">Language Tutor v1.2.0 · PWA: <span id="s-add-to-home">Přidat na plochu</span> · <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" style="color:var(--mut)" id="s-help-link">Nápověda</a></div>
     <div style="text-align:center;font-size:0.8rem;color:var(--mut);padding-bottom:8px"><a href="https://jan-zak.cz" target="_blank" rel="noopener" style="color:var(--mut)">jan-zak.cz</a> — další užitečné aplikace</div>
   </div>
 </div>
@@ -288,7 +298,7 @@
 <!-- ═══════ NAVBAR ═══════ -->
 
 <div id="navbar">
-  <button class="nav-btn active" id="nav-chat" onclick="navTo('chat')">
+  <button class="nav-btn" id="nav-chat" onclick="navTo('chat')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     <span id="nav-lbl-chat">Chat</span>
   </button>

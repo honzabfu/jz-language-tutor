@@ -49,6 +49,7 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
 - **CS/EN rozhraní** — přepínatelný jazyk celého rozhraní včetně nastavení; jazyk UI je nezávislý na mateřském jazyce
 - **Mateřský jazyk** — nastavitelný samostatně bez ohledu na jazyk UI; výběr z 32 jazyků; určuje jazyk překladů ve všech AI funkcích (chat, slovník, kvíz, generování slovíček); výchozí hodnota se odvozuje z jazyka UI
 - **Vlastní instrukce pro tutora** — volný text (max 500 znaků) přidaný do systémového promptu; personalizuje styl a zaměření tutora, např. „Always explain grammar rules when correcting" (doporučujeme psát anglicky)
+- **Výchozí záložka** — nastavitelná v Nastavení (Chat / Slovíčka / Flashcards / Quiz / Uložené); výchozí je Flashcards
 - **PWA** — lze přidat na domovskou obrazovku iOS/Android
 - **Bez backendu** — žádný server, žádný build, vše uloženo v localStorage
 
@@ -282,6 +283,7 @@ Claude Sonnet a GPT-5 jsou výrazně dražší alternativy. Ollama (lokální) j
 - [x] Dynamické načítání modelů — tlačítko „Načíst modely" stáhne aktuální seznam přímo z API providera (Anthropic, OpenAI, Gemini, Ollama); statický seznam slouží jako fallback; Ollama načítá automaticky po přepnutí providera; volitelný API klíč pro Ollama (OLLAMA_API_KEY / reverse proxy)
 - [x] Mateřský jazyk — nastavitelný nezávisle na jazyce UI; výběr z 32 jazyků; překlady ve všech AI funkcích (chat, slovník, kvíz, generování slovíček) se řídí tímto nastavením
 - [x] Vlastní instrukce pro tutora — volný text (max 500 znaků) přidaný do systémového promptu; živý čítač znaků; hint pro psaní v angličtině
+- [x] Výchozí záložka — nastavitelná v Nastavení; výchozí hodnota Flashcards
 
 ---
 
@@ -332,6 +334,7 @@ The primary purpose of this app is **practicing the vocabulary words you enter y
 - **CS/EN UI** — switchable interface language including all settings; UI language is independent of native language
 - **Native language setting** — configurable independently of the UI language; choose from 32 languages; determines the translation language in all AI features (chat, dictionary, quiz, vocabulary generation); defaults to the UI language if not set
 - **Custom tutor instructions** — freeform text (max 500 chars) appended to the system prompt; personalise tutor style and focus, e.g. "Always explain grammar rules when correcting" (writing in English gives best results)
+- **Default tab** — configurable in Settings (Chat / Vocab / Flashcards / Quiz / Saved tips); defaults to Flashcards
 - **PWA-ready** — add to iOS/Android home screen
 - **Zero backend** — no server, no build step, all data in localStorage
 
@@ -565,6 +568,7 @@ Claude Sonnet and GPT-5 are significantly more expensive alternatives. Ollama (l
 - [x] Dynamic model loading — "Load models" button fetches the current list directly from the provider API (Anthropic, OpenAI, Gemini, Ollama); static list used as fallback; Ollama auto-fetches on provider switch; optional API key for Ollama (OLLAMA_API_KEY / reverse proxy)
 - [x] Native language setting — configurable independently of the UI language; 32 languages available; translation target in chat, dictionary, quiz and vocabulary generation follows this setting
 - [x] Custom tutor instructions — freeform text (max 500 chars) appended to the system prompt; live character counter; hint to write in English for best results
+- [x] Default tab — configurable in Settings; defaults to Flashcards
 
 ---
 

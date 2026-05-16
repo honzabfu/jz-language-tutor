@@ -84,7 +84,7 @@ let sortIdx=0;
 
 // Shared across all views — starting a new request or switching views cancels any in-flight LLM call.
 let _abortCtrl=null;
-let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',customInstructions:'',uiLang:navigator.language.startsWith('cs')?'cs':'en',nativeLang:'',lessonMode:false,fontSize:'medium',theme:'auto',providerSettings:{}};
+let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',customInstructions:'',uiLang:navigator.language.startsWith('cs')?'cs':'en',nativeLang:'',lessonMode:false,fontSize:'medium',theme:'auto',defaultView:'fc',providerSettings:{}};
 let langLevels={};
 function getLangLevel(lang){return langLevels[lang]||'beginner';}
 function getNativeLangName(){const key=cfg.nativeLang||(cfg.uiLang==='cs'?'czech':'english');return LANG_META[key]?.name??'English';}
@@ -173,6 +173,7 @@ function _loadProviderSettings(p){
   document.getElementById('tips-lang-select').value=currentLang;
   updateEmptyState();
   updateInputPlaceholder();
+  navTo(cfg.defaultView||'fc');
 })();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(cfg.theme==='auto')applyTheme();});
 // Restore password fields when page is recovered from bfcache (iOS Safari clears them for security)
@@ -259,6 +260,9 @@ function applyI18n(){
   document.querySelector('#cfg-theme option[value="auto"]').textContent=t.themeAuto;
   document.querySelector('#cfg-theme option[value="light"]').textContent=t.themeLight;
   document.querySelector('#cfg-theme option[value="dark"]').textContent=t.themeDark;
+  document.getElementById('s-default-view-label').textContent=t.sDefaultViewLabel;
+  document.getElementById('s-default-view-vocab').textContent=t.navVocab;
+  document.getElementById('s-default-view-tips').textContent=t.navTips;
   document.getElementById('s-data-title').textContent=t.sDataTitle;
   document.getElementById('s-data-desc').textContent=t.sDataDesc;
   document.getElementById('s-save-btn').textContent=t.sSaveBtn;
@@ -375,6 +379,7 @@ function populateSettingsUI(){
   document.getElementById('cfg-custom-model').value=cfg.customModel||'';
   document.getElementById('cfg-font-size').value=cfg.fontSize||'medium';
   document.getElementById('cfg-theme').value=cfg.theme||'auto';
+  document.getElementById('cfg-default-view').value=cfg.defaultView||'fc';
   rebuildModelList(cfg.provider,MODELS_METADATA[cfg.provider]||[]);
   document.getElementById('cfg-model').value=cfg.model;
   toggleProviderFields(cfg.provider);
@@ -530,6 +535,7 @@ function saveSettings(){
   applyFontSize(cfg.fontSize);
   cfg.theme=document.getElementById('cfg-theme').value;
   applyTheme();
+  cfg.defaultView=document.getElementById('cfg-default-view').value;
   localStorage.setItem('lt-cfg',JSON.stringify(cfg));
   updateProviderBadge();
   const toast=document.getElementById('save-toast');
