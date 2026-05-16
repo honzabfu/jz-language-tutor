@@ -886,7 +886,7 @@ async function generateVocab(){
   const level=levelMap[selectedLevel]||'A1-A2';
   const nativeLang=getNativeLangName();
   if(!hasApiAccess()){
-    const prompt=`Generate ${count} ${meta.name} vocabulary words on the topic "${topic}" for ${level} level.\nReply ONLY as CSV (no header, one word per line):\nword in ${meta.name},translation in ${nativeLang},note or example in ${meta.name} (optional)\n\nExpected column format:\n<${meta.name} word>,<${nativeLang} translation>,<short usage note in ${meta.name} or empty>`;
+    const prompt=`Generate ${count} ${meta.name} vocabulary words on the topic "${topic}" for ${level} level.\nReply ONLY as CSV (no header, one word per line):\nword in ${meta.name},translation in ${nativeLang},grammatical note or example in ${meta.name} only (optional)\n\nExpected column format:\n<${meta.name} word>,<${nativeLang} translation>,<short grammatical note or example phrase in ${meta.name} only (e.g. gender, typical preposition, verb form, short phrase); empty if not needed>`;
     try{await navigator.clipboard.writeText(prompt);}
     catch{const ta=document.createElement('textarea');ta.value=prompt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
     closeGenModal();
@@ -900,7 +900,7 @@ async function generateVocab(){
   btn.textContent=t.genLoading;btn.disabled=true;
   const prompt=`Generate exactly ${count} ${meta.name} vocabulary words on the topic "${topic}" for a ${level} level learner. Translations should be in ${nativeLang}.
 Return ONLY a JSON array, no preamble, no markdown:
-[{"word":"<word in ${meta.name}>","translation":"<translation in ${nativeLang}>","notes":"<brief usage note or example, or empty string>","tags":["<topic category in ${nativeLang}>","${level}"]}]`;
+[{"word":"<word in ${meta.name}>","translation":"<translation in ${nativeLang}>","notes":"<short grammatical note or example phrase in ${meta.name} only (e.g. gender, typical preposition, verb form, short phrase); empty string if not applicable — do NOT use ${nativeLang} here>","tags":["<topic category in ${nativeLang}>","${level}"]}]`;
   try{
     const raw=await safeLLM([{role:'user',content:prompt}],'',Math.max(8192,count*200),_abortCtrl.signal);
     let arr;
