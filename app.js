@@ -1050,18 +1050,16 @@ async function quizAsk(lang){
   const word=quizCurrentWord;
   const meta=LANG_META[lang];
   const levelMap={beginner:'A1-A2',intermediate:'B1-B2',advanced:'C1-C2'};
-  const prompt=`You are a language quiz tutor testing the student on ${meta.name}.
-Level: ${levelMap[getLangLevel(lang)]||'A1-A2'}.
-Test this specific word: ${word.word} (meaning: ${word.translation}). Do NOT reveal the translation to the student.
-Ask a question that tests this word naturally (e.g. fill-in-the-blank, translate, use in a sentence).
-Respond ONLY with JSON: {"question":"<question text in ${meta.name}; if the task requires translation, you may include a ${getNativeLangName()} instruction>","targetWord":"${word.word}"}`;
+  const quizSys=`You are a language quiz tutor testing the student on ${meta.name}. Student level: ${levelMap[getLangLevel(lang)]||'A1-A2'}. Vary question formats naturally (fill-in-the-blank, translate, use in a sentence, etc.). Respond ONLY with valid JSON, no markdown.`;
+  const quizPrompt=`Test this specific word: "${word.word}" (meaning: "${word.translation}"). Do NOT reveal the translation to the student.
+Respond ONLY with JSON: {"question":"<question in ${meta.name}; if the task requires translation, you may include a ${getNativeLangName()} instruction>","targetWord":"${word.word}"}`;
   if(cfg.provider==='custom'&&(!cfg.customUrl||!cfg.customModel)){appendQuizMsg('tutor',t.errNoKey);return;}
   if(cfg.provider!=='ollama'&&cfg.provider!=='custom'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendQuizMsg('tutor',t.errNoKey);return;}
   abortPending();
   _abortCtrl=new AbortController();
   setQuizTyping(true);
   let raw;
-  try{raw=await safeLLM([{role:'user',content:prompt}],'',8192,_abortCtrl.signal);}
+  try{raw=await safeLLM([{role:'user',content:quizPrompt}],quizSys,8192,_abortCtrl.signal);}
   catch(err){setQuizTyping(false);if(err.name==='AbortError')return;appendQuizMsg('tutor',resolveErr(err));return;}
   setQuizTyping(false);
   try{const p=JSON.parse(clean(raw));appendQuizMsg('tutor',p.question);quizHistory.push({role:'assistant-question',word:p.targetWord,content:p.question});}
