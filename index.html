@@ -99,7 +99,7 @@
   <div class="hdr">
     <h1 id="fc-hdr-title">Flashcards</h1>
     <div class="hdr-right" style="display:flex;gap:6px;align-items:center">
-      <select id="fc-lang-select" onchange="startFlashcards(this.value)"></select>
+      <select id="fc-lang-select" onchange="onFCLangChange(this.value)"></select>
       <button class="fc-dir-btn" id="fc-dir-btn" onclick="toggleFcDirection()">⇄ Cizí</button>
     </div>
   </div>
@@ -114,7 +114,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.68"/></svg>
     </button>
     <h1 id="quiz-hdr-title">Quiz</h1>
-    <select id="quiz-lang-select" onchange="startQuiz()"></select>
+    <select id="quiz-lang-select" onchange="onQuizLangChange(this.value)"></select>
   </div>
   <div id="quiz-msg-list"><div id="quiz-empty" class="quiz-empty-state"><div style="font-size:2.67rem">🎯</div><h2 id="quiz-empty-title"></h2><p id="quiz-empty-desc"></p></div><div id="quiz-typing-row" class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
   <div id="quiz-input-area">
