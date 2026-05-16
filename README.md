@@ -38,7 +38,7 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
 
 ### Funkce
 
-- **Flashcards** — SM-2 spaced repetition: karty se ti zobrazují přesně ve chvíli, kdy je potřeba je zopakovat; přepínač směru (Cizí→Mateřský / Mateřský→Cizí)
+- **Flashcards** — SM-2 spaced repetition: karty se ti zobrazují přesně ve chvíli, kdy je potřeba je zopakovat; přepínač směru (Cizí→Mateřský / Mateřský→Cizí); filtr karet: **Dnes** (výchozí — nová + splatná), **Vše**, **Nová** (ještě neprocvičená), **Obtížná** (nízký easiness factor)
 - **Předčítání slov** — 🔊 poslouchej správnou výslovnost přímo v seznamu slovíček, na flashcardech i v modálním okně; používá webový prohlížečový API bez nutnosti klíče
 - **Kvíz mód** — AI tě zkouší ze tvých slovíček interaktivně (otázka → odpověď → zpětná vazba)
 - **Chat tutor** — konverzace v cílovém jazyce, zpětná vazba ke gramatice, překlady na požádání
@@ -275,7 +275,7 @@ Claude Sonnet a GPT-5 jsou výrazně dražší alternativy. Ollama (lokální) j
 
 - [ ] Statistiky pokroku (růst slovní zásoby, přesnost v čase)
 - [ ] Učební cíle s progress barem
-- [ ] Filtrování flashcards podle tagů
+- [x] Filtrování flashcards — výběr podle SM-2 stavu: Dnes (výchozí), Vše, Nová, Obtížná
 - [x] Tmavý režim — přepínač Světlý / Tmavý / Automaticky (systém) v Nastavení
 - [x] Refaktoring do oddělených souborů (`style.css`, `app.js`, `i18n.js`) — bez build nástroje, jen `<link>`/`<script src>`; zlepší udržovatelnost i18n a navigaci v kódu
 - [x] Tagování slovíček — zobrazení jako chipy v seznamu, prohledávatelnost, import/export CSV (4. sloupec s `|`), automatické generování tagů přes LLM
@@ -323,7 +323,7 @@ The primary purpose of this app is **practicing the vocabulary words you enter y
 
 ### Features
 
-- **Flashcards** — SM-2 spaced repetition: cards surface at precisely the right time; direction toggle (Foreign→Native / Native→Foreign)
+- **Flashcards** — SM-2 spaced repetition: cards surface at precisely the right time; direction toggle (Foreign→Native / Native→Foreign); card filter: **Today** (default — new + due), **All**, **New** (never reviewed), **Hard** (low easiness factor)
 - **Pronunciation** — 🔊 hear correct pronunciation directly in the vocabulary list, on flashcards, and in the word modal; uses native browser web speech API with no API key needed
 - **Quiz mode** — AI tests your vocabulary interactively (question → answer → feedback)
 - **Chat tutor** — conversation in the target language, grammar feedback, translations on demand
@@ -560,7 +560,7 @@ Claude Sonnet and GPT-5 are significantly more expensive alternatives. Ollama (l
 
 - [ ] Progress statistics (vocabulary growth, accuracy over time)
 - [ ] Learning goals with progress bar
-- [ ] Tag-based flashcard filtering
+- [x] Flashcard filter — SM-2 based: Today (default), All, New, Hard
 - [x] Dark mode — Light / Dark / Auto (system) toggle in Settings
 - [x] Refactor into separate files (`style.css`, `app.js`, `i18n.js`) — no build tool, just `<link>`/`<script src>`; improves i18n maintainability and code navigation
 - [x] Word tagging — chips displayed in the word list, searchable, CSV import/export (4th column with `|`), automatic tag generation via LLM
