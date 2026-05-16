@@ -563,7 +563,7 @@ function saveSettings(){
   setTimeout(()=>toast.classList.remove('visible'),2000);
   updateApiKeyStatus();
 }
-function updateProviderBadge(){const el=document.getElementById('provider-badge');const lb={anthropic:'Claude',openai:'GPT',gemini:'Gemini',ollama:'Ollama',custom:'Custom'};const ok=cfg.provider==='ollama'||(cfg.provider==='custom'&&!!cfg.customUrl&&!!cfg.customModel)||(cfg.apiKey&&cfg.apiKey.length>8);el.textContent=lb[cfg.provider]||cfg.provider;el.className='provider-badge'+(ok?'':' warn');}
+function updateProviderBadge(){const lb={anthropic:'Claude',openai:'GPT',gemini:'Gemini',ollama:'Ollama',custom:'Custom'};const ok=cfg.provider==='ollama'||(cfg.provider==='custom'&&!!cfg.customUrl&&!!cfg.customModel)||(cfg.apiKey&&cfg.apiKey.length>8);const text=lb[cfg.provider]||cfg.provider;const cls='provider-badge'+(ok?'':' warn');['provider-badge','quiz-provider-badge'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=text;el.className=cls;}});}
 
 // ── Export / Import full backup ──
 function exportAll(){
