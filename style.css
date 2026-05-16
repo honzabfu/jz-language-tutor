@@ -16,7 +16,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .hdr{background:var(--sur);border-bottom:1px solid var(--bdr);padding:10px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0;box-shadow:var(--sh)}
 .hdr h1{font-size:1.07rem;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hdr-right{flex-shrink:1;min-width:0}
-@media(max-width:480px){.mode-opt span{display:none}#provider-badge{display:none}#lang-select,#fc-lang-select{max-width:110px}.fc-dir-btn{max-width:72px;overflow:hidden;text-overflow:ellipsis}}
+@media(max-width:480px){.mode-opt span{display:none}#provider-badge{display:none}#chat-help-btn{display:none}#lang-select,#fc-lang-select{max-width:110px}.fc-dir-btn{max-width:72px;overflow:hidden;text-overflow:ellipsis}}
 .icon-btn{background:none;border:none;cursor:pointer;padding:6px;border-radius:var(--rs);color:var(--mut);display:flex;align-items:center;justify-content:center}
 .icon-btn:hover{background:var(--bg);color:var(--txt)}
 .icon-btn svg{width:20px;height:20px}
@@ -64,7 +64,7 @@ select:focus{outline:2px solid var(--pri)}
 .mode-opt.lesson.active{background:var(--lesson-bg);color:var(--lesson-txt)}
 
 /* INPUT */
-#input-area{background:var(--sur);border-top:1px solid var(--bdr);padding:8px 10px;padding-bottom:calc(8px + var(--sb));display:flex;gap:7px;align-items:flex-end;flex-shrink:0}
+#input-area{background:var(--sur);border-top:1px solid var(--bdr);padding:8px 10px;display:flex;gap:7px;align-items:flex-end;flex-shrink:0}
 #msg-input{flex:1;border:1px solid var(--bdr);border-radius:var(--r);padding:9px 12px;font-size:1rem;font-family:inherit;resize:none;outline:none;max-height:110px;line-height:1.4;background:var(--bg);transition:border-color .2s}
 #msg-input:focus{border-color:var(--pri);background:var(--sur)}
 #send-btn{background:var(--pri);color:#fff;border:none;border-radius:var(--r);padding:10px 13px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s}
@@ -142,7 +142,7 @@ select:focus{outline:2px solid var(--pri)}
 /* ── QUIZ VIEW ── */
 #quiz-view{background:var(--bg)}
 #quiz-msg-list{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
-#quiz-input-area{background:var(--sur);border-top:1px solid var(--bdr);padding:8px 10px;padding-bottom:calc(8px + var(--sb));display:flex;gap:7px;align-items:flex-end;flex-shrink:0}
+#quiz-input-area{background:var(--sur);border-top:1px solid var(--bdr);padding:8px 10px;display:flex;gap:7px;align-items:flex-end;flex-shrink:0}
 #quiz-input{flex:1;border:1px solid var(--bdr);border-radius:var(--r);padding:9px 12px;font-size:1rem;font-family:inherit;resize:none;outline:none;max-height:80px;line-height:1.4;background:var(--bg);transition:border-color .2s}
 #quiz-input:focus{border-color:var(--pri);background:var(--sur)}
 #quiz-send-btn{background:var(--pri);color:#fff;border:none;border-radius:var(--r);padding:10px 13px;cursor:pointer;display:flex;align-items:center;flex-shrink:0}
