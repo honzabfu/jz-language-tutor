@@ -11,7 +11,7 @@ Webová/mobilní aplikace pro podporu výuky jazyků s AI tutorem, flashcards (S
 | | | |
 |---|---|---|
 | ![Chat](screenshots/cs-chat.png) | ![Slovíčka](screenshots/cs-vocab.png) | ![Generování slovíček](screenshots/cs-generate.png) |
-| ![Flashcards](screenshots/cs-flashcards.png) | ![Quiz](screenshots/cs-quiz.png) | ![Nastavení](screenshots/cs-settings.png) |
+| ![Flashcards](screenshots/cs-flashcards.png) | ![Kvíz](screenshots/cs-quiz.png) | ![Nastavení](screenshots/cs-settings.png) |
 
 
 ### Proč tuto aplikaci?
@@ -40,7 +40,7 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
 
 - **Flashcards** — SM-2 spaced repetition: karty se ti zobrazují přesně ve chvíli, kdy je potřeba je zopakovat; přepínač směru (Cizí→Mateřský / Mateřský→Cizí)
 - **Předčítání slov** — 🔊 poslouchej správnou výslovnost přímo v seznamu slovíček, na flashcardech i v modálním okně; používá webový prohlížečový API bez nutnosti klíče
-- **Quiz mód** — AI tě zkouší ze tvých slovíček interaktivně (otázka → odpověď → zpětná vazba)
+- **Kvíz mód** — AI tě zkouší ze tvých slovíček interaktivně (otázka → odpověď → zpětná vazba)
 - **Chat tutor** — konverzace v cílovém jazyce, zpětná vazba ke gramatice, překlady na požádání
 - **Lesson mód** — tutor aktivně zapracovává tvá slovíčka do rozhovoru
 - **Slovník** — překryvný panel ve správě slovíček; zadáš slovo a LLM vrátí stručný slovníkový záznam (překlady s gramatickými kategoriemi + příklady použití); jedním kliknutím přidáš slovo do svého seznamu
@@ -49,14 +49,14 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
 - **CS/EN rozhraní** — přepínatelný jazyk celého rozhraní včetně nastavení; jazyk UI je nezávislý na mateřském jazyce
 - **Mateřský jazyk** — nastavitelný samostatně bez ohledu na jazyk UI; výběr z 32 jazyků; určuje jazyk překladů ve všech AI funkcích (chat, slovník, kvíz, generování slovíček); výchozí hodnota se odvozuje z jazyka UI
 - **Vlastní instrukce pro tutora** — volný text (max 500 znaků) přidaný do systémového promptu; personalizuje styl a zaměření tutora, např. „Always explain grammar rules when correcting" (doporučujeme psát anglicky)
-- **Výchozí záložka** — nastavitelná v Nastavení (Chat / Slovíčka / Flashcards / Quiz / Uložené); výchozí je Flashcards
+- **Výchozí záložka** — nastavitelná v Nastavení (Chat / Slovíčka / Flashcards / Kvíz / Uložené); výchozí je Flashcards
 - **PWA** — lze přidat na domovskou obrazovku iOS/Android
 - **Bez backendu** — žádný server, žádný build, vše uloženo v localStorage
 
 ### Jak začít
 
 1. Otevři aplikaci na **[honzabfu.github.io/jz-language-tutor](https://honzabfu.github.io/jz-language-tutor/)** — nebo stáhni celý repozitář a otevři `index.html` lokálně v prohlížeči.
-2. Získej API klíč (pro Chat a Quiz; Flashcards a správu slovíček klíč nepotřebuješ):
+2. Získej API klíč (pro Chat a Kvíz; Flashcards a správu slovíček klíč nepotřebuješ):
    - **Google Gemini** — [aistudio.google.com](https://aistudio.google.com) — zdarma s limitem (15 requestů/min, 1 500/den)
    - **Anthropic Claude** — [console.anthropic.com](https://console.anthropic.com)
    - **OpenAI** — [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
@@ -64,7 +64,7 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
    - **Vlastní provider** — libovolný OpenAI-compatible endpoint (viz níže)
 3. Přejdi do **Nastavení** → vyber poskytovatele → zadej API klíč → klikni **↻ Načíst modely** → vyber model. Nastavení providera (klíč, model) se ukládá automaticky ihned po změně.
 4. Přejdi do záložky **Slovíčka** → přidej první slovíčka.
-5. Procvičuj na záložce **Flashcards** nebo **Quiz**.
+5. Procvičuj na záložce **Flashcards** nebo **Kvíz**.
 
 ### Přidání slovíček
 
@@ -146,7 +146,7 @@ Formát: anglické slovo,český překlad,příklad věty
 
 ### Kolik slovíček přidávat?
 
-Flashcards a správa slovní zásoby jsou zcela zdarma — žádná AI volání. Při používání **Chat** a **Quiz** módů ale platí:
+Flashcards a správa slovní zásoby jsou zcela zdarma — žádná AI volání. Při používání **Chat** a **Kvíz** módů ale platí:
 
 > **Upozornění:** V Lesson módu se celý seznam slovíček odesílá s každou zprávou. Čím více slovíček, tím vyšší spotřeba tokenů a cena. Doporučujeme mít aktivně procvičovaných **20–50 slovíček** a zbytek archivovat exportem.
 
@@ -176,7 +176,7 @@ Obnova: **Nastavení → Import zálohy** → nahraj JSON soubor.
 | Generování slovíček       | ⚡ kopíruje prompt     | ✅       |
 | Slovník                   | ❌                     | ✅       |
 | Chat tutor                | ❌                     | ✅       |
-| Quiz mód                  | ❌                     | ✅       |
+| Kvíz mód                  | ❌                     | ✅       |
 
 > Výjimka: **Ollama** (lokální) a **vlastní provider** nevyžadují klíč — stačí URL.  
 > **Předčítání** používá Web Speech API prohlížeče (bez připojení k internetu), takže funguje vždy.
@@ -223,7 +223,7 @@ LLM se volá v **Chatu**, **Kvízu**, **Slovníku** a při **Generování sloví
 Na začátku konverzace: **~300–500 tokenů celkem**.  
 Po 10+ zprávách s lesson módem: **~1 500–2 500 tokenů celkem**.
 
-#### Quiz — jedno kolo (otázka + vyhodnocení)
+#### Kvíz — jedno kolo (otázka + vyhodnocení)
 
 | Volání                     | Vstup | Výstup |
 |----------------------------|-------|--------|
@@ -262,7 +262,7 @@ Příklad pro **gemini-2.5-flash** ($0,50/M vstupních, $1,50/M výstupních tok
 |-------------------------------------|---------------------------|-----------|
 | 1 chatová zpráva                    | ~700 in + ~350 out        | ~$0,001   |
 | Hodina aktivního chatu (~50 zpráv)  | ~35 000 in + ~17 500 out  | ~$0,04    |
-| Quiz session (10 kol)               | ~3 500 celkem             | ~$0,003   |
+| Kvíz session (10 kol)               | ~3 500 celkem             | ~$0,003   |
 | 1 vyhledání ve slovníku             | ~110 in + ~150 out        | ~$0,0003  |
 | Generování 10 slovíček              | ~100 in + ~500 out        | ~$0,0009  |
 | Generování 50 slovíček              | ~100 in + ~2 500 out      | ~$0,004   |
