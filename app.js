@@ -265,6 +265,7 @@ function applyI18n(){
   document.querySelector('#cfg-theme option[value="dark"]').textContent=t.themeDark;
   document.getElementById('s-default-view-label').textContent=t.sDefaultViewLabel;
   document.getElementById('s-default-view-vocab').textContent=t.navVocab;
+  document.getElementById('s-default-view-quiz').textContent=t.navQuiz;
   document.getElementById('s-default-view-tips').textContent=t.navTips;
   document.getElementById('s-data-title').textContent=t.sDataTitle;
   document.getElementById('s-data-desc').textContent=t.sDataDesc;
