@@ -84,7 +84,7 @@ let sortIdx=0;
 
 // Shared across all views — starting a new request or switching views cancels any in-flight LLM call.
 let _abortCtrl=null;
-let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',uiLang:navigator.language.startsWith('cs')?'cs':'en',nativeLang:'',lessonMode:false,fontSize:'medium',theme:'auto',providerSettings:{}};
+let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',customInstructions:'',uiLang:navigator.language.startsWith('cs')?'cs':'en',nativeLang:'',lessonMode:false,fontSize:'medium',theme:'auto',providerSettings:{}};
 let langLevels={};
 function getLangLevel(lang){return langLevels[lang]||'beginner';}
 function getNativeLangName(){const key=cfg.nativeLang||(cfg.uiLang==='cs'?'czech':'english');return LANG_META[key]?.name??'English';}
@@ -244,6 +244,8 @@ function applyI18n(){
   document.querySelector('#cfg-feedback-style option[value="gentle"]').textContent=t.sFeedbackGentle;
   document.querySelector('#cfg-feedback-style option[value="balanced"]').textContent=t.sFeedbackBalanced;
   document.querySelector('#cfg-feedback-style option[value="strict"]').textContent=t.sFeedbackStrict;
+  document.getElementById('s-custom-instructions-label').textContent=t.sCustomInstructionsLabel;
+  document.getElementById('cfg-custom-instructions').placeholder=t.sCustomInstructionsPH;
   document.getElementById('s-ui-lang-label').textContent=t.sUiLangLabel;
   document.getElementById('s-native-lang-label').textContent=t.sNativeLangLabel;
   const _nlsOpt=document.querySelector('#cfg-native-lang option[value=""]');if(_nlsOpt)_nlsOpt.textContent=t.sNativeLangAuto;
@@ -363,6 +365,7 @@ function populateSettingsUI(){
   lls.value=currentLang;
   document.getElementById('cfg-level').value=getLangLevel(currentLang);
   document.getElementById('cfg-feedback-style').value=cfg.feedbackStyle;
+  document.getElementById('cfg-custom-instructions').value=cfg.customInstructions||'';
   document.getElementById('cfg-apikey').value=cfg.apiKey||'';
   document.getElementById('cfg-ollama-url').value=cfg.ollamaUrl;
   document.getElementById('cfg-custom-url').value=cfg.customUrl||'';
@@ -517,6 +520,7 @@ function saveSettings(){
   langLevels[settingsLang]=document.getElementById('cfg-level').value;
   localStorage.setItem('lt-levels',JSON.stringify(langLevels));
   cfg.feedbackStyle=document.getElementById('cfg-feedback-style').value;
+  cfg.customInstructions=document.getElementById('cfg-custom-instructions').value.trim();
   cfg.uiLang=document.getElementById('cfg-ui-lang').value;
   cfg.nativeLang=document.getElementById('cfg-native-lang').value;
   cfg.fontSize=document.getElementById('cfg-font-size').value;
@@ -857,9 +861,7 @@ async function generateVocab(){
   const level=levelMap[selectedLevel]||'A1-A2';
   const nativeLang=getNativeLangName();
   if(!hasApiAccess()){
-    const prompt=cfg.uiLang==='cs'
-      ?`Vygeneruj ${count} slovíček v jazyce ${meta.name} na téma "${topic}" pro úroveň ${level}.\nOdpověz POUZE jako CSV (bez záhlaví, jedno slovíčko na řádek):\nslovo v ${meta.name},překlad do ${nativeLang},poznámka nebo příklad (volitelné)\n\nPříklad výstupu pro angličtinu:\nto travel,cestovat,to travel by train\nairport,letiště,go to the airport`
-      :`Generate ${count} ${meta.name} vocabulary words on the topic "${topic}" for ${level} level.\nReply ONLY as CSV (no header, one word per line):\nword in ${meta.name},translation in ${nativeLang},note or example (optional)\n\nExample output for Spanish:\nviajar,to travel,viajar en tren\naeropuerto,airport,ir al aeropuerto`;
+    const prompt=`Generate ${count} ${meta.name} vocabulary words on the topic "${topic}" for ${level} level.\nReply ONLY as CSV (no header, one word per line):\nword in ${meta.name},translation in ${nativeLang},note or example (optional)\n\nExample output for Spanish:\nviajar,to travel,viajar en tren\naeropuerto,airport,ir al aeropuerto`;
     try{await navigator.clipboard.writeText(prompt);}
     catch{const ta=document.createElement('textarea');ta.value=prompt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
     closeGenModal();
@@ -1165,8 +1167,9 @@ function buildSystemPrompt(){
     const arr=getVocab(currentLang).slice(0,50);// cap prevents context overflow; UI warns at 40 words
     if(arr.length)vocabCtx=`\n\nActive vocabulary list (use these words naturally in your responses):\n${arr.map(w=>`${w.word} = ${w.translation}`).join('\n')}`;
   }
+  const customCtx=cfg.customInstructions?`\nAdditional instructions: ${cfg.customInstructions}`:'';
   return `You are a friendly language tutor helping practice ${meta.name} (${meta.native}).
-Student level: ${lvMap[getLangLevel(currentLang)]||'A1-A2'}. Feedback style: ${fbMap[cfg.feedbackStyle]||'balanced'}.${vocabCtx}
+Student level: ${lvMap[getLangLevel(currentLang)]||'A1-A2'}. Feedback style: ${fbMap[cfg.feedbackStyle]||'balanced'}.${vocabCtx}${customCtx}
 ${cfg.lessonMode?'LESSON MODE: Actively incorporate vocabulary from the list above into your responses and explanations.':''}
 Respond ONLY with valid JSON (no markdown, no preamble):
 {"reply":"<response in ${meta.name}>","translation":"<${uiLangName} translation>","feedback":{"positive":["..."],"corrections":["..."],"suggestions":["..."]}}`;
