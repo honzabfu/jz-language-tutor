@@ -351,6 +351,7 @@ function applyI18n(){
   document.getElementById('dict-add-btn').textContent=t.dictAddBtn;
   document.getElementById('dict-close-btn').textContent=t.dictCloseBtn;
   document.getElementById('dict-btn').textContent=t.dictOpenBtn;
+  document.getElementById('dict-warning').innerHTML=t.dictWarning;
 }
 function updateInputPlaceholder(){const m=LANG_META[currentLang];const label=m?(cfg.uiLang==='en'?m.name:m.native):currentLang;document.getElementById('msg-input').placeholder=t.inputPH(label);}
 function updateEmptyState(){const m=LANG_META[currentLang];if(m)document.getElementById('empty-flag').textContent=m.flag;}
@@ -819,7 +820,7 @@ async function dictLookup(){
   const targetLang=targetMeta?targetMeta.name:vocabLang;
   const nativeLang=getNativeLangName();
   const sys=`You are a concise bilingual ${targetLang}–${nativeLang} dictionary. Reply with ONLY valid JSON, no markdown fences, no extra text. Keep all fields brief.`;
-  const userPrompt=`Look up: "${word}"\nReturn JSON with fields:\n- "entry": plain-text dictionary entry in ${targetLang}, max 3 lines: word+colon on line 1, grammatical category+main translations on line 2, one short usage example in ${targetLang} on line 3\n- "word": the word as given\n- "translation": main translations in ${nativeLang} as short comma-separated string (max 5 words)\n- "notes": one short usage example in ${targetLang} (empty if none, max 10 words)`;
+  const userPrompt=`Look up: "${word}"\nReturn JSON with fields:\n- "entry": plain-text dictionary entry in ${targetLang}, max 3 lines: word+colon on line 1, grammatical category+main translations on line 2, one short usage example in ${targetLang} on line 3\n- "word": the word as given\n- "translation": main translations in ${nativeLang} as short comma-separated string (max 5 words)\n- "notes": one short grammatical note or typical collocation in ${targetLang} (e.g. verb government, gender, typical preposition); empty string if not applicable`;
   try{
     const raw=await safeLLM([{role:'user',content:userPrompt}],sys,4096);
     let json;try{json=JSON.parse(clean(raw));}catch{throw new Error(t.errParseLlm);}
@@ -871,7 +872,7 @@ async function generateVocab(){
   const level=levelMap[selectedLevel]||'A1-A2';
   const nativeLang=getNativeLangName();
   if(!hasApiAccess()){
-    const prompt=`Generate ${count} ${meta.name} vocabulary words on the topic "${topic}" for ${level} level.\nReply ONLY as CSV (no header, one word per line):\nword in ${meta.name},translation in ${nativeLang},note or example (optional)\n\nExample output for Spanish:\nviajar,to travel,viajar en tren\naeropuerto,airport,ir al aeropuerto`;
+    const prompt=`Generate ${count} ${meta.name} vocabulary words on the topic "${topic}" for ${level} level.\nReply ONLY as CSV (no header, one word per line):\nword in ${meta.name},translation in ${nativeLang},note or example in ${meta.name} (optional)\n\nExpected column format:\n<${meta.name} word>,<${nativeLang} translation>,<short usage note in ${meta.name} or empty>`;
     try{await navigator.clipboard.writeText(prompt);}
     catch{const ta=document.createElement('textarea');ta.value=prompt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
     closeGenModal();
@@ -885,7 +886,7 @@ async function generateVocab(){
   btn.textContent=t.genLoading;btn.disabled=true;
   const prompt=`Generate exactly ${count} ${meta.name} vocabulary words on the topic "${topic}" for a ${level} level learner. Translations should be in ${nativeLang}.
 Return ONLY a JSON array, no preamble, no markdown:
-[{"word":"<word in ${meta.name}>","translation":"<translation in ${nativeLang}>","notes":"<brief usage note or example, or empty string>","tags":["<topic category in ${nativeLang}>","<CEFR level, e.g. A1>"]}]`;
+[{"word":"<word in ${meta.name}>","translation":"<translation in ${nativeLang}>","notes":"<brief usage note or example, or empty string>","tags":["<topic category in ${nativeLang}>","${level}"]}]`;
   try{
     const raw=await safeLLM([{role:'user',content:prompt}],'',Math.max(8192,count*200),_abortCtrl.signal);
     let arr;
@@ -1049,18 +1050,16 @@ async function quizAsk(lang){
   const word=quizCurrentWord;
   const meta=LANG_META[lang];
   const levelMap={beginner:'A1-A2',intermediate:'B1-B2',advanced:'C1-C2'};
-  const prompt=`You are a language quiz tutor testing the student on ${meta.name}.
-Level: ${levelMap[getLangLevel(lang)]||'A1-A2'}.
-Test this specific word: ${word.word} (meaning: ${word.translation}). Do NOT reveal the translation to the student.
-Ask a question that tests this word naturally (e.g. fill-in-the-blank, translate, use in a sentence).
-Respond ONLY with JSON: {"question":"<question text in ${meta.name}; if the task requires translation, you may include a ${getNativeLangName()} instruction>","targetWord":"${word.word}"}`;
+  const quizSys=`You are a language quiz tutor testing the student on ${meta.name}. Student level: ${levelMap[getLangLevel(lang)]||'A1-A2'}. Vary question formats naturally (fill-in-the-blank, translate, use in a sentence, etc.). Respond ONLY with valid JSON, no markdown.`;
+  const quizPrompt=`Test this specific word: "${word.word}" (meaning: "${word.translation}"). Do NOT reveal the translation to the student.
+Respond ONLY with JSON: {"question":"<question in ${meta.name}; if the task requires translation, you may include a ${getNativeLangName()} instruction>","targetWord":"${word.word}"}`;
   if(cfg.provider==='custom'&&(!cfg.customUrl||!cfg.customModel)){appendQuizMsg('tutor',t.errNoKey);return;}
   if(cfg.provider!=='ollama'&&cfg.provider!=='custom'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendQuizMsg('tutor',t.errNoKey);return;}
   abortPending();
   _abortCtrl=new AbortController();
   setQuizTyping(true);
   let raw;
-  try{raw=await safeLLM([{role:'user',content:prompt}],'',8192,_abortCtrl.signal);}
+  try{raw=await safeLLM([{role:'user',content:quizPrompt}],quizSys,8192,_abortCtrl.signal);}
   catch(err){setQuizTyping(false);if(err.name==='AbortError')return;appendQuizMsg('tutor',resolveErr(err));return;}
   setQuizTyping(false);
   try{const p=JSON.parse(clean(raw));appendQuizMsg('tutor',p.question);quizHistory.push({role:'assistant-question',word:p.targetWord,content:p.question});}
