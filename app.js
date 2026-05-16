@@ -187,7 +187,7 @@ function navTo(name){
   document.getElementById(name+'-view').classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('nav-'+name).classList.add('active');
-  if(name==='vocab'){renderVocabList();}
+  if(name==='vocab'){vocabLang=currentLang;document.getElementById('vocab-lang-select').value=currentLang;renderVocabList();}
   if(name==='fc'){document.getElementById('fc-lang-select').value=currentLang;startFlashcards(currentLang);}
   if(name==='quiz'){document.getElementById('quiz-lang-select').value=currentLang;if(!quizHistory.length)startQuiz();}
   if(name==='settings'){populateSettingsUI();}
@@ -611,7 +611,7 @@ function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2
 // ══════════════════════════════════════════════
 // VOCAB VIEW
 // ══════════════════════════════════════════════
-function onVocabLangChange(l){vocabLang=l;renderVocabList();}
+function onVocabLangChange(l){currentLang=l;vocabLang=l;localStorage.setItem('lt-lang',l);document.getElementById('lang-select').value=l;const lls=document.getElementById('cfg-level-lang-select');if(lls){lls.value=l;document.getElementById('cfg-level').value=getLangLevel(l);}renderVocabList();}
 function cycleSort(){sortIdx=(sortIdx+1)%SORT_MODES.length;document.getElementById('sort-btn').textContent=t[['sortAlpha','sortDue','sortNew'][sortIdx]];renderVocabList();}
 function renderVocabList(){
   const q=(document.getElementById('vocab-search').value||'').toLowerCase();
@@ -1257,7 +1257,7 @@ function renderFeedback(tab){
 // ══════════════════════════════════════════════
 function getSavedTips(lang){try{return JSON.parse(localStorage.getItem('lt-tips-'+lang)||'[]');}catch{return[];}}
 function setSavedTips(lang,arr){localStorage.setItem('lt-tips-'+(lang||currentLang),JSON.stringify(arr));}
-function onTipsLangChange(l){tipsLang=l;renderTipsList();}
+function onTipsLangChange(l){currentLang=l;tipsLang=l;localStorage.setItem('lt-lang',l);document.getElementById('lang-select').value=l;renderTipsList();}
 function setTipsFilter(filter,btn){tipsFilter=filter;document.querySelectorAll('.tips-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTipsList();}
 function saveTip(btn,text,type){
   const tips=getSavedTips(currentLang);
