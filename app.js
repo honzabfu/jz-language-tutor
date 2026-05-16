@@ -84,9 +84,10 @@ let sortIdx=0;
 
 // Shared across all views — starting a new request or switching views cancels any in-flight LLM call.
 let _abortCtrl=null;
-let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',uiLang:navigator.language.startsWith('cs')?'cs':'en',lessonMode:false,fontSize:'medium',theme:'auto',providerSettings:{}};
+let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',uiLang:navigator.language.startsWith('cs')?'cs':'en',nativeLang:'',lessonMode:false,fontSize:'medium',theme:'auto',providerSettings:{}};
 let langLevels={};
 function getLangLevel(lang){return langLevels[lang]||'beginner';}
+function getNativeLangName(){const key=cfg.nativeLang||(cfg.uiLang==='cs'?'czech':'english');return LANG_META[key]?.name??'English';}
 let chatHistory=[];
 let quizHistory=[];
 let quizQueue=[];
@@ -244,6 +245,8 @@ function applyI18n(){
   document.querySelector('#cfg-feedback-style option[value="balanced"]').textContent=t.sFeedbackBalanced;
   document.querySelector('#cfg-feedback-style option[value="strict"]').textContent=t.sFeedbackStrict;
   document.getElementById('s-ui-lang-label').textContent=t.sUiLangLabel;
+  document.getElementById('s-native-lang-label').textContent=t.sNativeLangLabel;
+  const _nlsOpt=document.querySelector('#cfg-native-lang option[value=""]');if(_nlsOpt)_nlsOpt.textContent=t.sNativeLangAuto;
   document.getElementById('s-font-size-label').textContent=t.sFontSizeLabel;
   document.querySelector('#cfg-font-size option[value="small"]').textContent=t.sFontSizeSmall;
   document.querySelector('#cfg-font-size option[value="medium"]').textContent=t.sFontSizeMedium;
@@ -279,7 +282,7 @@ function applyI18n(){
   const _langCode=LANG_META[vocabLang]?.lang||vocabLang;
   const _wordBase=t.modalWordLabel.replace(/\s*\*$/,'');
   document.getElementById('modal-word-label-text').textContent=`${_wordBase} (${_langCode}) *`;
-  document.getElementById('modal-trans-label-text').textContent=t.modalTransLabel;
+  document.getElementById('modal-trans-label-text').textContent=t.modalTransLabel.replace(/\s*\*$/,'')+' ('+getNativeLangName()+') *';
   document.getElementById('modal-swap-btn').title=t.swapBtn;
   document.getElementById('modal-note-label').textContent=t.modalNoteLabel;
   document.getElementById('modal-tags-label').textContent=t.modalTagsLabel;
@@ -352,6 +355,9 @@ function populateSettingsUI(){
   _loadProviderSettings(cfg.provider);
   document.getElementById('cfg-provider').value=cfg.provider;
   document.getElementById('cfg-ui-lang').value=cfg.uiLang;
+  const nls=document.getElementById('cfg-native-lang');
+  nls.innerHTML=`<option value="">${t.sNativeLangAuto}</option>`+Object.entries(LANG_META).sort(([,a],[,b])=>a.name.localeCompare(b.name)).map(([k,m])=>`<option value="${k}">${m.flag} ${m.name}</option>`).join('');
+  nls.value=cfg.nativeLang||'';
   const lls=document.getElementById('cfg-level-lang-select');
   lls.innerHTML=Object.entries(LANG_META).sort(([,a],[,b])=>a.native.localeCompare(b.native)).map(([k,m])=>`<option value="${k}">${m.flag} ${m.native}</option>`).join('');
   lls.value=currentLang;
@@ -512,6 +518,7 @@ function saveSettings(){
   localStorage.setItem('lt-levels',JSON.stringify(langLevels));
   cfg.feedbackStyle=document.getElementById('cfg-feedback-style').value;
   cfg.uiLang=document.getElementById('cfg-ui-lang').value;
+  cfg.nativeLang=document.getElementById('cfg-native-lang').value;
   cfg.fontSize=document.getElementById('cfg-font-size').value;
   applyFontSize(cfg.fontSize);
   cfg.theme=document.getElementById('cfg-theme').value;
@@ -796,7 +803,7 @@ async function dictLookup(){
   dictResult=null;
   const targetMeta=LANG_META[vocabLang];
   const targetLang=targetMeta?targetMeta.name:vocabLang;
-  const nativeLang=cfg.uiLang==='en'?'English':'Czech';
+  const nativeLang=getNativeLangName();
   const sys=`You are a concise bilingual ${targetLang}–${nativeLang} dictionary. Reply with ONLY valid JSON, no markdown fences, no extra text. Keep all fields brief.`;
   const userPrompt=`Look up: "${word}"\nReturn JSON with fields:\n- "entry": plain-text dictionary entry, max 3 lines: word+colon on line 1, grammatical category+main translations on line 2, one short usage example on line 3\n- "word": the word as given\n- "translation": main translations as short comma-separated string (max 5 words)\n- "notes": one short usage example (empty if none, max 10 words)`;
   try{
@@ -848,7 +855,7 @@ async function generateVocab(){
   langLevels[vocabLang]=selectedLevel;
   localStorage.setItem('lt-levels',JSON.stringify(langLevels));
   const level=levelMap[selectedLevel]||'A1-A2';
-  const nativeLang=cfg.uiLang==='cs'?'Czech':'English';
+  const nativeLang=getNativeLangName();
   if(!hasApiAccess()){
     const prompt=cfg.uiLang==='cs'
       ?`Vygeneruj ${count} slovíček v jazyce ${meta.name} na téma "${topic}" pro úroveň ${level}.\nOdpověz POUZE jako CSV (bez záhlaví, jedno slovíčko na řádek):\nslovo v ${meta.name},překlad do ${nativeLang},poznámka nebo příklad (volitelné)\n\nPříklad výstupu pro angličtinu:\nto travel,cestovat,to travel by train\nairport,letiště,go to the airport`
@@ -1034,7 +1041,7 @@ async function quizAsk(lang){
 Level: ${levelMap[getLangLevel(lang)]||'A1-A2'}.
 Test this specific word: ${word.word} (meaning: ${word.translation}). Do NOT reveal the translation to the student.
 Ask a question that tests this word naturally (e.g. fill-in-the-blank, translate, use in a sentence).
-Respond ONLY with JSON: {"question":"<question text in ${meta.name} and/or ${cfg.uiLang==='cs'?'Czech':'English'}>","targetWord":"${word.word}"}`;
+Respond ONLY with JSON: {"question":"<question text in ${meta.name} and/or ${getNativeLangName()}>","targetWord":"${word.word}"}`;
   if(cfg.provider==='custom'&&(!cfg.customUrl||!cfg.customModel)){appendQuizMsg('tutor',t.errNoKey);return;}
   if(cfg.provider!=='ollama'&&cfg.provider!=='custom'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendQuizMsg('tutor',t.errNoKey);return;}
   abortPending();
@@ -1067,7 +1074,7 @@ async function quizSend(){
 Question asked: "${question}"
 Target word: "${targetWord}"
 Student answer: "${txt}"
-Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief feedback in ${cfg.uiLang==='cs'?'Czech':'English'}>"}`;
+Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief feedback in ${getNativeLangName()}>"}`;
   let raw;
   try{raw=await safeLLM([{role:'user',content:evalPrompt}],'',8192,_abortCtrl.signal);}
   catch(err){setQuizTyping(false);if(err.name==='AbortError'){document.getElementById('quiz-send-btn').disabled=false;return;}appendQuizMsg('tutor',resolveErr(err));document.getElementById('quiz-send-btn').disabled=false;return;}
@@ -1152,7 +1159,7 @@ function buildSystemPrompt(){
   const meta=LANG_META[currentLang];
   const lvMap={beginner:'A1-A2',intermediate:'B1-B2',advanced:'C1-C2'};
   const fbMap={gentle:'encouraging and gentle',balanced:'balanced',strict:'strict and exhaustive'};
-  const uiLangName=cfg.uiLang==='cs'?'Czech':'English';
+  const uiLangName=getNativeLangName();
   let vocabCtx='';
   if(cfg.lessonMode){
     const arr=getVocab(currentLang).slice(0,50);// cap prevents context overflow; UI warns at 40 words
