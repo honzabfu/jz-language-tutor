@@ -11,7 +11,7 @@ PWA language tutor split into four source files — no build tool, no npm, no bu
 | `index.html` | ~450 | HTML structure only (views, overlays, nav) |
 | `style.css` | ~240 | All CSS |
 | `app.js` | ~1630 | All JavaScript logic |
-| `i18n.js` | ~5 (long) | `I18N` object with `cs` and `en` locale strings |
+| `i18n.js` | ~6 (long) | `I18N` object with `cs`, `en`, `es` locale strings |
 | `sw.js` | ~56 | Service worker (cache-first, cache key in line 1) |
 
 ## Development
@@ -50,7 +50,7 @@ No lint, no tests, no CI step — changes ship when merged to `main`.
   customModel,        // legacy (migrated)
   feedbackStyle,      // 'gentle' | 'balanced' | 'strict'
   customInstructions, // string, max 500 chars
-  uiLang,             // 'cs' | 'en'
+  uiLang,             // 'cs' | 'en' | 'es'  — see UI_LANGS in app.js
   nativeLang,         // LANG_META key or '' (auto)
   lessonMode,         // bool
   fontSize,           // 'small' | 'medium' | 'large' | 'xl'
@@ -86,9 +86,19 @@ Model metadata (tiers, capabilities, recommended flag) lives in `MODELS_METADATA
 
 ### I18N (`i18n.js`)
 
-Two locales — `cs` and `en` — in the `I18N` object. The active translations object is `t`. Call `applyI18n()` after changing `cfg.uiLang` to re-render all static labels. Dynamic labels are always read as `t.someKey` at render time.
+Locales — `cs`, `en`, `es` — in the `I18N` object. The active translations object is `t`. Call `applyI18n()` after changing `cfg.uiLang` to re-render all static labels. Dynamic labels are always read as `t.someKey` at render time.
 
-When adding a new translatable string: add the key to **both** locales in `i18n.js`, update `applyI18n()` in `app.js` to wire the element.
+When adding a new translatable string: add the key to **all** locales in `i18n.js`, update `applyI18n()` in `app.js` to wire the element.
+
+#### Adding a new UI language — checklist
+
+1. **`i18n.js`** — add a new locale object (copy `en`, translate all ~150 keys). Pay attention to arrow-function keys with pluralization (`fcDoneDesc`, `fcPendingFn`, `bulkCountFn`, `alertImportDoneFn`, `confirmDeleteLearnedFn`, `confirmDeleteSelectedFn`, `sm2DaysFn`).
+2. **`app.js` line 82** — add `{code:'xx', flag:'🏳️', label:'Language name'}` to `UI_LANGS`.
+3. **`app.js` line 88** — extend the `uiLang` auto-detection chain: `navigator.language.startsWith('xx')?'xx':…`
+4. **`app.js` `UI_LANG_NATIVE_FALLBACK`** — add `xx: 'languagename'` (key into `LANG_META`).
+5. **`app.js` `UI_LANG_LOCALE`** — add `xx: 'xx-XX'` (BCP 47 locale tag for `toLocaleDateString`).
+
+No changes needed in `applyI18n()`, `getUiLocale()`, or `getNativeLangName()` — they are locale-agnostic.
 
 ### Views
 
