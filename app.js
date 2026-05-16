@@ -531,6 +531,7 @@ function saveSettings(){
   cfg.customInstructions=document.getElementById('cfg-custom-instructions').value.trim();
   cfg.uiLang=document.getElementById('cfg-ui-lang').value;
   cfg.nativeLang=document.getElementById('cfg-native-lang').value;
+  applyI18n();
   cfg.fontSize=document.getElementById('cfg-font-size').value;
   applyFontSize(cfg.fontSize);
   cfg.theme=document.getElementById('cfg-theme').value;
