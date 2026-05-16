@@ -819,7 +819,7 @@ async function dictLookup(){
   const targetLang=targetMeta?targetMeta.name:vocabLang;
   const nativeLang=getNativeLangName();
   const sys=`You are a concise bilingual ${targetLang}–${nativeLang} dictionary. Reply with ONLY valid JSON, no markdown fences, no extra text. Keep all fields brief.`;
-  const userPrompt=`Look up: "${word}"\nReturn JSON with fields:\n- "entry": plain-text dictionary entry, max 3 lines: word+colon on line 1, grammatical category+main translations on line 2, one short usage example on line 3\n- "word": the word as given\n- "translation": main translations as short comma-separated string (max 5 words)\n- "notes": one short usage example (empty if none, max 10 words)`;
+  const userPrompt=`Look up: "${word}"\nReturn JSON with fields:\n- "entry": plain-text dictionary entry in ${targetLang}, max 3 lines: word+colon on line 1, grammatical category+main translations on line 2, one short usage example in ${targetLang} on line 3\n- "word": the word as given\n- "translation": main translations in ${nativeLang} as short comma-separated string (max 5 words)\n- "notes": one short usage example in ${targetLang} (empty if none, max 10 words)`;
   try{
     const raw=await safeLLM([{role:'user',content:userPrompt}],sys,4096);
     let json;try{json=JSON.parse(clean(raw));}catch{throw new Error(t.errParseLlm);}
@@ -1053,7 +1053,7 @@ async function quizAsk(lang){
 Level: ${levelMap[getLangLevel(lang)]||'A1-A2'}.
 Test this specific word: ${word.word} (meaning: ${word.translation}). Do NOT reveal the translation to the student.
 Ask a question that tests this word naturally (e.g. fill-in-the-blank, translate, use in a sentence).
-Respond ONLY with JSON: {"question":"<question text in ${meta.name} and/or ${getNativeLangName()}>","targetWord":"${word.word}"}`;
+Respond ONLY with JSON: {"question":"<question text in ${meta.name}; if the task requires translation, you may include a ${getNativeLangName()} instruction>","targetWord":"${word.word}"}`;
   if(cfg.provider==='custom'&&(!cfg.customUrl||!cfg.customModel)){appendQuizMsg('tutor',t.errNoKey);return;}
   if(cfg.provider!=='ollama'&&cfg.provider!=='custom'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendQuizMsg('tutor',t.errNoKey);return;}
   abortPending();
