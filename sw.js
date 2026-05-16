@@ -42,15 +42,15 @@ return;
 }
 
 e.respondWith(
-caches.match(e.request).then(cached => {
-if (cached) return cached;
-return fetch(e.request).then(resp => {
+caches.open(CACHE).then(cache =>
+cache.match(e.request).then(cached => {
+const revalidate = fetch(e.request).then(resp => {
 if (e.request.method === 'GET' && resp.status === 200 && url.origin === self.location.origin) {
-const clone = resp.clone();
-caches.open(CACHE).then(c => c.put(e.request, clone));
+cache.put(e.request, resp.clone());
 }
 return resp;
 });
+return cached || revalidate;
 })
 );
 });
