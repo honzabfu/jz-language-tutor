@@ -356,6 +356,9 @@ function applyI18n(){
   document.getElementById('dict-close-btn').textContent=t.dictCloseBtn;
   document.getElementById('dict-btn').textContent=t.dictOpenBtn;
   document.getElementById('dict-warning').innerHTML=t.dictWarning;
+  document.getElementById('footer-tagline').textContent=t.footerTagline;
+  document.getElementById('pwa-dismiss-btn').title=t.bannerDismiss;
+  document.getElementById('sw-dismiss-btn').title=t.bannerDismiss;
 }
 function updateInputPlaceholder(){const m=LANG_META[currentLang];const label=m?(cfg.uiLang==='en'?m.name:m.native):currentLang;document.getElementById('msg-input').placeholder=t.inputPH(label);}
 function updateEmptyState(){const m=LANG_META[currentLang];if(m)document.getElementById('empty-flag').textContent=m.flag;}
@@ -1112,7 +1115,7 @@ Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief fe
       quizQueue.push(quizQueue.shift());
     }
     if(!quizQueue.length){
-      setTimeout(()=>appendQuizMsg('tutor',cfg.uiLang==='cs'?'🎉 Kvíz dokončen! Všechna slova byla správně zodpovězena.':'🎉 Quiz complete! All words answered correctly.'),600);
+      setTimeout(()=>appendQuizMsg('tutor',t.quizDoneMsg),600);
     } else {
       setTimeout(()=>quizAsk(lang),600);
     }

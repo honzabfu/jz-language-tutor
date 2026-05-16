@@ -275,7 +275,7 @@
       <span id="save-toast" class="save-toast"></span>
     </div>
     <div style="text-align:center;font-size:0.8rem;color:var(--mut);padding-bottom:4px">Language Tutor v1.2.0 · PWA: <span id="s-add-to-home">Přidat na plochu</span> · <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" style="color:var(--mut)" id="s-help-link">Nápověda</a></div>
-    <div style="text-align:center;font-size:0.8rem;color:var(--mut);padding-bottom:8px"><a href="https://jan-zak.cz" target="_blank" rel="noopener" style="color:var(--mut)">jan-zak.cz</a> — další užitečné aplikace</div>
+    <div style="text-align:center;font-size:0.8rem;color:var(--mut);padding-bottom:8px"><a href="https://jan-zak.cz" target="_blank" rel="noopener" style="color:var(--mut)">jan-zak.cz</a> <span id="footer-tagline">— další užitečné aplikace</span></div>
   </div>
 </div>
 
@@ -284,7 +284,7 @@
 <div id="pwa-banner">
   <span id="pwa-banner-text">📲 Přidat Language Tutor na plochu</span>
   <button class="pwa-install-btn" id="pwa-install-btn" onclick="pwaInstall()">Přidat</button>
-  <button class="pwa-dismiss-btn" onclick="pwaDismiss()" title="Zavřít">×</button>
+  <button class="pwa-dismiss-btn" id="pwa-dismiss-btn" onclick="pwaDismiss()" title="Zavřít">×</button>
 </div>
 
 <!-- ═══════ SW UPDATE BANNER ═══════ -->
@@ -292,7 +292,7 @@
 <div id="sw-update-banner">
   <span id="sw-update-banner-text">🔄 Nová verze je k dispozici</span>
   <button class="sw-reload-btn" id="sw-reload-btn" onclick="window.location.reload()">Obnovit</button>
-  <button class="sw-dismiss-btn" onclick="document.getElementById('sw-update-banner').classList.remove('visible')" title="Zavřít">×</button>
+  <button class="sw-dismiss-btn" id="sw-dismiss-btn" onclick="document.getElementById('sw-update-banner').classList.remove('visible')" title="Zavřít">×</button>
 </div>
 
 <!-- ═══════ NAVBAR ═══════ -->
