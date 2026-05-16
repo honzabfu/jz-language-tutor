@@ -222,6 +222,8 @@ function applyI18n(){
   document.getElementById('mode-lbl-lesson').textContent=t.modeLesson;
   document.getElementById('mode-btn-chat').title=t.modeChatDesc;
   document.getElementById('mode-btn-lesson').title=t.modeLessonDesc;
+  document.getElementById('clear-chat-btn').title=t.clearChatTitle;
+  document.getElementById('chat-help-btn').title=t.sHelpLink;
   updateModeBadge();
   updateInputPlaceholder();
   updateApiKeyHint();
@@ -248,6 +250,7 @@ function applyI18n(){
   document.getElementById('s-custom-instructions-label').textContent=t.sCustomInstructionsLabel;
   document.getElementById('cfg-custom-instructions').placeholder=t.sCustomInstructionsPH;
   document.getElementById('s-custom-instructions-hint').textContent=t.sCustomInstructionsHint;
+  document.getElementById('s-ui-title').textContent=t.sUiTitle;
   document.getElementById('s-ui-lang-label').textContent=t.sUiLangLabel;
   document.getElementById('s-native-lang-label').textContent=t.sNativeLangLabel;
   const _nlsOpt=document.querySelector('#cfg-native-lang option[value=""]');if(_nlsOpt)_nlsOpt.textContent=t.sNativeLangAuto;
@@ -336,6 +339,7 @@ function applyI18n(){
   document.getElementById('sw-update-banner-text').textContent=t.swUpdateText;
   document.getElementById('sw-reload-btn').textContent=t.swReloadBtn;
   document.getElementById('add-word-btn').title=t.addWordTitle;
+  document.getElementById('vocab-cost-warn').textContent=t.vocabCostWarn;
   // tips view
   document.getElementById('tips-hdr-title').textContent=t.tipsHdr;
   document.getElementById('nav-lbl-tips').textContent=t.navTips;

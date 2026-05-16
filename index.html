@@ -20,12 +20,12 @@
 
 <div id="chat-view" class="view">
   <div class="hdr">
-    <button class="icon-btn" onclick="clearChat()" title="Nový rozhovor">
+    <button class="icon-btn" id="clear-chat-btn" onclick="clearChat()" title="Nový rozhovor">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.68"/></svg>
     </button>
     <h1 id="hdr-title">Language Tutor</h1>
     <div class="hdr-right" style="display:flex;gap:6px;align-items:center">
-      <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" class="icon-btn" title="Nápověda">
+      <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" class="icon-btn" id="chat-help-btn" title="Nápověda">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       </a>
       <div class="mode-toggle">
@@ -36,7 +36,7 @@
       <select id="lang-select" onchange="onLangChange(this.value)"></select>
     </div>
   </div>
-  <div id="vocab-cost-warn" style="display:none;font-size:0.8rem;padding:6px 14px;border-bottom:1px solid">⚠ Slovník obsahuje více než 40 slovíček — v Lesson módu se odesílají s každým dotazem, což zvyšuje cenu.</div>
+  <div id="vocab-cost-warn" style="display:none;font-size:0.8rem;padding:6px 14px;border-bottom:1px solid"></div>
   <div id="msg-list">
     <div id="empty">
       <div class="flag" id="empty-flag">🌍</div>
@@ -229,7 +229,7 @@
       </div>
     </div>
     <div class="card">
-      <h3>UI</h3>
+      <h3 id="s-ui-title">Rozhraní</h3>
       <div class="field"><label id="s-ui-lang-label">Jazyk rozhraní</label>
         <select id="cfg-ui-lang" onchange="onUiLangChange(this.value)">
           <option value="cs">Čeština</option>
