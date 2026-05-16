@@ -872,7 +872,7 @@ async function generateVocab(){
   const level=levelMap[selectedLevel]||'A1-A2';
   const nativeLang=getNativeLangName();
   if(!hasApiAccess()){
-    const prompt=`Generate ${count} ${meta.name} vocabulary words on the topic "${topic}" for ${level} level.\nReply ONLY as CSV (no header, one word per line):\nword in ${meta.name},translation in ${nativeLang},note or example (optional)\n\nExample output for Spanish:\nviajar,to travel,viajar en tren\naeropuerto,airport,ir al aeropuerto`;
+    const prompt=`Generate ${count} ${meta.name} vocabulary words on the topic "${topic}" for ${level} level.\nReply ONLY as CSV (no header, one word per line):\nword in ${meta.name},translation in ${nativeLang},note or example in ${meta.name} (optional)\n\nExpected column format:\n<${meta.name} word>,<${nativeLang} translation>,<short usage note in ${meta.name} or empty>`;
     try{await navigator.clipboard.writeText(prompt);}
     catch{const ta=document.createElement('textarea');ta.value=prompt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
     closeGenModal();
