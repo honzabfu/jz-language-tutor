@@ -192,7 +192,7 @@ function navTo(name){
   if(name==='fc'){document.getElementById('fc-lang-select').value=currentLang;startFlashcards(currentLang);}
   if(name==='quiz'){document.getElementById('quiz-lang-select').value=currentLang;if(!quizHistory.length)startQuiz();}
   if(name==='settings'){populateSettingsUI();}
-  if(name==='chat'){updateProviderBadge();updateInputPlaceholder();}
+  if(name==='chat'){updateProviderBadge();updateInputPlaceholder();updateEmptyState();}
   if(name==='tips'){tipsLang=currentLang;document.getElementById('tips-lang-select').value=tipsLang;renderTipsList();}
 }
 
