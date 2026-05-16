@@ -246,6 +246,7 @@ function applyI18n(){
   document.querySelector('#cfg-feedback-style option[value="strict"]').textContent=t.sFeedbackStrict;
   document.getElementById('s-custom-instructions-label').textContent=t.sCustomInstructionsLabel;
   document.getElementById('cfg-custom-instructions').placeholder=t.sCustomInstructionsPH;
+  document.getElementById('s-custom-instructions-hint').textContent=t.sCustomInstructionsHint;
   document.getElementById('s-ui-lang-label').textContent=t.sUiLangLabel;
   document.getElementById('s-native-lang-label').textContent=t.sNativeLangLabel;
   const _nlsOpt=document.querySelector('#cfg-native-lang option[value=""]');if(_nlsOpt)_nlsOpt.textContent=t.sNativeLangAuto;
