@@ -217,7 +217,7 @@ function applyI18n(){
   document.getElementById('fc-hdr-title').textContent=t.fcHdr;
   document.getElementById('quiz-hdr-title').textContent=t.quizHdr;
   document.getElementById('sort-btn').textContent=t[['sortAlpha','sortDue','sortNew'][sortIdx]];
-  const _dBtn=document.getElementById('fc-dir-btn');if(_dBtn)_dBtn.textContent=fcDirection==='normal'?t.fcDirNormal:t.fcDirReverse;
+  const _dBtn=document.getElementById('fc-dir-btn');if(_dBtn){_dBtn.textContent=fcDirection==='normal'?t.fcDirNormal:t.fcDirReverse;_dBtn.classList.toggle('rev',fcDirection==='reverse');}
   document.getElementById('mode-lbl-chat').textContent=t.modeChat;
   document.getElementById('mode-lbl-lesson').textContent=t.modeLesson;
   document.getElementById('mode-btn-chat').title=t.modeChatDesc;
