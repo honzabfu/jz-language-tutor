@@ -1053,7 +1053,7 @@ async function quizAsk(lang){
 Level: ${levelMap[getLangLevel(lang)]||'A1-A2'}.
 Test this specific word: ${word.word} (meaning: ${word.translation}). Do NOT reveal the translation to the student.
 Ask a question that tests this word naturally (e.g. fill-in-the-blank, translate, use in a sentence).
-Respond ONLY with JSON: {"question":"<question text in ${meta.name} and/or ${getNativeLangName()}>","targetWord":"${word.word}"}`;
+Respond ONLY with JSON: {"question":"<question text in ${meta.name}; if the task requires translation, you may include a ${getNativeLangName()} instruction>","targetWord":"${word.word}"}`;
   if(cfg.provider==='custom'&&(!cfg.customUrl||!cfg.customModel)){appendQuizMsg('tutor',t.errNoKey);return;}
   if(cfg.provider!=='ollama'&&cfg.provider!=='custom'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendQuizMsg('tutor',t.errNoKey);return;}
   abortPending();
