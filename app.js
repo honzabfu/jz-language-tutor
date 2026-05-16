@@ -886,7 +886,7 @@ async function generateVocab(){
   btn.textContent=t.genLoading;btn.disabled=true;
   const prompt=`Generate exactly ${count} ${meta.name} vocabulary words on the topic "${topic}" for a ${level} level learner. Translations should be in ${nativeLang}.
 Return ONLY a JSON array, no preamble, no markdown:
-[{"word":"<word in ${meta.name}>","translation":"<translation in ${nativeLang}>","notes":"<brief usage note or example, or empty string>","tags":["<topic category in ${nativeLang}>","<CEFR level, e.g. A1>"]}]`;
+[{"word":"<word in ${meta.name}>","translation":"<translation in ${nativeLang}>","notes":"<brief usage note or example, or empty string>","tags":["<topic category in ${nativeLang}>","${level}"]}]`;
   try{
     const raw=await safeLLM([{role:'user',content:prompt}],'',Math.max(8192,count*200),_abortCtrl.signal);
     let arr;
