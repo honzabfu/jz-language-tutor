@@ -102,6 +102,7 @@ let fcPending=[];
 let fcIdx=0;
 let fcRevealed=false;
 let fcDirection='reverse';
+let fcFilter='today';
 let genWords=[];
 let bulkSelectMode=false;
 const selectedIds=new Set();
@@ -219,6 +220,7 @@ function applyI18n(){
   document.getElementById('quiz-hdr-title').textContent=t.quizHdr;
   document.getElementById('sort-btn').textContent=t[['sortAlpha','sortDue','sortNew'][sortIdx]];
   const _dBtn=document.getElementById('fc-dir-btn');if(_dBtn){_dBtn.textContent=fcDirection==='normal'?t.fcDirNormal:t.fcDirReverse;_dBtn.classList.toggle('rev',fcDirection==='reverse');}
+  const _fSel=document.getElementById('fc-filter-select');if(_fSel){const _fOpts=_fSel.querySelectorAll('option');if(_fOpts[0])_fOpts[0].textContent=t.fcFilterToday;if(_fOpts[1])_fOpts[1].textContent=t.fcFilterAll;if(_fOpts[2])_fOpts[2].textContent=t.fcFilterNew;if(_fOpts[3])_fOpts[3].textContent=t.fcFilterWeak;}
   document.getElementById('mode-lbl-chat').textContent=t.modeChat;
   document.getElementById('mode-lbl-lesson').textContent=t.modeLesson;
   document.getElementById('mode-btn-chat').title=t.modeChatDesc;
@@ -978,11 +980,20 @@ function sm2Update(sm,q){
 // FLASHCARD VIEW
 // ══════════════════════════════════════════════
 function onFCLangChange(l){currentLang=l;vocabLang=l;localStorage.setItem('lt-lang',l);syncLangSelectors(l);startFlashcards(l);}
+function onFCFilterChange(v){fcFilter=v;startFlashcards(document.getElementById('fc-lang-select').value);}
 function startFlashcards(lang){
-  const todayEnd=new Date();todayEnd.setHours(23,59,59,999);const cutoff=todayEnd.getTime();
   const all=getVocab(lang);
-  fcQueue=all.filter(w=>!w.sm2||w.sm2.due<=cutoff);
-  fcPending=all.filter(w=>w.sm2&&w.sm2.due>cutoff);
+  if(fcFilter==='today'){
+    const cutoff=new Date().setHours(23,59,59,999);
+    fcQueue=all.filter(w=>!w.sm2||w.sm2.due<=cutoff);
+    fcPending=all.filter(w=>w.sm2&&w.sm2.due>cutoff);
+  }else if(fcFilter==='all'){
+    fcQueue=[...all];fcPending=[];
+  }else if(fcFilter==='new'){
+    fcQueue=all.filter(w=>!w.sm2||w.sm2.reps===0);fcPending=[];
+  }else{
+    fcQueue=all.filter(w=>w.sm2&&w.sm2.ef<2.0);fcPending=[];
+  }
   // shuffle
   for(let i=fcQueue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[fcQueue[i],fcQueue[j]]=[fcQueue[j],fcQueue[i]];}
   fcIdx=0;fcRevealed=false;
@@ -991,9 +1002,11 @@ function startFlashcards(lang){
 function renderFC(){
   const body=document.getElementById('fc-body');
   const _locale=cfg.uiLang==='en'?'en-US':'cs-CZ';
-  const _pendingStr=fcPending.length?`<p style="color:var(--mut);font-size:0.87rem;margin-top:8px">${t.fcPendingFn(fcPending.length)} · ${t.fcNextDue} ${new Date(Math.min(...fcPending.map(w=>w.sm2.due))).toLocaleDateString(_locale,{day:'numeric',month:'long'})}</p>`:'';
+  const _pendingStr=(fcFilter==='today'&&fcPending.length)?`<p style="color:var(--mut);font-size:0.87rem;margin-top:8px">${t.fcPendingFn(fcPending.length)} · ${t.fcNextDue} ${new Date(Math.min(...fcPending.map(w=>w.sm2.due))).toLocaleDateString(_locale,{day:'numeric',month:'long'})}</p>`:'';
   if(!fcQueue.length){
-    if(fcPending.length){body.innerHTML=`<div class="fc-done"><div class="big">🎉</div><h2>${t.fcDoneTitle}</h2>${_pendingStr}<button class="btn btn-secondary" onclick="navTo('vocab')">${t.navVocab}</button></div>`;}
+    if(fcFilter==='today'&&fcPending.length){body.innerHTML=`<div class="fc-done"><div class="big">🎉</div><h2>${t.fcDoneTitle}</h2>${_pendingStr}<button class="btn btn-secondary" onclick="navTo('vocab')">${t.navVocab}</button></div>`;}
+    else if(fcFilter==='new'){body.innerHTML=`<div class="fc-done"><div class="big">✅</div><h2>${t.fcEmptyNew}</h2><p>${t.fcEmptyNewDesc}</p></div>`;}
+    else if(fcFilter==='weak'){body.innerHTML=`<div class="fc-done"><div class="big">💪</div><h2>${t.fcEmptyWeak}</h2><p>${t.fcEmptyWeakDesc}</p></div>`;}
     else{body.innerHTML=`<div class="fc-done"><div class="big">📚</div><h2>${t.fcEmptyTitle}</h2><p>${t.fcEmptyDesc}</p><button class="btn btn-primary" onclick="navTo('vocab')">${t.navVocab}</button></div>`;}
     return;
   }

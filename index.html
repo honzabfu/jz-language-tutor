@@ -100,6 +100,12 @@
     <h1 id="fc-hdr-title">Flashcards</h1>
     <div class="hdr-right" style="display:flex;gap:6px;align-items:center">
       <select id="fc-lang-select" onchange="onFCLangChange(this.value)"></select>
+      <select id="fc-filter-select" onchange="onFCFilterChange(this.value)">
+        <option value="today">Dnes</option>
+        <option value="all">Vše</option>
+        <option value="new">Nová</option>
+        <option value="weak">Obtížná</option>
+      </select>
       <button class="fc-dir-btn" id="fc-dir-btn" onclick="toggleFcDirection()">⇄ Cizí</button>
     </div>
   </div>
