@@ -182,6 +182,7 @@ window.addEventListener('pageshow',e=>{if(e.persisted){const _ak=document.getEle
 // ══════════════════════════════════════════════
 // NAV
 // ══════════════════════════════════════════════
+function syncLangSelectors(l){['lang-select','vocab-lang-select','fc-lang-select','quiz-lang-select','tips-lang-select'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=l;});}
 function navTo(name){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById(name+'-view').classList.add('active');
@@ -615,7 +616,7 @@ function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2
 // ══════════════════════════════════════════════
 // VOCAB VIEW
 // ══════════════════════════════════════════════
-function onVocabLangChange(l){currentLang=l;vocabLang=l;localStorage.setItem('lt-lang',l);document.getElementById('lang-select').value=l;const lls=document.getElementById('cfg-level-lang-select');if(lls){lls.value=l;document.getElementById('cfg-level').value=getLangLevel(l);}renderVocabList();}
+function onVocabLangChange(l){currentLang=l;vocabLang=l;localStorage.setItem('lt-lang',l);syncLangSelectors(l);const lls=document.getElementById('cfg-level-lang-select');if(lls){lls.value=l;document.getElementById('cfg-level').value=getLangLevel(l);}renderVocabList();}
 function cycleSort(){sortIdx=(sortIdx+1)%SORT_MODES.length;document.getElementById('sort-btn').textContent=t[['sortAlpha','sortDue','sortNew'][sortIdx]];renderVocabList();}
 function renderVocabList(){
   const q=(document.getElementById('vocab-search').value||'').toLowerCase();
@@ -976,6 +977,7 @@ function sm2Update(sm,q){
 // ══════════════════════════════════════════════
 // FLASHCARD VIEW
 // ══════════════════════════════════════════════
+function onFCLangChange(l){currentLang=l;vocabLang=l;localStorage.setItem('lt-lang',l);syncLangSelectors(l);startFlashcards(l);}
 function startFlashcards(lang){
   const todayEnd=new Date();todayEnd.setHours(23,59,59,999);const cutoff=todayEnd.getTime();
   const all=getVocab(lang);
@@ -1041,6 +1043,7 @@ function rateFC(q){
 // ══════════════════════════════════════════════
 // QUIZ VIEW
 // ══════════════════════════════════════════════
+function onQuizLangChange(l){currentLang=l;vocabLang=l;localStorage.setItem('lt-lang',l);syncLangSelectors(l);startQuiz();}
 function startQuiz(){
   quizHistory=[];
   quizQueue=[];
@@ -1146,7 +1149,7 @@ function updateModeBadge(){
   document.getElementById('vocab-cost-warn').style.display=(cfg.lessonMode&&getVocab(currentLang).length>40)?'block':'none';
 }
 function clearChat(){abortPending();chatHistory=[];currentFbData=null;const list=document.getElementById('msg-list');[...list.children].forEach(el=>{if(el.id!=='empty'&&el.id!=='typing-row')el.remove();});document.getElementById('empty').style.display='';document.getElementById('feedback-bar').classList.remove('visible');document.getElementById('typing-row').style.display='none';document.getElementById('send-btn').disabled=true;}
-function onLangChange(l){currentLang=l;localStorage.setItem('lt-lang',l);document.getElementById('vocab-lang-select').value=l;vocabLang=l;updateEmptyState();updateInputPlaceholder();updateModeBadge();clearChat();const lls=document.getElementById('cfg-level-lang-select');if(lls){lls.value=l;document.getElementById('cfg-level').value=getLangLevel(l);}}
+function onLangChange(l){currentLang=l;vocabLang=l;localStorage.setItem('lt-lang',l);syncLangSelectors(l);updateEmptyState();updateInputPlaceholder();updateModeBadge();clearChat();const lls=document.getElementById('cfg-level-lang-select');if(lls){lls.value=l;document.getElementById('cfg-level').value=getLangLevel(l);}}
 function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
 function scrollBottom(){const l=document.getElementById('msg-list');l.scrollTop=l.scrollHeight;}
@@ -1261,7 +1264,7 @@ function renderFeedback(tab){
 // ══════════════════════════════════════════════
 function getSavedTips(lang){try{return JSON.parse(localStorage.getItem('lt-tips-'+lang)||'[]');}catch{return[];}}
 function setSavedTips(lang,arr){localStorage.setItem('lt-tips-'+(lang||currentLang),JSON.stringify(arr));}
-function onTipsLangChange(l){currentLang=l;tipsLang=l;localStorage.setItem('lt-lang',l);document.getElementById('lang-select').value=l;renderTipsList();}
+function onTipsLangChange(l){currentLang=l;tipsLang=l;vocabLang=l;localStorage.setItem('lt-lang',l);syncLangSelectors(l);renderTipsList();}
 function setTipsFilter(filter,btn){tipsFilter=filter;document.querySelectorAll('.tips-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTipsList();}
 function saveTip(btn,text,type){
   const tips=getSavedTips(currentLang);
