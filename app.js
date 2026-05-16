@@ -820,7 +820,7 @@ async function dictLookup(){
   const targetLang=targetMeta?targetMeta.name:vocabLang;
   const nativeLang=getNativeLangName();
   const sys=`You are a concise bilingual ${targetLang}–${nativeLang} dictionary. Reply with ONLY valid JSON, no markdown fences, no extra text. Keep all fields brief.`;
-  const userPrompt=`Look up: "${word}"\nReturn JSON with fields:\n- "entry": plain-text dictionary entry in ${targetLang}, max 3 lines: word+colon on line 1, grammatical category+main translations on line 2, one short usage example in ${targetLang} on line 3\n- "word": the word as given\n- "translation": main translations in ${nativeLang} as short comma-separated string (max 5 words)\n- "notes": one short usage example in ${targetLang} (empty if none, max 10 words)`;
+  const userPrompt=`Look up: "${word}"\nReturn JSON with fields:\n- "entry": plain-text dictionary entry in ${targetLang}, max 3 lines: word+colon on line 1, grammatical category+main translations on line 2, one short usage example in ${targetLang} on line 3\n- "word": the word as given\n- "translation": main translations in ${nativeLang} as short comma-separated string (max 5 words)\n- "notes": one short grammatical note or typical collocation in ${targetLang} (e.g. verb government, gender, typical preposition); empty string if not applicable`;
   try{
     const raw=await safeLLM([{role:'user',content:userPrompt}],sys,4096);
     let json;try{json=JSON.parse(clean(raw));}catch{throw new Error(t.errParseLlm);}
