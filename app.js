@@ -79,6 +79,7 @@ const MODELS={
 };
 const DEFAULT_PROVIDER_SETTINGS={anthropic:{apiKey:'',model:''},openai:{apiKey:'',model:''},gemini:{apiKey:'',model:''},ollama:{apiKey:'',model:'',url:'http://localhost:11434'},custom:{apiKey:'',model:'',url:''}};
 const LANG_META={bulgarian:{name:'Bulgarian',native:'Български',flag:'🇧🇬',lang:'bg'},croatian:{name:'Croatian',native:'Hrvatski',flag:'🇭🇷',lang:'hr'},czech:{name:'Czech',native:'Čeština',flag:'🇨🇿',lang:'cs'},danish:{name:'Danish',native:'Dansk',flag:'🇩🇰',lang:'da'},dutch:{name:'Dutch',native:'Nederlands',flag:'🇳🇱',lang:'nl'},english:{name:'English',native:'English',flag:'🇬🇧',lang:'en'},estonian:{name:'Estonian',native:'Eesti',flag:'🇪🇪',lang:'et'},finnish:{name:'Finnish',native:'Suomi',flag:'🇫🇮',lang:'fi'},french:{name:'French',native:'Français',flag:'🇫🇷',lang:'fr'},german:{name:'German',native:'Deutsch',flag:'🇩🇪',lang:'de'},greek:{name:'Greek',native:'Ελληνικά',flag:'🇬🇷',lang:'el'},hungarian:{name:'Hungarian',native:'Magyar',flag:'🇭🇺',lang:'hu'},italian:{name:'Italian',native:'Italiano',flag:'🇮🇹',lang:'it'},latvian:{name:'Latvian',native:'Latviešu',flag:'🇱🇻',lang:'lv'},lithuanian:{name:'Lithuanian',native:'Lietuvių',flag:'🇱🇹',lang:'lt'},norwegian:{name:'Norwegian',native:'Norsk',flag:'🇳🇴',lang:'no'},polish:{name:'Polish',native:'Polski',flag:'🇵🇱',lang:'pl'},portuguese:{name:'Portuguese',native:'Português',flag:'🇵🇹',lang:'pt'},romanian:{name:'Romanian',native:'Română',flag:'🇷🇴',lang:'ro'},serbian:{name:'Serbian',native:'Srpski',flag:'🇷🇸',lang:'sr'},slovak:{name:'Slovak',native:'Slovenčina',flag:'🇸🇰',lang:'sk'},slovenian:{name:'Slovenian',native:'Slovenščina',flag:'🇸🇮',lang:'sl'},spanish:{name:'Spanish',native:'Español',flag:'🇪🇸',lang:'es'},swedish:{name:'Swedish',native:'Svenska',flag:'🇸🇪',lang:'sv'},ukrainian:{name:'Ukrainian',native:'Українська',flag:'🇺🇦',lang:'uk'},arabic:{name:'Arabic',native:'العربية',flag:'🇸🇦',lang:'ar'},chinese:{name:'Chinese',native:'中文',flag:'🇨🇳',lang:'zh'},hindi:{name:'Hindi',native:'हिन्दी',flag:'🇮🇳',lang:'hi'},japanese:{name:'Japanese',native:'日本語',flag:'🇯🇵',lang:'ja'},korean:{name:'Korean',native:'한국어',flag:'🇰🇷',lang:'ko'},turkish:{name:'Turkish',native:'Türkçe',flag:'🇹🇷',lang:'tr'}};
+const UI_LANGS=[{code:'cs',flag:'🇨🇿',label:'Čeština'},{code:'en',flag:'🇬🇧',label:'English'}];
 const SORT_MODES=['alpha','due','new'];
 let sortIdx=0;
 
@@ -373,7 +374,7 @@ function updateEmptyState(){const m=LANG_META[currentLang];if(m)document.getElem
 function populateSettingsUI(){
   _loadProviderSettings(cfg.provider);
   document.getElementById('cfg-provider').value=cfg.provider;
-  document.getElementById('cfg-ui-lang').value=cfg.uiLang;
+  const uis=document.getElementById('cfg-ui-lang');uis.innerHTML=UI_LANGS.map(l=>`<option value="${l.code}">${l.flag} ${l.label}</option>`).join('');uis.value=cfg.uiLang;
   const nls=document.getElementById('cfg-native-lang');
   nls.innerHTML=`<option value="">${t.sNativeLangAuto}</option>`+Object.entries(LANG_META).sort(([,a],[,b])=>a.name.localeCompare(b.name)).map(([k,m])=>`<option value="${k}">${m.flag} ${m.name}</option>`).join('');
   nls.value=cfg.nativeLang||'';

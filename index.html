@@ -210,16 +210,16 @@
       <div class="field"><label id="s-lang-label">Jazyk</label>
         <select id="cfg-level-lang-select" onchange="onSettingsLevelLangChange(this.value)"></select>
       </div>
-      <div class="field"><label id="s-native-lang-label">Mateřský jazyk</label>
-        <select id="cfg-native-lang" onchange="onNativeLangChange(this.value)">
-          <option value="">Automaticky (= jazyk UI)</option>
-        </select>
-      </div>
       <div class="field"><label id="s-level-label">Úroveň studenta</label>
         <select id="cfg-level" onchange="onLevelChange(this.value)">
           <option value="beginner">Začátečník (A1–A2)</option>
           <option value="intermediate">Mírně pokročilý (B1–B2)</option>
           <option value="advanced">Pokročilý (C1–C2)</option>
+        </select>
+      </div>
+      <div class="field"><label id="s-native-lang-label">Mateřský jazyk</label>
+        <select id="cfg-native-lang" onchange="onNativeLangChange(this.value)">
+          <option value="">Automaticky (= jazyk UI)</option>
         </select>
       </div>
       <div class="field"><label id="s-feedback-label">Styl zpětné vazby</label>
@@ -238,10 +238,7 @@
     <div class="card">
       <h3 id="s-ui-title">Rozhraní</h3>
       <div class="field"><label id="s-ui-lang-label">Jazyk rozhraní</label>
-        <select id="cfg-ui-lang" onchange="onUiLangChange(this.value)">
-          <option value="cs">Čeština</option>
-          <option value="en">English</option>
-        </select>
+        <select id="cfg-ui-lang" onchange="onUiLangChange(this.value)"></select>
       </div>
       <div class="field"><label id="s-font-size-label">Velikost písma</label>
         <select id="cfg-font-size" onchange="onFontSizeChange(this.value)">
