@@ -187,7 +187,7 @@ function navTo(name){
   document.getElementById(name+'-view').classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('nav-'+name).classList.add('active');
-  if(name==='vocab'){renderVocabList();}
+  if(name==='vocab'){vocabLang=currentLang;document.getElementById('vocab-lang-select').value=currentLang;renderVocabList();}
   if(name==='fc'){document.getElementById('fc-lang-select').value=currentLang;startFlashcards(currentLang);}
   if(name==='quiz'){document.getElementById('quiz-lang-select').value=currentLang;if(!quizHistory.length)startQuiz();}
   if(name==='settings'){populateSettingsUI();}
@@ -217,11 +217,13 @@ function applyI18n(){
   document.getElementById('fc-hdr-title').textContent=t.fcHdr;
   document.getElementById('quiz-hdr-title').textContent=t.quizHdr;
   document.getElementById('sort-btn').textContent=t[['sortAlpha','sortDue','sortNew'][sortIdx]];
-  const _dBtn=document.getElementById('fc-dir-btn');if(_dBtn)_dBtn.textContent=fcDirection==='normal'?t.fcDirNormal:t.fcDirReverse;
+  const _dBtn=document.getElementById('fc-dir-btn');if(_dBtn){_dBtn.textContent=fcDirection==='normal'?t.fcDirNormal:t.fcDirReverse;_dBtn.classList.toggle('rev',fcDirection==='reverse');}
   document.getElementById('mode-lbl-chat').textContent=t.modeChat;
   document.getElementById('mode-lbl-lesson').textContent=t.modeLesson;
   document.getElementById('mode-btn-chat').title=t.modeChatDesc;
   document.getElementById('mode-btn-lesson').title=t.modeLessonDesc;
+  document.getElementById('clear-chat-btn').title=t.clearChatTitle;
+  document.getElementById('chat-help-btn').title=t.sHelpLink;
   updateModeBadge();
   updateInputPlaceholder();
   updateApiKeyHint();
@@ -248,6 +250,7 @@ function applyI18n(){
   document.getElementById('s-custom-instructions-label').textContent=t.sCustomInstructionsLabel;
   document.getElementById('cfg-custom-instructions').placeholder=t.sCustomInstructionsPH;
   document.getElementById('s-custom-instructions-hint').textContent=t.sCustomInstructionsHint;
+  document.getElementById('s-ui-title').textContent=t.sUiTitle;
   document.getElementById('s-ui-lang-label').textContent=t.sUiLangLabel;
   document.getElementById('s-native-lang-label').textContent=t.sNativeLangLabel;
   const _nlsOpt=document.querySelector('#cfg-native-lang option[value=""]');if(_nlsOpt)_nlsOpt.textContent=t.sNativeLangAuto;
@@ -336,6 +339,7 @@ function applyI18n(){
   document.getElementById('sw-update-banner-text').textContent=t.swUpdateText;
   document.getElementById('sw-reload-btn').textContent=t.swReloadBtn;
   document.getElementById('add-word-btn').title=t.addWordTitle;
+  document.getElementById('vocab-cost-warn').textContent=t.vocabCostWarn;
   // tips view
   document.getElementById('tips-hdr-title').textContent=t.tipsHdr;
   document.getElementById('nav-lbl-tips').textContent=t.navTips;
@@ -409,6 +413,13 @@ function autoSaveProviderCfg(){
   updateProviderBadge();
   updateApiKeyStatus();
 }
+function onLevelChange(val){const lang=document.getElementById('cfg-level-lang-select').value;langLevels[lang]=val;localStorage.setItem('lt-levels',JSON.stringify(langLevels));}
+function onFeedbackStyleChange(val){cfg.feedbackStyle=val;localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
+function onNativeLangChange(val){cfg.nativeLang=val;localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
+function onFontSizeChange(val){cfg.fontSize=val;applyFontSize(val);localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
+function onThemeChange(val){cfg.theme=val;applyTheme();localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
+function onDefaultViewChange(val){cfg.defaultView=val;localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
+function onCustomInstructionsChange(val){cfg.customInstructions=val.trim();localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
 function rebuildModelList(p,models){
   const s=document.getElementById('cfg-model');
   s.innerHTML='';
@@ -514,7 +525,7 @@ function toggleProviderFields(p){
 }
 function updateApiKeyHint(){const el=document.getElementById('apikey-hint');const h=t.apiHints[cfg.provider]||'';el.textContent=cfg.provider==='ollama'?(t.ollamaApiKeyHint||'Volitelné — vyžadováno pouze pokud je Ollama zabezpečena klíčem (OLLAMA_API_KEY) nebo reverse proxy.'):h?t.sGenerateAt(h):'';document.getElementById('apikey-storage-warn').textContent=cfg.provider!=='ollama'?t.apiKeyStorageWarn:'';}
 function updateApiKeyStatus(){const el=document.getElementById('apikey-status');if(cfg.provider==='custom'){el.textContent='';return;}const k=document.getElementById('cfg-apikey')?.value||cfg.apiKey||'';if(cfg.provider==='ollama'){el.innerHTML=k.length>0?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:'';return;}el.innerHTML=k.length>8?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:`<span class="status-dot status-empty"></span>${t.noApiKey}`;}
-function onUiLangChange(l){cfg.uiLang=l;t=I18N[l]||I18N.cs;applyI18n();}
+function onUiLangChange(l){cfg.uiLang=l;t=I18N[l]||I18N.cs;applyI18n();localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
 function applyFontSize(size){const m={small:'13px',medium:'15px',large:'17px',xl:'20px'};document.documentElement.style.setProperty('--fs',m[size]||'15px');}
 function applyTheme(){const th=cfg.theme||'auto';if(th==='auto'){document.documentElement.dataset.theme=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}else{document.documentElement.dataset.theme=th;}}
 function saveSettings(){
@@ -600,7 +611,7 @@ function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2
 // ══════════════════════════════════════════════
 // VOCAB VIEW
 // ══════════════════════════════════════════════
-function onVocabLangChange(l){vocabLang=l;renderVocabList();}
+function onVocabLangChange(l){currentLang=l;vocabLang=l;localStorage.setItem('lt-lang',l);document.getElementById('lang-select').value=l;const lls=document.getElementById('cfg-level-lang-select');if(lls){lls.value=l;document.getElementById('cfg-level').value=getLangLevel(l);}renderVocabList();}
 function cycleSort(){sortIdx=(sortIdx+1)%SORT_MODES.length;document.getElementById('sort-btn').textContent=t[['sortAlpha','sortDue','sortNew'][sortIdx]];renderVocabList();}
 function renderVocabList(){
   const q=(document.getElementById('vocab-search').value||'').toLowerCase();
@@ -1246,7 +1257,7 @@ function renderFeedback(tab){
 // ══════════════════════════════════════════════
 function getSavedTips(lang){try{return JSON.parse(localStorage.getItem('lt-tips-'+lang)||'[]');}catch{return[];}}
 function setSavedTips(lang,arr){localStorage.setItem('lt-tips-'+(lang||currentLang),JSON.stringify(arr));}
-function onTipsLangChange(l){tipsLang=l;renderTipsList();}
+function onTipsLangChange(l){currentLang=l;tipsLang=l;localStorage.setItem('lt-lang',l);document.getElementById('lang-select').value=l;renderTipsList();}
 function setTipsFilter(filter,btn){tipsFilter=filter;document.querySelectorAll('.tips-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTipsList();}
 function saveTip(btn,text,type){
   const tips=getSavedTips(currentLang);

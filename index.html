@@ -20,12 +20,12 @@
 
 <div id="chat-view" class="view">
   <div class="hdr">
-    <button class="icon-btn" onclick="clearChat()" title="Nový rozhovor">
+    <button class="icon-btn" id="clear-chat-btn" onclick="clearChat()" title="Nový rozhovor">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.68"/></svg>
     </button>
     <h1 id="hdr-title">Language Tutor</h1>
     <div class="hdr-right" style="display:flex;gap:6px;align-items:center">
-      <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" class="icon-btn" title="Nápověda">
+      <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" class="icon-btn" id="chat-help-btn" title="Nápověda">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       </a>
       <div class="mode-toggle">
@@ -36,7 +36,7 @@
       <select id="lang-select" onchange="onLangChange(this.value)"></select>
     </div>
   </div>
-  <div id="vocab-cost-warn" style="display:none;font-size:0.8rem;padding:6px 14px;border-bottom:1px solid">⚠ Slovník obsahuje více než 40 slovíček — v Lesson módu se odesílají s každým dotazem, což zvyšuje cenu.</div>
+  <div id="vocab-cost-warn" style="display:none;font-size:0.8rem;padding:6px 14px;border-bottom:1px solid"></div>
   <div id="msg-list">
     <div id="empty">
       <div class="flag" id="empty-flag">🌍</div>
@@ -203,41 +203,41 @@
       <div class="field"><label id="s-lang-label">Jazyk</label>
         <select id="cfg-level-lang-select" onchange="onSettingsLevelLangChange(this.value)"></select>
       </div>
+      <div class="field"><label id="s-native-lang-label">Mateřský jazyk</label>
+        <select id="cfg-native-lang" onchange="onNativeLangChange(this.value)">
+          <option value="">Automaticky (= jazyk UI)</option>
+        </select>
+      </div>
       <div class="field"><label id="s-level-label">Úroveň studenta</label>
-        <select id="cfg-level">
+        <select id="cfg-level" onchange="onLevelChange(this.value)">
           <option value="beginner">Začátečník (A1–A2)</option>
           <option value="intermediate">Mírně pokročilý (B1–B2)</option>
           <option value="advanced">Pokročilý (C1–C2)</option>
         </select>
       </div>
       <div class="field"><label id="s-feedback-label">Styl zpětné vazby</label>
-        <select id="cfg-feedback-style">
+        <select id="cfg-feedback-style" onchange="onFeedbackStyleChange(this.value)">
           <option value="gentle">Jemný (povzbuzující)</option>
           <option value="balanced">Vyvážený</option>
           <option value="strict">Přísný (každá chyba)</option>
         </select>
       </div>
       <div class="field"><label id="s-custom-instructions-label">Vlastní instrukce pro tutora</label>
-        <textarea id="cfg-custom-instructions" rows="3" maxlength="500" style="resize:vertical" placeholder="Vždy používej formální tykání. Vysvětluj gramatická pravidla při opravách." oninput="document.getElementById('cfg-custom-instructions-count').textContent=this.value.length"></textarea>
+        <textarea id="cfg-custom-instructions" rows="3" maxlength="500" style="resize:vertical" placeholder="Vždy používej formální tykání. Vysvětluj gramatická pravidla při opravách." oninput="document.getElementById('cfg-custom-instructions-count').textContent=this.value.length" onchange="onCustomInstructionsChange(this.value)"></textarea>
         <span id="cfg-custom-instructions-count" style="font-size:0.78rem;color:var(--mut);float:right">0</span><span style="font-size:0.78rem;color:var(--mut);float:right">&nbsp;/ 500&nbsp;</span>
         <small id="s-custom-instructions-hint" style="color:var(--mut);display:block;margin-top:4px">Pro nejlepší výsledky piš instrukce v angličtině.</small>
       </div>
     </div>
     <div class="card">
-      <h3>UI</h3>
+      <h3 id="s-ui-title">Rozhraní</h3>
       <div class="field"><label id="s-ui-lang-label">Jazyk rozhraní</label>
         <select id="cfg-ui-lang" onchange="onUiLangChange(this.value)">
           <option value="cs">Čeština</option>
           <option value="en">English</option>
         </select>
       </div>
-      <div class="field"><label id="s-native-lang-label">Mateřský jazyk</label>
-        <select id="cfg-native-lang">
-          <option value="">Automaticky (= jazyk UI)</option>
-        </select>
-      </div>
       <div class="field"><label id="s-font-size-label">Velikost písma</label>
-        <select id="cfg-font-size">
+        <select id="cfg-font-size" onchange="onFontSizeChange(this.value)">
           <option value="small">Malé (13px)</option>
           <option value="medium">Střední (15px)</option>
           <option value="large">Velké (17px)</option>
@@ -245,14 +245,14 @@
         </select>
       </div>
       <div class="field"><label id="s-theme-label">Vzhled</label>
-        <select id="cfg-theme">
+        <select id="cfg-theme" onchange="onThemeChange(this.value)">
           <option value="auto">Automaticky (systém)</option>
           <option value="light">Světlý</option>
           <option value="dark">Tmavý</option>
         </select>
       </div>
       <div class="field"><label id="s-default-view-label">Výchozí záložka</label>
-        <select id="cfg-default-view">
+        <select id="cfg-default-view" onchange="onDefaultViewChange(this.value)">
           <option value="chat" id="s-default-view-chat">Chat</option>
           <option value="vocab" id="s-default-view-vocab">Slovíčka</option>
           <option value="fc" id="s-default-view-fc">Flashcards</option>
