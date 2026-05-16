@@ -173,7 +173,7 @@ function _loadProviderSettings(p){
   document.getElementById('tips-lang-select').value=currentLang;
   updateEmptyState();
   updateInputPlaceholder();
-  navTo(cfg.defaultView||'fc');
+  navTo(['chat','vocab','fc','quiz','tips','settings'].includes(cfg.defaultView)?cfg.defaultView:'fc');
 })();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(cfg.theme==='auto')applyTheme();});
 // Restore password fields when page is recovered from bfcache (iOS Safari clears them for security)
