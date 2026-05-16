@@ -84,7 +84,7 @@ let sortIdx=0;
 
 // Shared across all views — starting a new request or switching views cancels any in-flight LLM call.
 let _abortCtrl=null;
-let cfg={provider:'anthropic',model:MODELS.anthropic[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',customInstructions:'',uiLang:navigator.language.startsWith('cs')?'cs':'en',nativeLang:'',lessonMode:false,fontSize:'medium',theme:'auto',defaultView:'fc',providerSettings:{}};
+let cfg={provider:'gemini',model:MODELS.gemini[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',customInstructions:'',uiLang:navigator.language.startsWith('cs')?'cs':'en',nativeLang:'',lessonMode:false,fontSize:'medium',theme:'auto',defaultView:'fc',providerSettings:{}};
 let langLevels={};
 function getLangLevel(lang){return langLevels[lang]||'beginner';}
 function getNativeLangName(){const key=cfg.nativeLang||(cfg.uiLang==='cs'?'czech':'english');return LANG_META[key]?.name??'English';}
