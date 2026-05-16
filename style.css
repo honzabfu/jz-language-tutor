@@ -227,6 +227,8 @@ select:focus{outline:2px solid var(--pri)}
 /* ── DICTIONARY OVERLAY ── */
 .dict-entry{font-family:monospace;white-space:pre-wrap;font-size:0.9rem;line-height:1.65;background:var(--bg);border:1px solid var(--bdr);border-radius:var(--rs);padding:12px 14px;margin:10px 0}
 .dict-msg{font-size:0.87rem;color:var(--mut);font-style:italic;padding:16px 0;text-align:center}
+#dict-warning{margin:6px 0 2px;font-size:0.78rem;color:var(--mut);line-height:1.45}
+#dict-warning a{color:var(--pri)}
 
 /* ── VOCAB COST WARNING ── */
 #vocab-cost-warn{background:var(--clr-warn-bg);color:var(--clr-warn-txt);border-bottom-color:var(--clr-warn-bdr)}

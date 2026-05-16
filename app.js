@@ -351,6 +351,7 @@ function applyI18n(){
   document.getElementById('dict-add-btn').textContent=t.dictAddBtn;
   document.getElementById('dict-close-btn').textContent=t.dictCloseBtn;
   document.getElementById('dict-btn').textContent=t.dictOpenBtn;
+  document.getElementById('dict-warning').innerHTML=t.dictWarning;
 }
 function updateInputPlaceholder(){const m=LANG_META[currentLang];const label=m?(cfg.uiLang==='en'?m.name:m.native):currentLang;document.getElementById('msg-input').placeholder=t.inputPH(label);}
 function updateEmptyState(){const m=LANG_META[currentLang];if(m)document.getElementById('empty-flag').textContent=m.flag;}
