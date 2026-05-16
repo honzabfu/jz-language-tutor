@@ -365,7 +365,9 @@ function populateSettingsUI(){
   lls.value=currentLang;
   document.getElementById('cfg-level').value=getLangLevel(currentLang);
   document.getElementById('cfg-feedback-style').value=cfg.feedbackStyle;
-  document.getElementById('cfg-custom-instructions').value=cfg.customInstructions||'';
+  const _ci=document.getElementById('cfg-custom-instructions');
+  _ci.value=cfg.customInstructions||'';
+  document.getElementById('cfg-custom-instructions-count').textContent=_ci.value.length;
   document.getElementById('cfg-apikey').value=cfg.apiKey||'';
   document.getElementById('cfg-ollama-url').value=cfg.ollamaUrl;
   document.getElementById('cfg-custom-url').value=cfg.customUrl||'';
