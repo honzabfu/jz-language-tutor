@@ -216,6 +216,11 @@
           <option value="strict">Přísný (každá chyba)</option>
         </select>
       </div>
+      <div class="field"><label id="s-custom-instructions-label">Vlastní instrukce pro tutora</label>
+        <textarea id="cfg-custom-instructions" rows="3" maxlength="500" style="resize:vertical" placeholder="Vždy používej formální tykání. Vysvětluj gramatická pravidla při opravách." oninput="document.getElementById('cfg-custom-instructions-count').textContent=this.value.length"></textarea>
+        <span id="cfg-custom-instructions-count" style="font-size:0.78rem;color:var(--mut);float:right">0</span><span style="font-size:0.78rem;color:var(--mut);float:right">&nbsp;/ 500&nbsp;</span>
+        <small id="s-custom-instructions-hint" style="color:var(--mut);display:block;margin-top:4px">Pro nejlepší výsledky piš instrukce v angličtině.</small>
+      </div>
     </div>
     <div class="card">
       <h3>UI</h3>
@@ -223,6 +228,11 @@
         <select id="cfg-ui-lang" onchange="onUiLangChange(this.value)">
           <option value="cs">Čeština</option>
           <option value="en">English</option>
+        </select>
+      </div>
+      <div class="field"><label id="s-native-lang-label">Mateřský jazyk</label>
+        <select id="cfg-native-lang">
+          <option value="">Automaticky (= jazyk UI)</option>
         </select>
       </div>
       <div class="field"><label id="s-font-size-label">Velikost písma</label>

@@ -46,7 +46,9 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
 - **Slovník** — překryvný panel ve správě slovíček; zadáš slovo a LLM vrátí stručný slovníkový záznam (překlady s gramatickými kategoriemi + příklady použití); jedním kliknutím přidáš slovo do svého seznamu
 - **Správa slovní zásoby** — ruční zadávání, import z CSV/TXT (s podporou tagů), generování slovíček přes AI (včetně automatického přiřazení tagů), sady per jazyk; tagy se zobrazují jako chipy v seznamu a jsou prohledávatelné
 - **Více AI poskytovatelů** — Anthropic (Claude), OpenAI (GPT), Google (Gemini), Ollama (lokálně), vlastní OpenAI-compatible endpoint
-- **CS/EN rozhraní** — přepínatelný jazyk celého rozhraní včetně nastavení
+- **CS/EN rozhraní** — přepínatelný jazyk celého rozhraní včetně nastavení; jazyk UI je nezávislý na mateřském jazyce
+- **Mateřský jazyk** — nastavitelný samostatně bez ohledu na jazyk UI; výběr z 32 jazyků; určuje jazyk překladů ve všech AI funkcích (chat, slovník, kvíz, generování slovíček); výchozí hodnota se odvozuje z jazyka UI
+- **Vlastní instrukce pro tutora** — volný text (max 500 znaků) přidaný do systémového promptu; personalizuje styl a zaměření tutora, např. „Always explain grammar rules when correcting" (doporučujeme psát anglicky)
 - **PWA** — lze přidat na domovskou obrazovku iOS/Android
 - **Bez backendu** — žádný server, žádný build, vše uloženo v localStorage
 
@@ -210,7 +212,8 @@ LLM se volá v **Chatu**, **Kvízu**, **Slovníku** a při **Generování sloví
 
 | Komponenta                               | Tokeny (vstup) |
 |------------------------------------------|----------------|
-| Systémový prompt                         | ~100           |
+| Systémový prompt                         | ~100–225       |
+| Vlastní instrukce (pokud nastaveny)      | +0–125         |
 | Slovíčka v lesson módu (max 50 slov)     | +250–350       |
 | Historie konverzace (max 24 zpráv)       | 0–1 200        |
 | Zpráva uživatele                         | 10–80          |
@@ -277,6 +280,8 @@ Claude Sonnet a GPT-5 jsou výrazně dražší alternativy. Ollama (lokální) j
 - [x] Tagování slovíček — zobrazení jako chipy v seznamu, prohledávatelnost, import/export CSV (4. sloupec s `|`), automatické generování tagů přes LLM
 - [x] Oprava limitu tokenů při generování slovíček — zvýšený výstupní budget zabraňuje chybě „odpověď zkrácena" i u verbose modelů
 - [x] Dynamické načítání modelů — tlačítko „Načíst modely" stáhne aktuální seznam přímo z API providera (Anthropic, OpenAI, Gemini, Ollama); statický seznam slouží jako fallback; Ollama načítá automaticky po přepnutí providera; volitelný API klíč pro Ollama (OLLAMA_API_KEY / reverse proxy)
+- [x] Mateřský jazyk — nastavitelný nezávisle na jazyce UI; výběr z 32 jazyků; překlady ve všech AI funkcích (chat, slovník, kvíz, generování slovíček) se řídí tímto nastavením
+- [x] Vlastní instrukce pro tutora — volný text (max 500 znaků) přidaný do systémového promptu; živý čítač znaků; hint pro psaní v angličtině
 
 ---
 
@@ -324,7 +329,9 @@ The primary purpose of this app is **practicing the vocabulary words you enter y
 - **Dictionary** — overlay panel inside the Vocabulary tab; type any word and the LLM returns a concise dictionary entry (translations with grammatical categories + usage examples); add the word to your list in one click
 - **Vocabulary management** — manual entry, CSV/TXT import (with tag support), in-app AI generation (with automatic tag assignment), per-language sets; tags are displayed as chips in the word list and are searchable
 - **Multi-provider LLM** — Anthropic (Claude), OpenAI (GPT), Google (Gemini), Ollama (local), custom OpenAI-compatible endpoint
-- **CS/EN UI** — switchable interface language including all settings
+- **CS/EN UI** — switchable interface language including all settings; UI language is independent of native language
+- **Native language setting** — configurable independently of the UI language; choose from 32 languages; determines the translation language in all AI features (chat, dictionary, quiz, vocabulary generation); defaults to the UI language if not set
+- **Custom tutor instructions** — freeform text (max 500 chars) appended to the system prompt; personalise tutor style and focus, e.g. "Always explain grammar rules when correcting" (writing in English gives best results)
 - **PWA-ready** — add to iOS/Android home screen
 - **Zero backend** — no server, no build step, all data in localStorage
 
@@ -488,7 +495,8 @@ The LLM is called in **Chat**, **Quiz**, **Dictionary**, and **Vocabulary genera
 
 | Component                               | Tokens (input) |
 |-----------------------------------------|----------------|
-| System prompt                           | ~100           |
+| System prompt                           | ~100–225       |
+| Custom instructions (if set)            | +0–125         |
 | Vocabulary in lesson mode (max 50 words)| +250–350       |
 | Conversation history (max 24 messages)  | 0–1 200        |
 | User message                            | 10–80          |
@@ -555,6 +563,8 @@ Claude Sonnet and GPT-5 are significantly more expensive alternatives. Ollama (l
 - [x] Word tagging — chips displayed in the word list, searchable, CSV import/export (4th column with `|`), automatic tag generation via LLM
 - [x] Fix token limit in vocabulary generation — increased output budget prevents "response truncated" errors with verbose models
 - [x] Dynamic model loading — "Load models" button fetches the current list directly from the provider API (Anthropic, OpenAI, Gemini, Ollama); static list used as fallback; Ollama auto-fetches on provider switch; optional API key for Ollama (OLLAMA_API_KEY / reverse proxy)
+- [x] Native language setting — configurable independently of the UI language; 32 languages available; translation target in chat, dictionary, quiz and vocabulary generation follows this setting
+- [x] Custom tutor instructions — freeform text (max 500 chars) appended to the system prompt; live character counter; hint to write in English for best results
 
 ---
 
