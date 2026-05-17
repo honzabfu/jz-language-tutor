@@ -249,6 +249,7 @@ function applyI18n(){
   document.querySelector('#cfg-provider option[value="ollama"]').textContent=t.sOllamaOption;
   document.querySelector('#cfg-provider option[value="custom"]').textContent=t.sCustomOption;
   document.getElementById('s-model-label').textContent=t.sModelLabel;
+  document.getElementById('fetch-models-lbl').textContent=t.fetchModelsLbl;
   document.getElementById('s-custom-model-label').textContent=t.sCustomModelLabel;
   document.getElementById('s-apikey-label').textContent=t.sApiKeyLabel;
   document.getElementById('s-ollama-hint').textContent=t.sOllamaHint;
