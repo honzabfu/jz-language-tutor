@@ -85,7 +85,7 @@ let sortIdx=0;
 
 // Shared across all views — starting a new request or switching views cancels any in-flight LLM call.
 let _abortCtrl=null;
-let cfg={provider:'gemini',model:MODELS.gemini[0],apiKey:'',anthropicProxyUrl:'',openaiEndpointUrl:'',openaiAuthHeader:'bearer',geminiEndpointUrl:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',customInstructions:'',uiLang:navigator.language.startsWith('cs')?'cs':navigator.language.startsWith('es')?'es':'en',nativeLang:'',lessonMode:false,fontSize:'medium',theme:'auto',defaultView:'fc',maxTokens:8192,temperature:null,streamingDisabled:false,providerSettings:{}};
+let cfg={provider:'gemini',model:MODELS.gemini[0],apiKey:'',anthropicProxyUrl:'',openaiEndpointUrl:'',openaiAuthHeader:'bearer',geminiEndpointUrl:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',customInstructions:'',uiLang:navigator.language.startsWith('cs')?'cs':navigator.language.startsWith('es')?'es':'en',nativeLang:'',lessonMode:false,fontSize:'medium',theme:'auto',defaultView:'fc',maxTokens:8192,temperature:null,streamingDisabled:false,fcSessionSize:20,quizSessionSize:10,smEasyBonus:1.0,ttsRate:0.9,vocabImportDuplicates:'skip',providerSettings:{}};
 let langLevels={};
 function getLangLevel(lang){return langLevels[lang]||'beginner';}
 const UI_LANG_NATIVE_FALLBACK={cs:'czech',en:'english',es:'spanish'};
@@ -405,6 +405,20 @@ function applyI18n(){
   document.getElementById('adv-save-btn').textContent=t.advSaveBtn;
   document.getElementById('adv-cancel-btn').textContent=t.advCancelBtn;
   document.getElementById('adv-reset-btn').textContent=t.advResetBtn;
+  document.getElementById('s-learning-title').textContent=t.sLearningTitle;
+  document.getElementById('s-fc-session-size-label').textContent=t.sFcSessionSizeLabel;
+  document.getElementById('s-fc-session-size-hint').textContent=t.sFcSessionSizeHint;
+  document.getElementById('s-quiz-session-size-label').textContent=t.sQuizSessionSizeLabel;
+  document.getElementById('s-quiz-session-size-hint').textContent=t.sQuizSessionSizeHint;
+  document.getElementById('s-sm-easy-bonus-label').textContent=t.sSmEasyBonusLabel;
+  document.getElementById('s-sm-easy-bonus-hint').textContent=t.sSmEasyBonusHint;
+  document.getElementById('s-tts-rate-label').textContent=t.sTtsRateLabel;
+  document.getElementById('s-tts-rate-hint').textContent=t.sTtsRateHint;
+  document.getElementById('s-vocab-import-dups-label').textContent=t.sVocabImportDupsLabel;
+  document.querySelector('#cfg-vocab-import-dups option[value="skip"]').textContent=t.sVocabImportDupsSkip;
+  document.querySelector('#cfg-vocab-import-dups option[value="merge"]').textContent=t.sVocabImportDupsMerge;
+  document.querySelector('#cfg-vocab-import-dups option[value="overwrite"]').textContent=t.sVocabImportDupsOverwrite;
+  document.getElementById('s-vocab-import-dups-hint').textContent=t.sVocabImportDupsHint;
 }
 function updateInputPlaceholder(){const m=LANG_META[currentLang];const label=m?(cfg.uiLang==='en'?m.name:m.native):currentLang;document.getElementById('msg-input').placeholder=t.inputPH(label);}
 function updateEmptyState(){const m=LANG_META[currentLang];if(m)document.getElementById('empty-flag').textContent=m.flag;}
@@ -434,6 +448,11 @@ function populateSettingsUI(){
   document.getElementById('cfg-font-size').value=cfg.fontSize||'medium';
   document.getElementById('cfg-theme').value=cfg.theme||'auto';
   document.getElementById('cfg-default-view').value=cfg.defaultView||'fc';
+  const _fcs=cfg.fcSessionSize??20;document.getElementById('cfg-fc-session-size').value=_fcs;
+  const _qss=cfg.quizSessionSize??10;document.getElementById('cfg-quiz-session-size').value=_qss;
+  const _seb=cfg.smEasyBonus??1.0;document.getElementById('cfg-sm-easy-bonus').value=_seb;document.getElementById('cfg-sm-easy-bonus-val').textContent=parseFloat(_seb).toFixed(2);
+  const _tts=cfg.ttsRate??0.9;document.getElementById('cfg-tts-rate').value=_tts;document.getElementById('cfg-tts-rate-val').textContent=parseFloat(_tts).toFixed(1);
+  document.getElementById('cfg-vocab-import-dups').value=cfg.vocabImportDuplicates||'skip';
   rebuildModelList(cfg.provider,MODELS_METADATA[cfg.provider]||[]);
   document.getElementById('cfg-model').value=cfg.model;
   toggleProviderFields(cfg.provider);
@@ -622,6 +641,11 @@ function saveSettings(){
   cfg.theme=document.getElementById('cfg-theme').value;
   applyTheme();
   cfg.defaultView=document.getElementById('cfg-default-view').value;
+  const _fcsv=parseInt(document.getElementById('cfg-fc-session-size').value,10);cfg.fcSessionSize=(!isNaN(_fcsv)&&_fcsv>=5&&_fcsv<=50)?_fcsv:20;
+  const _qssv=parseInt(document.getElementById('cfg-quiz-session-size').value,10);cfg.quizSessionSize=(!isNaN(_qssv)&&_qssv>=5&&_qssv<=30)?_qssv:10;
+  const _sebv=parseFloat(document.getElementById('cfg-sm-easy-bonus').value);cfg.smEasyBonus=(!isNaN(_sebv)&&_sebv>=1.0&&_sebv<=1.5)?_sebv:1.0;
+  const _ttsv=parseFloat(document.getElementById('cfg-tts-rate').value);cfg.ttsRate=(!isNaN(_ttsv)&&_ttsv>=0.5&&_ttsv<=1.5)?_ttsv:0.9;
+  cfg.vocabImportDuplicates=document.getElementById('cfg-vocab-import-dups').value;
   localStorage.setItem('lt-cfg',JSON.stringify(cfg));
   updateProviderBadge();
   const toast=document.getElementById('save-toast');
@@ -896,8 +920,9 @@ function confirmImport(){
   const lang=document.getElementById('import-lang-sel').value;
   const lines=raw.split('\n').filter(l=>l.trim()&&!l.startsWith('#'));
   const arr=getVocab(lang);
-  const existing=new Set(arr.map(w=>w.word.toLowerCase()));
-  let added=0,skipped=0;
+  const existing=new Map(arr.map(w=>[w.word.toLowerCase(),w]));
+  const dupMode=cfg.vocabImportDuplicates||'skip';
+  let added=0,skipped=0,merged=0;
   lines.forEach(line=>{
     const parts=line.split(',');
     if(parts.length<2){// try tab
@@ -907,15 +932,23 @@ function confirmImport(){
     const rev=document.getElementById('import-col-order').value==='reverse';
     const word=(parts[rev?1:0]||'').trim();const trans=(parts[rev?0:1]||'').trim();
     if(!word||!trans)return;
-    if(existing.has(word.toLowerCase())){skipped++;return;}
     const rawTags=(parts[3]||'').trim();
     const tags=rawTags?rawTags.split('|').map(s=>s.trim()).filter(Boolean):[];
-    arr.push({id:uid(),word,translation:trans,notes:(parts[2]||'').trim(),tags,sm2:newSM2()});
-    existing.add(word.toLowerCase());added++;
+    const notes=(parts[2]||'').trim();
+    if(existing.has(word.toLowerCase())){
+      if(dupMode==='skip'){skipped++;return;}
+      const ew=existing.get(word.toLowerCase());
+      ew.translation=trans;
+      if(dupMode==='overwrite'){ew.notes=notes;ew.tags=tags;}
+      else{if(notes)ew.notes=notes;if(tags.length)ew.tags=tags;}
+      merged++;return;
+    }
+    const w={id:uid(),word,translation:trans,notes,tags,sm2:newSM2()};
+    arr.push(w);existing.set(word.toLowerCase(),w);added++;
   });
   setVocab(lang,arr);
   closeImportModal();renderVocabList();
-  alert(t.alertImportDoneFn(added,skipped));
+  alert(t.alertImportDoneFn(added,skipped,merged));
 }
 function exportVocab(){
   const arr=getVocab(vocabLang);
@@ -1079,7 +1112,7 @@ function sm2Update(sm,q){
   else{
     if(reps===0)interval=1;
     else if(reps===1)interval=6;
-    else interval=Math.round(interval*ef);
+    else interval=Math.round(interval*ef*(q===5?(cfg.smEasyBonus??1):1));
     reps++;
   }
   ef=Math.max(1.3,ef+(0.1-(5-q)*(0.08+(5-q)*0.02)));// official SM-2 EF update; floor 1.3 prevents intervals from collapsing to 1 day forever
@@ -1106,6 +1139,7 @@ function startFlashcards(lang){
   }
   // shuffle
   for(let i=fcQueue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[fcQueue[i],fcQueue[j]]=[fcQueue[j],fcQueue[i]];}
+  if(cfg.fcSessionSize>0)fcQueue=fcQueue.slice(0,cfg.fcSessionSize);
   fcIdx=0;fcRevealed=false;
   renderFC();
 }
@@ -1181,7 +1215,7 @@ function startQuiz(){
   const today=new Date().setHours(23,59,59,999);
   const due=shuffle(arr.filter(w=>!w.sm2||w.sm2.due<=today));
   const rest=shuffle(arr.filter(w=>w.sm2&&w.sm2.due>today));
-  quizQueue=[...due,...rest].slice(0,10);
+  quizQueue=[...due,...rest].slice(0,cfg.quizSessionSize||10);
   quizHistory=[{role:'system-note',content:`Vocabulary to test: ${quizQueue.map(w=>w.word).join(', ')}`}];
   quizAsk(lang);
 }
@@ -1770,7 +1804,7 @@ function playWord(word,lang){
   if(!word)return;
   if(window.speechSynthesis.speaking)window.speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(word);
-  u.lang=LANG_META[lang]?.lang||lang;u.rate=0.9;
+  u.lang=LANG_META[lang]?.lang||lang;u.rate=cfg.ttsRate??0.9;
   window.speechSynthesis.speak(u);
 }
 
