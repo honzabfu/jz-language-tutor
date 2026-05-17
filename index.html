@@ -166,6 +166,17 @@
     <h1 id="settings-title">Nastavení</h1>
   </div>
   <div class="settings-body">
+    <div id="onboarding-banner" class="onboarding-banner" style="display:none">
+      <div class="onboarding-banner-hd" id="ob-title"></div>
+      <ol class="onboarding-steps">
+        <li id="ob-step1"></li>
+        <li id="ob-step2"></li>
+        <li id="ob-step3"></li>
+      </ol>
+      <div class="onboarding-banner-footer">
+        <button class="btn btn-sm btn-ghost" onclick="dismissOnboarding()" id="ob-dismiss"></button>
+      </div>
+    </div>
     <div class="card">
       <h3 id="s-provider-title">LLM Poskytovatel</h3>
       <div class="field"><label id="s-provider-label">Poskytovatel</label>

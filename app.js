@@ -188,7 +188,7 @@ function _loadProviderSettings(p){
   document.getElementById('tips-lang-select').value=currentLang;
   updateEmptyState();
   updateInputPlaceholder();
-  navTo(['chat','vocab','fc','quiz','tips','settings'].includes(cfg.defaultView)?cfg.defaultView:'fc');
+  if(!localStorage.getItem('lt-onboarded')){navTo('settings');}else{navTo(['chat','vocab','fc','quiz','tips','settings'].includes(cfg.defaultView)?cfg.defaultView:'fc');}
 })();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(cfg.theme==='auto')applyTheme();});
 // Restore password fields when page is recovered from bfcache (iOS Safari clears them for security)
@@ -385,6 +385,12 @@ function applyI18n(){
   document.getElementById('footer-tagline').textContent=t.footerTagline;
   document.getElementById('pwa-dismiss-btn').title=t.bannerDismiss;
   document.getElementById('sw-dismiss-btn').title=t.bannerDismiss;
+  const _ob=id=>document.getElementById(id);
+  if(_ob('ob-title'))_ob('ob-title').textContent=t.onboardTitle;
+  if(_ob('ob-step1'))_ob('ob-step1').textContent=t.onboardStep1;
+  if(_ob('ob-step2'))_ob('ob-step2').textContent=t.onboardStep2;
+  if(_ob('ob-step3'))_ob('ob-step3').textContent=t.onboardStep3;
+  if(_ob('ob-dismiss'))_ob('ob-dismiss').textContent=t.onboardDismiss;
 }
 function updateInputPlaceholder(){const m=LANG_META[currentLang];const label=m?(cfg.uiLang==='en'?m.name:m.native):currentLang;document.getElementById('msg-input').placeholder=t.inputPH(label);}
 function updateEmptyState(){const m=LANG_META[currentLang];if(m)document.getElementById('empty-flag').textContent=m.flag;}
@@ -420,6 +426,13 @@ function populateSettingsUI(){
   updateApiKeyHint();
   updateApiKeyStatus();
   setModelHint(cfg.provider);
+  const _obBanner=document.getElementById('onboarding-banner');
+  if(_obBanner)_obBanner.style.display=localStorage.getItem('lt-onboarded')?'none':'flex';
+}
+function dismissOnboarding(){
+  localStorage.setItem('lt-onboarded','1');
+  const b=document.getElementById('onboarding-banner');
+  if(b)b.style.display='none';
 }
 function onProviderChange(p){
   _saveProviderSettings(cfg.provider);cfg.provider=p;_loadProviderSettings(p);
