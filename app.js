@@ -647,14 +647,16 @@ function closeAdvancedSettings(){
 }
 function onAdvTemperatureDefaultChange(checked){
   document.getElementById('cfg-adv-temperature').disabled=checked;
-  const val=parseFloat(document.getElementById('cfg-adv-temperature').value)||0.7;
+  const _tv=parseFloat(document.getElementById('cfg-adv-temperature').value);
+  const val=isNaN(_tv)?0.7:_tv;
   document.getElementById('cfg-adv-temperature-val').textContent=checked?'—':val.toFixed(2);
 }
 function saveAdvancedSettings(){
   const mt=parseInt(document.getElementById('cfg-adv-max-tokens').value,10);
   cfg.maxTokens=(!isNaN(mt)&&mt>=128&&mt<=8192)?mt:8192;
   const useProviderDefault=document.getElementById('cfg-adv-temperature-default').checked;
-  cfg.temperature=useProviderDefault?null:Math.min(1,Math.max(0,parseFloat(document.getElementById('cfg-adv-temperature').value)||0.7));
+  const _t=parseFloat(document.getElementById('cfg-adv-temperature').value);
+  cfg.temperature=useProviderDefault?null:Math.min(1,Math.max(0,isNaN(_t)?0.7:_t));
   cfg.streamingDisabled=document.getElementById('cfg-adv-streaming-disabled').checked;
   localStorage.setItem('lt-cfg',JSON.stringify(cfg));
   closeAdvancedSettings();
