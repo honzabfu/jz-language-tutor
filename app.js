@@ -1437,7 +1437,8 @@ async function safeLLM(msgs,sys,maxTokens=1024,signal){
 async function callAnthropic(msgs,sys,maxTokens=1024,signal){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const filteredMsgs=msgs.filter(m=>m.role==='user'||m.role==='assistant');
-  const url=cfg.anthropicProxyUrl||'https://api.anthropic.com/v1/messages';
+  const _aps=cfg.providerSettings.anthropic||{};
+  const url=_aps.proxyUrl||'https://api.anthropic.com/v1/messages';
   const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,system:sys||undefined,messages:filteredMsgs}),signal});
   if(!res.ok)await httpErr(res);
   const d1=await res.json();
@@ -1447,8 +1448,9 @@ async function callAnthropic(msgs,sys,maxTokens=1024,signal){
 async function callOpenAI(msgs,sys,maxTokens=1024,signal){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
-  const _oaiUrl=cfg.openaiEndpointUrl||'https://api.openai.com/v1/chat/completions';
-  const _oaiAuth=cfg.openaiAuthHeader==='api-key'?{'api-key':cfg.apiKey}:{'Authorization':`Bearer ${cfg.apiKey}`};
+  const _ops=cfg.providerSettings.openai||{};
+  const _oaiUrl=_ops.endpointUrl||'https://api.openai.com/v1/chat/completions';
+  const _oaiAuth=_ops.authHeader==='api-key'?{'api-key':cfg.apiKey}:{'Authorization':`Bearer ${cfg.apiKey}`};
   const res=await fetch(_oaiUrl,{method:'POST',headers:{'Content-Type':'application/json',..._oaiAuth},body:JSON.stringify({model:cfg.model,max_completion_tokens:maxTokens,messages:m}),signal});
   if(!res.ok)await httpErr(res);
   const d2=await res.json();
@@ -1460,7 +1462,8 @@ async function callGemini(msgs,sys,maxTokens=1024,signal){
   const gm=msgs.filter(x=>x.role==='user'||x.role==='assistant').map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
   const body={contents:gm,generationConfig:{maxOutputTokens:maxTokens}};
   if(sys)body.system_instruction={parts:[{text:sys}]};
-  const _gBase=(cfg.geminiEndpointUrl||'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/,'');
+  const _gps=cfg.providerSettings.gemini||{};
+  const _gBase=(_gps.endpointUrl||'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/,'');
   const res=await fetch(`${_gBase}/models/${cfg.model}:generateContent?key=${cfg.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal});
   if(!res.ok)await httpErr(res);
   const data=await res.json();
@@ -1519,7 +1522,8 @@ async function readSSE(response,onData){
 async function callAnthropicStream(msgs,sys,maxTokens,signal,onChunk){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const filteredMsgs=msgs.filter(m=>m.role==='user'||m.role==='assistant');
-  const url=cfg.anthropicProxyUrl||'https://api.anthropic.com/v1/messages';
+  const _aps=cfg.providerSettings.anthropic||{};
+  const url=_aps.proxyUrl||'https://api.anthropic.com/v1/messages';
   const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,stream:true,system:sys||undefined,messages:filteredMsgs}),signal});
   if(!res.ok)await httpErr(res);
   let full='';
@@ -1531,8 +1535,9 @@ async function callAnthropicStream(msgs,sys,maxTokens,signal,onChunk){
 async function callOpenAIStream(msgs,sys,maxTokens,signal,onChunk){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
-  const _oaiUrl=cfg.openaiEndpointUrl||'https://api.openai.com/v1/chat/completions';
-  const _oaiAuth=cfg.openaiAuthHeader==='api-key'?{'api-key':cfg.apiKey}:{'Authorization':`Bearer ${cfg.apiKey}`};
+  const _ops=cfg.providerSettings.openai||{};
+  const _oaiUrl=_ops.endpointUrl||'https://api.openai.com/v1/chat/completions';
+  const _oaiAuth=_ops.authHeader==='api-key'?{'api-key':cfg.apiKey}:{'Authorization':`Bearer ${cfg.apiKey}`};
   const res=await fetch(_oaiUrl,{method:'POST',headers:{'Content-Type':'application/json',..._oaiAuth},body:JSON.stringify({model:cfg.model,max_completion_tokens:maxTokens,stream:true,messages:m}),signal});
   if(!res.ok)await httpErr(res);
   let full='';
@@ -1547,7 +1552,8 @@ async function callGeminiStream(msgs,sys,maxTokens,signal,onChunk){
   const gm=msgs.filter(x=>x.role==='user'||x.role==='assistant').map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
   const body={contents:gm,generationConfig:{maxOutputTokens:maxTokens}};
   if(sys)body.system_instruction={parts:[{text:sys}]};
-  const _gBase=(cfg.geminiEndpointUrl||'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/,'');
+  const _gps=cfg.providerSettings.gemini||{};
+  const _gBase=(_gps.endpointUrl||'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/,'');
   const res=await fetch(`${_gBase}/models/${cfg.model}:streamGenerateContent?key=${cfg.apiKey}&alt=sse`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal});
   if(!res.ok)await httpErr(res);
   let full='';
