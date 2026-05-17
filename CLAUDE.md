@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-PWA language tutor split into four source files — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.2.0**, PWA cache key: `langtutor-v14`.
+PWA language tutor split into four source files — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.3.0**, PWA cache key: `langtutor-v16`.
 
 | File | Lines | Contents |
 |---|---|---|
