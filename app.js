@@ -85,7 +85,7 @@ let sortIdx=0;
 
 // Shared across all views — starting a new request or switching views cancels any in-flight LLM call.
 let _abortCtrl=null;
-let cfg={provider:'gemini',model:MODELS.gemini[0],apiKey:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',customInstructions:'',uiLang:navigator.language.startsWith('cs')?'cs':navigator.language.startsWith('es')?'es':'en',nativeLang:'',lessonMode:false,fontSize:'medium',theme:'auto',defaultView:'fc',providerSettings:{}};
+let cfg={provider:'gemini',model:MODELS.gemini[0],apiKey:'',anthropicProxyUrl:'',openaiEndpointUrl:'',openaiAuthHeader:'bearer',geminiEndpointUrl:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',customInstructions:'',uiLang:navigator.language.startsWith('cs')?'cs':navigator.language.startsWith('es')?'es':'en',nativeLang:'',lessonMode:false,fontSize:'medium',theme:'auto',defaultView:'fc',providerSettings:{}};
 let langLevels={};
 function getLangLevel(lang){return langLevels[lang]||'beginner';}
 const UI_LANG_NATIVE_FALLBACK={cs:'czech',en:'english',es:'spanish'};
@@ -127,6 +127,9 @@ function populateLangSelects(){
 function _saveProviderSettings(p){
   const ps=cfg.providerSettings[p]||(cfg.providerSettings[p]={});
   ps.apiKey=(document.getElementById('cfg-apikey')?.value||'').trim();
+  if(p==='anthropic')ps.proxyUrl=(document.getElementById('cfg-anthropic-proxy-url')?.value||'').trim();
+  if(p==='openai'){ps.endpointUrl=(document.getElementById('cfg-openai-endpoint-url')?.value||'').trim();ps.authHeader=document.getElementById('cfg-openai-auth-header')?.value||'bearer';}
+  if(p==='gemini')ps.endpointUrl=(document.getElementById('cfg-gemini-endpoint-url')?.value||'').trim();
   if(p==='ollama')ps.url=(document.getElementById('cfg-ollama-url')?.value||'').trim();
   if(p==='custom'){ps.url=(document.getElementById('cfg-custom-url')?.value||'').trim();ps.model=(document.getElementById('cfg-custom-model')?.value||'').trim();}
   else ps.model=document.getElementById('cfg-model')?.value||'';
@@ -134,11 +137,18 @@ function _saveProviderSettings(p){
 function _loadProviderSettings(p){
   const ps=cfg.providerSettings[p]||{};
   cfg.apiKey=ps.apiKey||'';
+  if(p==='anthropic')cfg.anthropicProxyUrl=ps.proxyUrl||'';
+  if(p==='openai'){cfg.openaiEndpointUrl=ps.endpointUrl||'';cfg.openaiAuthHeader=ps.authHeader||'bearer';}
+  if(p==='gemini')cfg.geminiEndpointUrl=ps.endpointUrl||'';
   if(p==='ollama')cfg.ollamaUrl=ps.url||'http://localhost:11434';
   if(p==='custom'){cfg.customUrl=ps.url||'';cfg.customModel=ps.model||'';}
   else cfg.model=ps.model||(MODELS[p]?.[0]||'');
   const _g=id=>document.getElementById(id);
   if(_g('cfg-apikey'))_g('cfg-apikey').value=cfg.apiKey;
+  if(_g('cfg-anthropic-proxy-url'))_g('cfg-anthropic-proxy-url').value=cfg.anthropicProxyUrl;
+  if(_g('cfg-openai-endpoint-url'))_g('cfg-openai-endpoint-url').value=cfg.openaiEndpointUrl;
+  if(_g('cfg-openai-auth-header'))_g('cfg-openai-auth-header').value=cfg.openaiAuthHeader;
+  if(_g('cfg-gemini-endpoint-url'))_g('cfg-gemini-endpoint-url').value=cfg.geminiEndpointUrl;
   if(_g('cfg-ollama-url'))_g('cfg-ollama-url').value=cfg.ollamaUrl;
   if(_g('cfg-custom-url'))_g('cfg-custom-url').value=cfg.customUrl;
   if(_g('cfg-custom-model'))_g('cfg-custom-model').value=cfg.customModel;
@@ -243,6 +253,14 @@ function applyI18n(){
   document.getElementById('s-apikey-label').textContent=t.sApiKeyLabel;
   document.getElementById('s-ollama-hint').textContent=t.sOllamaHint;
   document.getElementById('s-anthropic-hint').textContent=t.sAnthropicHint;
+  document.getElementById('s-advanced-label').textContent=t.sAdvancedLabel;
+  document.getElementById('s-anthropic-proxy-label').textContent=t.sAnthropicProxyLabel;
+  document.getElementById('s-anthropic-proxy-hint').textContent=t.sAnthropicProxyHint;
+  document.getElementById('s-openai-endpoint-label').textContent=t.sOpenAIEndpointLabel;
+  document.getElementById('s-openai-endpoint-hint').textContent=t.sOpenAIEndpointHint;
+  document.getElementById('s-openai-auth-label').textContent=t.sOpenAIAuthLabel;
+  document.getElementById('s-gemini-endpoint-label').textContent=t.sGeminiEndpointLabel;
+  document.getElementById('s-gemini-endpoint-hint').textContent=t.sGeminiEndpointHint;
   document.getElementById('s-custom-url-hint').textContent=t.sCustomUrlHint;
   document.getElementById('s-tutor-title').textContent=t.sTutorTitle;
   document.getElementById('s-lang-label').textContent=t.sLangLabel;
@@ -416,6 +434,10 @@ function onProviderChange(p){
 function autoSaveProviderCfg(){
   cfg.apiKey=(document.getElementById('cfg-apikey')?.value||'').trim();
   cfg.model=document.getElementById('cfg-model')?.value||cfg.model;
+  cfg.anthropicProxyUrl=(document.getElementById('cfg-anthropic-proxy-url')?.value||'').trim();
+  cfg.openaiEndpointUrl=(document.getElementById('cfg-openai-endpoint-url')?.value||'').trim();
+  cfg.openaiAuthHeader=document.getElementById('cfg-openai-auth-header')?.value||'bearer';
+  cfg.geminiEndpointUrl=(document.getElementById('cfg-gemini-endpoint-url')?.value||'').trim();
   cfg.ollamaUrl=(document.getElementById('cfg-ollama-url')?.value||'').trim()||'http://localhost:11434';
   cfg.customUrl=(document.getElementById('cfg-custom-url')?.value||'').trim();
   cfg.customModel=(document.getElementById('cfg-custom-model')?.value||'').trim();
@@ -525,14 +547,27 @@ async function fetchAndRebuildModels(){
   }
 }
 
+function toggleAdvancedFields(open){
+  document.getElementById('advanced-fields').style.display=open?'':'none';
+}
 function toggleProviderFields(p){
-  const isOllama=p==='ollama',isCustom=p==='custom',isAnthropic=p==='anthropic';
+  const isOllama=p==='ollama',isCustom=p==='custom',isAnthropic=p==='anthropic',isOpenAI=p==='openai',isGemini=p==='gemini';
+  const hasAdvanced=isAnthropic||isOpenAI||isGemini;
   document.getElementById('field-apikey').style.display='';
+  document.getElementById('s-anthropic-hint').style.display=isAnthropic?'':'none';
+  document.getElementById('field-advanced').style.display=hasAdvanced?'':'none';
+  document.getElementById('field-anthropic-proxy-url').style.display=isAnthropic?'':'none';
+  document.getElementById('field-openai-endpoint-url').style.display=isOpenAI?'':'none';
+  document.getElementById('field-openai-auth-header').style.display=isOpenAI?'':'none';
+  document.getElementById('field-gemini-endpoint-url').style.display=isGemini?'':'none';
   document.getElementById('field-ollama-url').style.display=isOllama?'':'none';
   document.getElementById('field-custom-url').style.display=isCustom?'':'none';
   document.getElementById('field-custom-model').style.display=isCustom?'':'none';
   document.getElementById('field-model-select').style.display=isCustom?'none':'';
-  document.getElementById('s-anthropic-hint').style.display=isAnthropic?'':'none';
+  // auto-open if provider already has a non-default advanced value configured
+  const hasValue=(isAnthropic&&!!cfg.anthropicProxyUrl)||(isOpenAI&&(!!cfg.openaiEndpointUrl||cfg.openaiAuthHeader!=='bearer'))||(isGemini&&!!cfg.geminiEndpointUrl);
+  document.getElementById('cfg-advanced').checked=hasValue;
+  document.getElementById('advanced-fields').style.display=hasValue?'':'none';
 }
 function updateApiKeyHint(){const el=document.getElementById('apikey-hint');const h=t.apiHints[cfg.provider]||'';el.textContent=cfg.provider==='ollama'?(t.ollamaApiKeyHint||'Volitelné — vyžadováno pouze pokud je Ollama zabezpečena klíčem (OLLAMA_API_KEY) nebo reverse proxy.'):h?t.sGenerateAt(h):'';document.getElementById('apikey-storage-warn').textContent=cfg.provider!=='ollama'?t.apiKeyStorageWarn:'';}
 function updateApiKeyStatus(){const el=document.getElementById('apikey-status');if(cfg.provider==='custom'){el.textContent='';return;}const k=document.getElementById('cfg-apikey')?.value||cfg.apiKey||'';if(cfg.provider==='ollama'){el.innerHTML=k.length>0?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:'';return;}el.innerHTML=k.length>8?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:`<span class="status-dot status-empty"></span>${t.noApiKey}`;}
@@ -1402,7 +1437,9 @@ async function safeLLM(msgs,sys,maxTokens=1024,signal){
 async function callAnthropic(msgs,sys,maxTokens=1024,signal){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const filteredMsgs=msgs.filter(m=>m.role==='user'||m.role==='assistant');
-  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,system:sys||undefined,messages:filteredMsgs}),signal});
+  const _aps=cfg.providerSettings.anthropic||{};
+  const url=_aps.proxyUrl||'https://api.anthropic.com/v1/messages';
+  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,system:sys||undefined,messages:filteredMsgs}),signal});
   if(!res.ok)await httpErr(res);
   const d1=await res.json();
   if(d1.stop_reason==='max_tokens')throw new Error('MAX_TOKENS');
@@ -1411,7 +1448,10 @@ async function callAnthropic(msgs,sys,maxTokens=1024,signal){
 async function callOpenAI(msgs,sys,maxTokens=1024,signal){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
-  const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${cfg.apiKey}`},body:JSON.stringify({model:cfg.model,max_completion_tokens:maxTokens,messages:m}),signal});
+  const _ops=cfg.providerSettings.openai||{};
+  const _oaiUrl=_ops.endpointUrl||'https://api.openai.com/v1/chat/completions';
+  const _oaiAuth=_ops.authHeader==='api-key'?{'api-key':cfg.apiKey}:{'Authorization':`Bearer ${cfg.apiKey}`};
+  const res=await fetch(_oaiUrl,{method:'POST',headers:{'Content-Type':'application/json',..._oaiAuth},body:JSON.stringify({model:cfg.model,max_completion_tokens:maxTokens,messages:m}),signal});
   if(!res.ok)await httpErr(res);
   const d2=await res.json();
   if(d2.choices[0].finish_reason==='length')throw new Error('MAX_TOKENS');
@@ -1422,7 +1462,9 @@ async function callGemini(msgs,sys,maxTokens=1024,signal){
   const gm=msgs.filter(x=>x.role==='user'||x.role==='assistant').map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
   const body={contents:gm,generationConfig:{maxOutputTokens:maxTokens}};
   if(sys)body.system_instruction={parts:[{text:sys}]};
-  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:generateContent?key=${cfg.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal});
+  const _gps=cfg.providerSettings.gemini||{};
+  const _gBase=(_gps.endpointUrl||'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/,'');
+  const res=await fetch(`${_gBase}/models/${cfg.model}:generateContent?key=${cfg.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal});
   if(!res.ok)await httpErr(res);
   const data=await res.json();
   if(data.candidates?.[0]?.finishReason==='MAX_TOKENS')throw new Error('MAX_TOKENS');
@@ -1480,7 +1522,9 @@ async function readSSE(response,onData){
 async function callAnthropicStream(msgs,sys,maxTokens,signal,onChunk){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const filteredMsgs=msgs.filter(m=>m.role==='user'||m.role==='assistant');
-  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,stream:true,system:sys||undefined,messages:filteredMsgs}),signal});
+  const _aps=cfg.providerSettings.anthropic||{};
+  const url=_aps.proxyUrl||'https://api.anthropic.com/v1/messages';
+  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,stream:true,system:sys||undefined,messages:filteredMsgs}),signal});
   if(!res.ok)await httpErr(res);
   let full='';
   await readSSE(res,data=>{
@@ -1491,7 +1535,10 @@ async function callAnthropicStream(msgs,sys,maxTokens,signal,onChunk){
 async function callOpenAIStream(msgs,sys,maxTokens,signal,onChunk){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
-  const res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${cfg.apiKey}`},body:JSON.stringify({model:cfg.model,max_completion_tokens:maxTokens,stream:true,messages:m}),signal});
+  const _ops=cfg.providerSettings.openai||{};
+  const _oaiUrl=_ops.endpointUrl||'https://api.openai.com/v1/chat/completions';
+  const _oaiAuth=_ops.authHeader==='api-key'?{'api-key':cfg.apiKey}:{'Authorization':`Bearer ${cfg.apiKey}`};
+  const res=await fetch(_oaiUrl,{method:'POST',headers:{'Content-Type':'application/json',..._oaiAuth},body:JSON.stringify({model:cfg.model,max_completion_tokens:maxTokens,stream:true,messages:m}),signal});
   if(!res.ok)await httpErr(res);
   let full='';
   await readSSE(res,data=>{
@@ -1505,7 +1552,9 @@ async function callGeminiStream(msgs,sys,maxTokens,signal,onChunk){
   const gm=msgs.filter(x=>x.role==='user'||x.role==='assistant').map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
   const body={contents:gm,generationConfig:{maxOutputTokens:maxTokens}};
   if(sys)body.system_instruction={parts:[{text:sys}]};
-  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:streamGenerateContent?key=${cfg.apiKey}&alt=sse`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal});
+  const _gps=cfg.providerSettings.gemini||{};
+  const _gBase=(_gps.endpointUrl||'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/,'');
+  const res=await fetch(`${_gBase}/models/${cfg.model}:streamGenerateContent?key=${cfg.apiKey}&alt=sse`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal});
   if(!res.ok)await httpErr(res);
   let full='';
   await readSSE(res,data=>{

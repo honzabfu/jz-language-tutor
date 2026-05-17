@@ -184,6 +184,36 @@
         <div class="hint" id="apikey-storage-warn" style="margin-top:4px"></div>
       </div>
       <div class="hint-warn" id="s-anthropic-hint" style="display:none"></div>
+      <div id="field-advanced" style="display:none">
+        <label class="adv-toggle">
+          <input type="checkbox" id="cfg-advanced" onchange="toggleAdvancedFields(this.checked)">
+          <span id="s-advanced-label">Pokročilé</span>
+        </label>
+      </div>
+      <div id="advanced-fields" style="display:none">
+        <div class="field" id="field-anthropic-proxy-url" style="display:none">
+          <label id="s-anthropic-proxy-label">Proxy URL</label>
+          <input type="text" id="cfg-anthropic-proxy-url" placeholder="https://…" autocomplete="off" onchange="autoSaveProviderCfg()">
+          <div class="hint" id="s-anthropic-proxy-hint"></div>
+        </div>
+        <div class="field" id="field-openai-endpoint-url" style="display:none">
+          <label id="s-openai-endpoint-label">API URL</label>
+          <input type="text" id="cfg-openai-endpoint-url" placeholder="https://api.openai.com/v1/chat/completions" autocomplete="off" onchange="autoSaveProviderCfg()">
+          <div class="hint" id="s-openai-endpoint-hint"></div>
+        </div>
+        <div class="field" id="field-openai-auth-header" style="display:none">
+          <label id="s-openai-auth-label">Auth header</label>
+          <select id="cfg-openai-auth-header" onchange="autoSaveProviderCfg()">
+            <option value="bearer">Authorization: Bearer (default)</option>
+            <option value="api-key">api-key (Azure)</option>
+          </select>
+        </div>
+        <div class="field" id="field-gemini-endpoint-url" style="display:none">
+          <label id="s-gemini-endpoint-label">API URL</label>
+          <input type="text" id="cfg-gemini-endpoint-url" placeholder="https://generativelanguage.googleapis.com/v1beta" autocomplete="off" onchange="autoSaveProviderCfg()">
+          <div class="hint" id="s-gemini-endpoint-hint"></div>
+        </div>
+      </div>
       <div class="field" id="field-ollama-url" style="display:none"><label>Ollama URL</label>
         <input type="text" id="cfg-ollama-url" placeholder="http://localhost:11434" onchange="autoSaveProviderCfg()">
         <div class="hint" id="s-ollama-hint">Ollama musí mít povoleno CORS pro tuto doménu.</div>
