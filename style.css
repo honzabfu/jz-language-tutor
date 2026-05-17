@@ -118,6 +118,8 @@ select:focus{outline:2px solid var(--pri)}
 .btn-ghost:hover{background:var(--bg)}
 .btn-danger{background:transparent;border:1px solid var(--err);color:var(--err)}
 .btn-danger:hover{background:var(--btn-danger-hover-bg)}
+.btn-warn{background:transparent;border:1px solid var(--warn);color:var(--warn)}
+.btn-warn:hover{background:var(--clr-warn-bg)}
 .btn-sm{padding:5px 10px;font-size:0.8rem}
 
 /* ── FLASHCARD VIEW ── */
