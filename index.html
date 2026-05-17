@@ -277,24 +277,6 @@
       </div>
     </div>
     <div class="card">
-      <h3 id="s-learning-title">Výuka</h3>
-      <div class="field">
-        <label id="s-fc-session-size-label">Počet karet za sezení</label>
-        <input type="number" id="cfg-fc-session-size" min="5" max="50" step="1" style="width:100%">
-        <span class="hint" id="s-fc-session-size-hint">Kolik karet se zobrazí za jedno sezení (5–50).</span>
-      </div>
-      <div class="field">
-        <label id="s-quiz-session-size-label">Otázek na kvíz</label>
-        <input type="number" id="cfg-quiz-session-size" min="5" max="30" step="1" style="width:100%">
-        <span class="hint" id="s-quiz-session-size-hint">Počet slovíček testovaných na jeden kvíz (5–30).</span>
-      </div>
-      <div class="field">
-        <label><span id="s-sm-easy-bonus-label">SM-2 bonus pro snadné</span>: <span id="cfg-sm-easy-bonus-val">1.00</span>×</label>
-        <input type="range" id="cfg-sm-easy-bonus" min="1.0" max="1.5" step="0.05" style="width:100%" oninput="document.getElementById('cfg-sm-easy-bonus-val').textContent=parseFloat(this.value).toFixed(2)">
-        <span class="hint" id="s-sm-easy-bonus-hint">Interval snadných karet se vynásobí tímto koeficientem. 1.0 = bez bonusu.</span>
-      </div>
-    </div>
-    <div class="card">
       <h3 id="s-ui-title">Rozhraní</h3>
       <div class="field"><label id="s-ui-lang-label">Jazyk rozhraní</label>
         <select id="cfg-ui-lang" onchange="onUiLangChange(this.value)"></select>
@@ -323,24 +305,10 @@
           <option value="tips" id="s-default-view-tips">Uložené</option>
         </select>
       </div>
-      <div class="field">
-        <label><span id="s-tts-rate-label">Rychlost výslovnosti</span>: <span id="cfg-tts-rate-val">0.9</span>×</label>
-        <input type="range" id="cfg-tts-rate" min="0.5" max="1.5" step="0.1" style="width:100%" oninput="document.getElementById('cfg-tts-rate-val').textContent=parseFloat(this.value).toFixed(1)">
-        <span class="hint" id="s-tts-rate-hint">Rychlost přehrávání výslovnosti (0.5–1.5×).</span>
-      </div>
     </div>
     <div class="card">
       <h3 id="s-data-title">Data & záloha</h3>
       <p id="s-data-desc" style="font-size:0.87rem;color:var(--mut);margin-bottom:12px">Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.</p>
-      <div class="field">
-        <label id="s-vocab-import-dups-label">Při importu duplicit</label>
-        <select id="cfg-vocab-import-dups">
-          <option value="skip">Přeskočit</option>
-          <option value="merge">Sloučit (aktualizovat překlad)</option>
-          <option value="overwrite">Přepsat (překlad + poznámky)</option>
-        </select>
-        <span class="hint" id="s-vocab-import-dups-hint">Chování při importu slovíčka, které již existuje ve slovníku.</span>
-      </div>
       <div class="btn-row">
         <button id="s-save-btn" class="btn btn-primary" onclick="saveSettings()">Uložit</button>
         <button id="s-export-btn" class="btn btn-ghost" onclick="exportAll()">Export zálohy</button>
@@ -383,6 +351,35 @@
         <span id="adv-streaming-label">Zakázat streaming odpovědí</span>
       </label>
       <span class="hint" id="adv-streaming-hint">Pro vlastní endpointy bez podpory SSE streamingu.</span>
+    </div>
+    <div class="field">
+      <label id="s-fc-session-size-label">Počet karet za sezení</label>
+      <input type="number" id="cfg-fc-session-size" min="5" max="50" step="1" style="width:100%">
+      <span class="hint" id="s-fc-session-size-hint">Kolik karet se zobrazí za jedno sezení (5–50).</span>
+    </div>
+    <div class="field">
+      <label id="s-quiz-session-size-label">Otázek na kvíz</label>
+      <input type="number" id="cfg-quiz-session-size" min="5" max="30" step="1" style="width:100%">
+      <span class="hint" id="s-quiz-session-size-hint">Počet slovíček testovaných na jeden kvíz (5–30).</span>
+    </div>
+    <div class="field">
+      <label><span id="s-sm-easy-bonus-label">SM-2 bonus pro snadné</span>: <span id="cfg-sm-easy-bonus-val">1.00</span>×</label>
+      <input type="range" id="cfg-sm-easy-bonus" min="1.0" max="1.5" step="0.05" style="width:100%" oninput="document.getElementById('cfg-sm-easy-bonus-val').textContent=parseFloat(this.value).toFixed(2)">
+      <span class="hint" id="s-sm-easy-bonus-hint">Interval snadných karet se vynásobí tímto koeficientem. 1.0 = bez bonusu.</span>
+    </div>
+    <div class="field">
+      <label><span id="s-tts-rate-label">Rychlost výslovnosti</span>: <span id="cfg-tts-rate-val">0.9</span>×</label>
+      <input type="range" id="cfg-tts-rate" min="0.5" max="1.5" step="0.1" style="width:100%" oninput="document.getElementById('cfg-tts-rate-val').textContent=parseFloat(this.value).toFixed(1)">
+      <span class="hint" id="s-tts-rate-hint">Rychlost přehrávání výslovnosti (0.5–1.5×).</span>
+    </div>
+    <div class="field">
+      <label id="s-vocab-import-dups-label">Při importu duplicit</label>
+      <select id="cfg-vocab-import-dups">
+        <option value="skip">Přeskočit</option>
+        <option value="merge">Sloučit (aktualizovat překlad)</option>
+        <option value="overwrite">Přepsat (překlad + poznámky)</option>
+      </select>
+      <span class="hint" id="s-vocab-import-dups-hint">Chování při importu slovíčka, které již existuje ve slovníku.</span>
     </div>
     <div class="btn-row" style="margin-top:16px">
       <button class="btn btn-primary" onclick="saveAdvancedSettings()" id="adv-save-btn">Uložit</button>

@@ -405,7 +405,6 @@ function applyI18n(){
   document.getElementById('adv-save-btn').textContent=t.advSaveBtn;
   document.getElementById('adv-cancel-btn').textContent=t.advCancelBtn;
   document.getElementById('adv-reset-btn').textContent=t.advResetBtn;
-  document.getElementById('s-learning-title').textContent=t.sLearningTitle;
   document.getElementById('s-fc-session-size-label').textContent=t.sFcSessionSizeLabel;
   document.getElementById('s-fc-session-size-hint').textContent=t.sFcSessionSizeHint;
   document.getElementById('s-quiz-session-size-label').textContent=t.sQuizSessionSizeLabel;
@@ -448,11 +447,6 @@ function populateSettingsUI(){
   document.getElementById('cfg-font-size').value=cfg.fontSize||'medium';
   document.getElementById('cfg-theme').value=cfg.theme||'auto';
   document.getElementById('cfg-default-view').value=cfg.defaultView||'fc';
-  const _fcs=cfg.fcSessionSize??20;document.getElementById('cfg-fc-session-size').value=_fcs;
-  const _qss=cfg.quizSessionSize??10;document.getElementById('cfg-quiz-session-size').value=_qss;
-  const _seb=cfg.smEasyBonus??1.0;document.getElementById('cfg-sm-easy-bonus').value=_seb;document.getElementById('cfg-sm-easy-bonus-val').textContent=parseFloat(_seb).toFixed(2);
-  const _tts=cfg.ttsRate??0.9;document.getElementById('cfg-tts-rate').value=_tts;document.getElementById('cfg-tts-rate-val').textContent=parseFloat(_tts).toFixed(1);
-  document.getElementById('cfg-vocab-import-dups').value=cfg.vocabImportDuplicates||'skip';
   rebuildModelList(cfg.provider,MODELS_METADATA[cfg.provider]||[]);
   document.getElementById('cfg-model').value=cfg.model;
   toggleProviderFields(cfg.provider);
@@ -641,11 +635,6 @@ function saveSettings(){
   cfg.theme=document.getElementById('cfg-theme').value;
   applyTheme();
   cfg.defaultView=document.getElementById('cfg-default-view').value;
-  const _fcsv=parseInt(document.getElementById('cfg-fc-session-size').value,10);cfg.fcSessionSize=(!isNaN(_fcsv)&&_fcsv>=5&&_fcsv<=50)?_fcsv:20;
-  const _qssv=parseInt(document.getElementById('cfg-quiz-session-size').value,10);cfg.quizSessionSize=(!isNaN(_qssv)&&_qssv>=5&&_qssv<=30)?_qssv:10;
-  const _sebv=parseFloat(document.getElementById('cfg-sm-easy-bonus').value);cfg.smEasyBonus=(!isNaN(_sebv)&&_sebv>=1.0&&_sebv<=1.5)?_sebv:1.0;
-  const _ttsv=parseFloat(document.getElementById('cfg-tts-rate').value);cfg.ttsRate=(!isNaN(_ttsv)&&_ttsv>=0.5&&_ttsv<=1.5)?_ttsv:0.9;
-  cfg.vocabImportDuplicates=document.getElementById('cfg-vocab-import-dups').value;
   localStorage.setItem('lt-cfg',JSON.stringify(cfg));
   updateProviderBadge();
   const toast=document.getElementById('save-toast');
@@ -664,6 +653,11 @@ function openAdvancedSettings(){
   document.getElementById('cfg-adv-temperature').disabled=useProviderDefault;
   document.getElementById('cfg-adv-temperature-val').textContent=useProviderDefault?'—':parseFloat(temp).toFixed(2);
   document.getElementById('cfg-adv-streaming-disabled').checked=!!cfg.streamingDisabled;
+  const _fcs=cfg.fcSessionSize??20;document.getElementById('cfg-fc-session-size').value=_fcs;
+  const _qss=cfg.quizSessionSize??10;document.getElementById('cfg-quiz-session-size').value=_qss;
+  const _seb=cfg.smEasyBonus??1.0;document.getElementById('cfg-sm-easy-bonus').value=_seb;document.getElementById('cfg-sm-easy-bonus-val').textContent=parseFloat(_seb).toFixed(2);
+  const _tts=cfg.ttsRate??0.9;document.getElementById('cfg-tts-rate').value=_tts;document.getElementById('cfg-tts-rate-val').textContent=parseFloat(_tts).toFixed(1);
+  document.getElementById('cfg-vocab-import-dups').value=cfg.vocabImportDuplicates||'skip';
   document.getElementById('advanced-settings-overlay').classList.add('open');
 }
 function closeAdvancedSettings(){
@@ -682,6 +676,11 @@ function saveAdvancedSettings(){
   const _t=parseFloat(document.getElementById('cfg-adv-temperature').value);
   cfg.temperature=useProviderDefault?null:Math.min(1,Math.max(0,isNaN(_t)?0.7:_t));
   cfg.streamingDisabled=document.getElementById('cfg-adv-streaming-disabled').checked;
+  const _fcsv=parseInt(document.getElementById('cfg-fc-session-size').value,10);cfg.fcSessionSize=(!isNaN(_fcsv)&&_fcsv>=5&&_fcsv<=50)?_fcsv:20;
+  const _qssv=parseInt(document.getElementById('cfg-quiz-session-size').value,10);cfg.quizSessionSize=(!isNaN(_qssv)&&_qssv>=5&&_qssv<=30)?_qssv:10;
+  const _sebv=parseFloat(document.getElementById('cfg-sm-easy-bonus').value);cfg.smEasyBonus=(!isNaN(_sebv)&&_sebv>=1.0&&_sebv<=1.5)?_sebv:1.0;
+  const _ttsv=parseFloat(document.getElementById('cfg-tts-rate').value);cfg.ttsRate=(!isNaN(_ttsv)&&_ttsv>=0.5&&_ttsv<=1.5)?_ttsv:0.9;
+  cfg.vocabImportDuplicates=document.getElementById('cfg-vocab-import-dups').value;
   localStorage.setItem('lt-cfg',JSON.stringify(cfg));
   closeAdvancedSettings();
   const toast=document.getElementById('save-toast');
@@ -690,12 +689,18 @@ function saveAdvancedSettings(){
 }
 function resetAdvancedSettings(){
   cfg.maxTokens=8192;cfg.temperature=null;cfg.streamingDisabled=false;
+  cfg.fcSessionSize=20;cfg.quizSessionSize=10;cfg.smEasyBonus=1.0;cfg.ttsRate=0.9;cfg.vocabImportDuplicates='skip';
   document.getElementById('cfg-adv-max-tokens').value=8192;
   document.getElementById('cfg-adv-temperature-default').checked=true;
   document.getElementById('cfg-adv-temperature').value=0.7;
   document.getElementById('cfg-adv-temperature').disabled=true;
   document.getElementById('cfg-adv-temperature-val').textContent='—';
   document.getElementById('cfg-adv-streaming-disabled').checked=false;
+  document.getElementById('cfg-fc-session-size').value=20;
+  document.getElementById('cfg-quiz-session-size').value=10;
+  document.getElementById('cfg-sm-easy-bonus').value=1.0;document.getElementById('cfg-sm-easy-bonus-val').textContent='1.00';
+  document.getElementById('cfg-tts-rate').value=0.9;document.getElementById('cfg-tts-rate-val').textContent='0.9';
+  document.getElementById('cfg-vocab-import-dups').value='skip';
   localStorage.setItem('lt-cfg',JSON.stringify(cfg));
 }
 
