@@ -236,6 +236,12 @@ select:focus{outline:2px solid var(--pri)}
 /* ── VOCAB COST WARNING ── */
 #vocab-cost-warn{background:var(--clr-warn-bg);color:var(--clr-warn-txt);border-bottom-color:var(--clr-warn-bdr)}
 
+/* ── ONBOARDING BANNER ── */
+.onboarding-banner{background:var(--clr-info-bg);border:1px solid var(--pwa-bdr);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.onboarding-banner-hd{font-weight:700;font-size:0.97rem;color:var(--prid)}
+.onboarding-steps{padding-left:20px;display:flex;flex-direction:column;gap:5px;font-size:0.87rem;line-height:1.45;color:var(--txt)}
+.onboarding-banner-footer{display:flex;justify-content:flex-end}
+
 /* ── PRONUNCIATION (WEB SPEECH API) ── */
 .speak-btn{background:none;border:none;cursor:pointer;color:var(--pri);font-size:0.9rem;padding:4px 6px;border-radius:var(--rs);transition:background .15s;display:inline-flex;align-items:center;justify-content:center}
 .speak-btn:hover{background:var(--prit)}
