@@ -85,7 +85,7 @@ let sortIdx=0;
 
 // Shared across all views — starting a new request or switching views cancels any in-flight LLM call.
 let _abortCtrl=null;
-let cfg={provider:'gemini',model:MODELS.gemini[0],apiKey:'',anthropicProxyUrl:'',openaiEndpointUrl:'',openaiAuthHeader:'bearer',geminiEndpointUrl:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',customInstructions:'',uiLang:navigator.language.startsWith('cs')?'cs':navigator.language.startsWith('es')?'es':'en',nativeLang:'',lessonMode:false,fontSize:'medium',theme:'auto',defaultView:'fc',maxTokens:4096,temperature:0.7,streamingDisabled:false,providerSettings:{}};
+let cfg={provider:'gemini',model:MODELS.gemini[0],apiKey:'',anthropicProxyUrl:'',openaiEndpointUrl:'',openaiAuthHeader:'bearer',geminiEndpointUrl:'',ollamaUrl:'http://localhost:11434',customUrl:'',customModel:'',feedbackStyle:'balanced',customInstructions:'',uiLang:navigator.language.startsWith('cs')?'cs':navigator.language.startsWith('es')?'es':'en',nativeLang:'',lessonMode:false,fontSize:'medium',theme:'auto',defaultView:'fc',maxTokens:8192,temperature:null,streamingDisabled:false,providerSettings:{}};
 let langLevels={};
 function getLangLevel(lang){return langLevels[lang]||'beginner';}
 const UI_LANG_NATIVE_FALLBACK={cs:'czech',en:'english',es:'spanish'};
@@ -397,6 +397,7 @@ function applyI18n(){
   document.getElementById('adv-warning').textContent=t.advWarning;
   document.getElementById('adv-max-tokens-label').textContent=t.advMaxTokensLabel;
   document.getElementById('adv-max-tokens-hint').textContent=t.advMaxTokensHint;
+  document.getElementById('adv-temperature-default-label').textContent=t.advTemperatureDefaultLabel;
   document.getElementById('adv-temperature-label').textContent=t.advTemperatureLabel;
   document.getElementById('adv-temperature-hint').textContent=t.advTemperatureHint;
   document.getElementById('adv-streaming-label').textContent=t.advStreamingLabel;
@@ -630,21 +631,30 @@ function saveSettings(){
 }
 function updateProviderBadge(){const lb={anthropic:'Claude',openai:'GPT',gemini:'Gemini',ollama:'Ollama',custom:'Custom'};const ok=cfg.provider==='ollama'||(cfg.provider==='custom'&&!!cfg.customUrl&&!!cfg.customModel)||(cfg.apiKey&&cfg.apiKey.length>8);const text=lb[cfg.provider]||cfg.provider;const cls='provider-badge'+(ok?'':' warn');['provider-badge','quiz-provider-badge'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=text;el.className=cls;}});}
 function openAdvancedSettings(){
-  const mt=cfg.maxTokens||4096;
-  const temp=cfg.temperature??0.7;
+  const mt=cfg.maxTokens||8192;
+  const useProviderDefault=cfg.temperature==null;
+  const temp=useProviderDefault?0.7:cfg.temperature;
   document.getElementById('cfg-adv-max-tokens').value=mt;
+  document.getElementById('cfg-adv-temperature-default').checked=useProviderDefault;
   document.getElementById('cfg-adv-temperature').value=temp;
-  document.getElementById('cfg-adv-temperature-val').textContent=parseFloat(temp).toFixed(2);
+  document.getElementById('cfg-adv-temperature').disabled=useProviderDefault;
+  document.getElementById('cfg-adv-temperature-val').textContent=useProviderDefault?'—':parseFloat(temp).toFixed(2);
   document.getElementById('cfg-adv-streaming-disabled').checked=!!cfg.streamingDisabled;
   document.getElementById('advanced-settings-overlay').classList.add('open');
 }
 function closeAdvancedSettings(){
   document.getElementById('advanced-settings-overlay').classList.remove('open');
 }
+function onAdvTemperatureDefaultChange(checked){
+  document.getElementById('cfg-adv-temperature').disabled=checked;
+  const val=parseFloat(document.getElementById('cfg-adv-temperature').value)||0.7;
+  document.getElementById('cfg-adv-temperature-val').textContent=checked?'—':val.toFixed(2);
+}
 function saveAdvancedSettings(){
   const mt=parseInt(document.getElementById('cfg-adv-max-tokens').value,10);
-  cfg.maxTokens=(!isNaN(mt)&&mt>=128&&mt<=8192)?mt:4096;
-  cfg.temperature=Math.min(1,Math.max(0,parseFloat(document.getElementById('cfg-adv-temperature').value)||0.7));
+  cfg.maxTokens=(!isNaN(mt)&&mt>=128&&mt<=8192)?mt:8192;
+  const useProviderDefault=document.getElementById('cfg-adv-temperature-default').checked;
+  cfg.temperature=useProviderDefault?null:Math.min(1,Math.max(0,parseFloat(document.getElementById('cfg-adv-temperature').value)||0.7));
   cfg.streamingDisabled=document.getElementById('cfg-adv-streaming-disabled').checked;
   localStorage.setItem('lt-cfg',JSON.stringify(cfg));
   closeAdvancedSettings();
@@ -653,10 +663,12 @@ function saveAdvancedSettings(){
   setTimeout(()=>toast.classList.remove('visible'),2000);
 }
 function resetAdvancedSettings(){
-  cfg.maxTokens=4096;cfg.temperature=0.7;cfg.streamingDisabled=false;
-  document.getElementById('cfg-adv-max-tokens').value=4096;
+  cfg.maxTokens=8192;cfg.temperature=null;cfg.streamingDisabled=false;
+  document.getElementById('cfg-adv-max-tokens').value=8192;
+  document.getElementById('cfg-adv-temperature-default').checked=true;
   document.getElementById('cfg-adv-temperature').value=0.7;
-  document.getElementById('cfg-adv-temperature-val').textContent='0.70';
+  document.getElementById('cfg-adv-temperature').disabled=true;
+  document.getElementById('cfg-adv-temperature-val').textContent='—';
   document.getElementById('cfg-adv-streaming-disabled').checked=false;
   localStorage.setItem('lt-cfg',JSON.stringify(cfg));
 }
@@ -1496,7 +1508,7 @@ async function callAnthropic(msgs,sys,maxTokens=1024,signal){
   const filteredMsgs=msgs.filter(m=>m.role==='user'||m.role==='assistant');
   const _aps=cfg.providerSettings.anthropic||{};
   const url=_aps.proxyUrl||'https://api.anthropic.com/v1/messages';
-  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,temperature:cfg.temperature??0.7,system:sys||undefined,messages:filteredMsgs}),signal});
+  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{}),system:sys||undefined,messages:filteredMsgs}),signal});
   if(!res.ok)await httpErr(res);
   const d1=await res.json();
   if(d1.stop_reason==='max_tokens')throw new Error('MAX_TOKENS');
@@ -1508,7 +1520,7 @@ async function callOpenAI(msgs,sys,maxTokens=1024,signal){
   const _ops=cfg.providerSettings.openai||{};
   const _oaiUrl=_ops.endpointUrl||'https://api.openai.com/v1/chat/completions';
   const _oaiAuth=_ops.authHeader==='api-key'?{'api-key':cfg.apiKey}:{'Authorization':`Bearer ${cfg.apiKey}`};
-  const res=await fetch(_oaiUrl,{method:'POST',headers:{'Content-Type':'application/json',..._oaiAuth},body:JSON.stringify({model:cfg.model,max_completion_tokens:maxTokens,temperature:cfg.temperature??0.7,messages:m}),signal});
+  const res=await fetch(_oaiUrl,{method:'POST',headers:{'Content-Type':'application/json',..._oaiAuth},body:JSON.stringify({model:cfg.model,max_completion_tokens:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{}),messages:m}),signal});
   if(!res.ok)await httpErr(res);
   const d2=await res.json();
   if(d2.choices[0].finish_reason==='length')throw new Error('MAX_TOKENS');
@@ -1517,7 +1529,7 @@ async function callOpenAI(msgs,sys,maxTokens=1024,signal){
 async function callGemini(msgs,sys,maxTokens=1024,signal){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const gm=msgs.filter(x=>x.role==='user'||x.role==='assistant').map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
-  const body={contents:gm,generationConfig:{maxOutputTokens:maxTokens,temperature:cfg.temperature??0.7}};
+  const body={contents:gm,generationConfig:{maxOutputTokens:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{})}};
   if(sys)body.system_instruction={parts:[{text:sys}]};
   const _gps=cfg.providerSettings.gemini||{};
   const _gBase=(_gps.endpointUrl||'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/,'');
@@ -1537,7 +1549,7 @@ async function callOllama(msgs,sys,signal){
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
   const headers={'Content-Type':'application/json'};
   if(cfg.apiKey)headers['Authorization']=`Bearer ${cfg.apiKey}`;
-  const res=await fetch(`${base}/api/chat`,{method:'POST',headers,body:JSON.stringify({model:cfg.model,stream:false,options:{temperature:cfg.temperature??0.7},messages:m}),signal});
+  const res=await fetch(`${base}/api/chat`,{method:'POST',headers,body:JSON.stringify({model:cfg.model,stream:false,...(cfg.temperature!=null?{options:{temperature:cfg.temperature}}:{}),messages:m}),signal});
   if(!res.ok)await httpErr(res);
   return(await res.json()).message.content;
 }
@@ -1547,7 +1559,7 @@ async function callCustom(msgs,sys,maxTokens=1024,signal){
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
   const headers={'Content-Type':'application/json'};
   if(cfg.apiKey)headers['Authorization']=`Bearer ${cfg.apiKey}`;
-  const res=await fetch(`${base}/chat/completions`,{method:'POST',headers,body:JSON.stringify({model:cfg.customModel,max_tokens:maxTokens,temperature:cfg.temperature??0.7,messages:m}),signal});
+  const res=await fetch(`${base}/chat/completions`,{method:'POST',headers,body:JSON.stringify({model:cfg.customModel,max_tokens:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{}),messages:m}),signal});
   if(!res.ok)await httpErr(res);
   const d3=await res.json();
   if(d3.choices[0].finish_reason==='length')throw new Error('MAX_TOKENS');
@@ -1581,7 +1593,7 @@ async function callAnthropicStream(msgs,sys,maxTokens,signal,onChunk){
   const filteredMsgs=msgs.filter(m=>m.role==='user'||m.role==='assistant');
   const _aps=cfg.providerSettings.anthropic||{};
   const url=_aps.proxyUrl||'https://api.anthropic.com/v1/messages';
-  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,temperature:cfg.temperature??0.7,stream:true,system:sys||undefined,messages:filteredMsgs}),signal});
+  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{}),stream:true,system:sys||undefined,messages:filteredMsgs}),signal});
   if(!res.ok)await httpErr(res);
   let full='';
   await readSSE(res,data=>{
@@ -1595,7 +1607,7 @@ async function callOpenAIStream(msgs,sys,maxTokens,signal,onChunk){
   const _ops=cfg.providerSettings.openai||{};
   const _oaiUrl=_ops.endpointUrl||'https://api.openai.com/v1/chat/completions';
   const _oaiAuth=_ops.authHeader==='api-key'?{'api-key':cfg.apiKey}:{'Authorization':`Bearer ${cfg.apiKey}`};
-  const res=await fetch(_oaiUrl,{method:'POST',headers:{'Content-Type':'application/json',..._oaiAuth},body:JSON.stringify({model:cfg.model,max_completion_tokens:maxTokens,temperature:cfg.temperature??0.7,stream:true,messages:m}),signal});
+  const res=await fetch(_oaiUrl,{method:'POST',headers:{'Content-Type':'application/json',..._oaiAuth},body:JSON.stringify({model:cfg.model,max_completion_tokens:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{}),stream:true,messages:m}),signal});
   if(!res.ok)await httpErr(res);
   let full='';
   await readSSE(res,data=>{
@@ -1607,7 +1619,7 @@ async function callOpenAIStream(msgs,sys,maxTokens,signal,onChunk){
 async function callGeminiStream(msgs,sys,maxTokens,signal,onChunk){
   if(!cfg.apiKey)throw new Error('NO_KEY');
   const gm=msgs.filter(x=>x.role==='user'||x.role==='assistant').map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
-  const body={contents:gm,generationConfig:{maxOutputTokens:maxTokens,temperature:cfg.temperature??0.7}};
+  const body={contents:gm,generationConfig:{maxOutputTokens:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{})}};
   if(sys)body.system_instruction={parts:[{text:sys}]};
   const _gps=cfg.providerSettings.gemini||{};
   const _gBase=(_gps.endpointUrl||'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/,'');
@@ -1625,7 +1637,7 @@ async function callOllamaStream(msgs,sys,signal,onChunk){
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
   const headers={'Content-Type':'application/json'};
   if(cfg.apiKey)headers['Authorization']=`Bearer ${cfg.apiKey}`;
-  const res=await fetch(`${base}/api/chat`,{method:'POST',headers,body:JSON.stringify({model:cfg.model,stream:true,options:{temperature:cfg.temperature??0.7},messages:m}),signal});
+  const res=await fetch(`${base}/api/chat`,{method:'POST',headers,body:JSON.stringify({model:cfg.model,stream:true,...(cfg.temperature!=null?{options:{temperature:cfg.temperature}}:{}),messages:m}),signal});
   if(!res.ok)await httpErr(res);
   const reader=res.body.getReader();
   const decoder=new TextDecoder();
@@ -1654,7 +1666,7 @@ async function callCustomStream(msgs,sys,maxTokens,signal,onChunk){
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
   const headers={'Content-Type':'application/json'};
   if(cfg.apiKey)headers['Authorization']=`Bearer ${cfg.apiKey}`;
-  const res=await fetch(`${base}/chat/completions`,{method:'POST',headers,body:JSON.stringify({model:cfg.customModel,max_tokens:maxTokens,temperature:cfg.temperature??0.7,stream:true,messages:m}),signal});
+  const res=await fetch(`${base}/chat/completions`,{method:'POST',headers,body:JSON.stringify({model:cfg.customModel,max_tokens:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{}),stream:true,messages:m}),signal});
   if(!res.ok)await httpErr(res);
   let full='';
   await readSSE(res,data=>{
