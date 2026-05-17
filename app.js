@@ -253,6 +253,7 @@ function applyI18n(){
   document.getElementById('s-apikey-label').textContent=t.sApiKeyLabel;
   document.getElementById('s-ollama-hint').textContent=t.sOllamaHint;
   document.getElementById('s-anthropic-hint').textContent=t.sAnthropicHint;
+  document.getElementById('s-advanced-label').textContent=t.sAdvancedLabel;
   document.getElementById('s-anthropic-proxy-label').textContent=t.sAnthropicProxyLabel;
   document.getElementById('s-anthropic-proxy-hint').textContent=t.sAnthropicProxyHint;
   document.getElementById('s-openai-endpoint-label').textContent=t.sOpenAIEndpointLabel;
@@ -546,10 +547,15 @@ async function fetchAndRebuildModels(){
   }
 }
 
+function toggleAdvancedFields(open){
+  document.getElementById('advanced-fields').style.display=open?'':'none';
+}
 function toggleProviderFields(p){
   const isOllama=p==='ollama',isCustom=p==='custom',isAnthropic=p==='anthropic',isOpenAI=p==='openai',isGemini=p==='gemini';
+  const hasAdvanced=isAnthropic||isOpenAI||isGemini;
   document.getElementById('field-apikey').style.display='';
   document.getElementById('s-anthropic-hint').style.display=isAnthropic?'':'none';
+  document.getElementById('field-advanced').style.display=hasAdvanced?'':'none';
   document.getElementById('field-anthropic-proxy-url').style.display=isAnthropic?'':'none';
   document.getElementById('field-openai-endpoint-url').style.display=isOpenAI?'':'none';
   document.getElementById('field-openai-auth-header').style.display=isOpenAI?'':'none';
@@ -558,6 +564,10 @@ function toggleProviderFields(p){
   document.getElementById('field-custom-url').style.display=isCustom?'':'none';
   document.getElementById('field-custom-model').style.display=isCustom?'':'none';
   document.getElementById('field-model-select').style.display=isCustom?'none':'';
+  // auto-open if provider already has a non-default advanced value configured
+  const hasValue=(isAnthropic&&!!cfg.anthropicProxyUrl)||(isOpenAI&&(!!cfg.openaiEndpointUrl||cfg.openaiAuthHeader!=='bearer'))||(isGemini&&!!cfg.geminiEndpointUrl);
+  document.getElementById('cfg-advanced').checked=hasValue;
+  document.getElementById('advanced-fields').style.display=hasValue?'':'none';
 }
 function updateApiKeyHint(){const el=document.getElementById('apikey-hint');const h=t.apiHints[cfg.provider]||'';el.textContent=cfg.provider==='ollama'?(t.ollamaApiKeyHint||'Volitelné — vyžadováno pouze pokud je Ollama zabezpečena klíčem (OLLAMA_API_KEY) nebo reverse proxy.'):h?t.sGenerateAt(h):'';document.getElementById('apikey-storage-warn').textContent=cfg.provider!=='ollama'?t.apiKeyStorageWarn:'';}
 function updateApiKeyStatus(){const el=document.getElementById('apikey-status');if(cfg.provider==='custom'){el.textContent='';return;}const k=document.getElementById('cfg-apikey')?.value||cfg.apiKey||'';if(cfg.provider==='ollama'){el.innerHTML=k.length>0?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:'';return;}el.innerHTML=k.length>8?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:`<span class="status-dot status-empty"></span>${t.noApiKey}`;}
