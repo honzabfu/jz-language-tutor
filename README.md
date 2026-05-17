@@ -161,9 +161,44 @@ Při používání více zařízení (telefon + počítač apod.):
 
 ### Záloha a obnova
 
-**Nastavení → Export zálohy** — exportuje jeden JSON soubor se vším: nastavením, všemi slovíčky (všechny jazyky) a SM-2 daty.
+**Nastavení → Export zálohy** — exportuje jeden JSON soubor se vším: nastavením (včetně pokročilých nastavení providera), všemi slovíčky (všechny jazyky) a SM-2 daty.
 
 Obnova: **Nastavení → Import zálohy** → nahraj JSON soubor.
+
+**Kompatibilita záloh:**
+- Záloha z nové verze → stará aplikace: neznámá pole jsou ignorována, ostatní obnoveno správně.
+- Záloha ze starší verze → nová aplikace: chybějící nová pole (proxy URL, Azure endpoint) se nastaví na výchozí hodnoty (prázdné = přímé API).
+
+**Ukázka struktury záložního souboru:**
+
+```json
+{
+  "version": 2,
+  "exported": "2025-05-17T10:00:00.000Z",
+  "cfg": {
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "providerSettings": {
+      "anthropic": { "apiKey": "sk-ant-…", "model": "claude-haiku-4-5", "proxyUrl": "https://my-worker.workers.dev" },
+      "openai": {
+        "apiKey": "sk-…", "model": "gpt-4o-mini",
+        "endpointUrl": "https://myresource.openai.azure.com/openai/deployments/gpt4mini/chat/completions?api-version=2024-05-01-preview",
+        "authHeader": "api-key"
+      },
+      "gemini": { "apiKey": "AIza…", "model": "gemini-2.5-flash", "endpointUrl": "" }
+    },
+    "feedbackStyle": "balanced",
+    "uiLang": "cs"
+  },
+  "langLevels": { "spanish": "intermediate" },
+  "vocab": {
+    "spanish": [
+      { "word": "hola", "translation": "ahoj", "sm2": { "interval": 7, "ef": 2.5, "due": 1747000000000, "reps": 3 } }
+    ]
+  },
+  "tips": {}
+}
+```
 
 ### Co funguje bez API klíče
 
@@ -185,9 +220,9 @@ Obnova: **Nastavení → Import zálohy** → nahraj JSON soubor.
 
 | Poskytovatel  | Zdroj API klíče              | Poznámky                                                      |
 |---------------|------------------------------|---------------------------------------------------------------|
-| Anthropic     | console.anthropic.com        | Vyžaduje povolení `anthropic-dangerous-direct-browser-calls`; při problémech zkontroluj CORS chyby v konzoli prohlížeče (F12), ad blocker nebo firewall |
-| OpenAI        | platform.openai.com/api-keys | Standardní bearer token                                       |
-| Google Gemini | aistudio.google.com          | **Zdarma** s limitem (15 req/min, 1 500/den); bez kreditů     |
+| Anthropic     | console.anthropic.com        | ⚠ Přímé volání blokováno CORS z GitHub Pages — přejdi na Gemini/OpenAI nebo nastav proxy URL (viz Pokročilá nastavení níže) |
+| OpenAI        | platform.openai.com/api-keys | Standardní bearer token; Azure OpenAI přes Pokročilá nastavení |
+| Google Gemini | aistudio.google.com          | **Zdarma** s limitem (15 req/min, 1 500/den); Vertex AI přes Pokročilá nastavení |
 | Ollama        | —                            | Lokální; URL nastav v Nastavení; API klíč volitelný (pro `OLLAMA_API_KEY` nebo reverse proxy) |
 | Vlastní       | závisí na provideru          | Libovolný OpenAI-compatible endpoint                          |
 
@@ -204,6 +239,58 @@ V Nastavení vyber **Vlastní (OpenAI-compatible)** a zadej:
   - Jakýkoliv jiný OpenAI-compatible server
 - **Model** — název modelu přesně tak, jak ho endpoint očekává (např. `meta-llama/llama-3.3-70b-instruct`)
 - **API klíč** — pokud ho endpoint vyžaduje (volitelné)
+
+### Pokročilá nastavení providera
+
+Providery Anthropic, OpenAI a Gemini nabízejí volitelná **Pokročilá nastavení** — zaškrtávací políčko v Nastavení → LLM Poskytovatel. Výchozí stav (prázdné pole / políčko nezaškrtnuté) odpovídá přímému volání příslušného API. Pokud má provider uloženou pokročilou hodnotu, sekce se otevře automaticky.
+
+#### Anthropic — proxy URL (řeší CORS z GitHub Pages)
+
+Anthropic API blokuje přímé volání z GitHub Pages. Řešení: Cloudflare Worker jako proxy.
+
+**`worker.js`** — nasazení přes [dash.cloudflare.com](https://dash.cloudflare.com) → Workers & Pages → Create. Free tier: 100 000 req/den.
+
+```js
+const TARGET = 'https://api.anthropic.com/v1/messages';
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': '*',
+};
+
+export default {
+  async fetch(request) {
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: CORS });
+    }
+    const response = await fetch(TARGET, {
+      method: 'POST',
+      headers: request.headers,
+      body: request.body,
+    });
+    const headers = new Headers(response.headers);
+    for (const [k, v] of Object.entries(CORS)) headers.set(k, v);
+    return new Response(response.body, { status: response.status, headers });
+  },
+};
+```
+
+Nastavení: Provider `Anthropic` → Pokročilé → **Proxy URL**: `https://<worker>.workers.dev`
+
+#### OpenAI — Azure OpenAI
+
+Provider `OpenAI` → Pokročilé:
+- **API URL**: `https://<resource>.openai.azure.com/openai/deployments/<deployment>/chat/completions?api-version=2024-05-01-preview`
+- **Auth header**: `api-key (Azure)`
+- **API klíč**: Azure API klíč (Azure AI Foundry → Deployments)
+
+#### Gemini — Vertex AI
+
+Provider `Google Gemini` → Pokročilé → **API URL**: základní URL Vertex AI endpointu; aplikace automaticky připojí `/models/<model>:generateContent`.
+
+#### Azure AI Foundry — Claude modely
+
+Azure AI Foundry umožňuje provozovat Claude modely přes Anthropic-nativní formát. Provider `Anthropic` → Pokročilé → **Proxy URL**: Azure AI Foundry endpoint → **API klíč**: Azure AI Foundry klíč.
 
 ### Odhadovaná spotřeba tokenů
 
@@ -446,9 +533,44 @@ When using multiple devices (phone + computer etc.):
 
 ### Backup & restore
 
-**Settings → Export backup** — exports a single JSON file containing everything: config, all vocabulary (all languages), and SM-2 progress data.
+**Settings → Export backup** — exports a single JSON file containing everything: config (including advanced provider settings), all vocabulary (all languages), and SM-2 progress data.
 
 Restore: **Settings → Import backup** → load the JSON file.
+
+**Backup compatibility:**
+- New backup → old app: unknown fields are ignored; everything else restores correctly.
+- Old backup → new app: missing new fields (proxy URL, Azure endpoint) default to empty (= direct API).
+
+**Example backup structure:**
+
+```json
+{
+  "version": 2,
+  "exported": "2025-05-17T10:00:00.000Z",
+  "cfg": {
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "providerSettings": {
+      "anthropic": { "apiKey": "sk-ant-…", "model": "claude-haiku-4-5", "proxyUrl": "https://my-worker.workers.dev" },
+      "openai": {
+        "apiKey": "sk-…", "model": "gpt-4o-mini",
+        "endpointUrl": "https://myresource.openai.azure.com/openai/deployments/gpt4mini/chat/completions?api-version=2024-05-01-preview",
+        "authHeader": "api-key"
+      },
+      "gemini": { "apiKey": "AIza…", "model": "gemini-2.5-flash", "endpointUrl": "" }
+    },
+    "feedbackStyle": "balanced",
+    "uiLang": "en"
+  },
+  "langLevels": { "spanish": "intermediate" },
+  "vocab": {
+    "spanish": [
+      { "word": "hola", "translation": "hello", "sm2": { "interval": 7, "ef": 2.5, "due": 1747000000000, "reps": 3 } }
+    ]
+  },
+  "tips": {}
+}
+```
 
 ### What works without an API key
 
@@ -470,9 +592,9 @@ Restore: **Settings → Import backup** → load the JSON file.
 
 | Provider      | API key source               | Notes                                                         |
 |---------------|------------------------------|---------------------------------------------------------------|
-| Anthropic     | console.anthropic.com        | Requires `anthropic-dangerous-direct-browser-calls` enabled; if it fails check for CORS errors in the browser console (F12), ad blocker, or firewall |
-| OpenAI        | platform.openai.com/api-keys | Standard bearer token                                         |
-| Google Gemini | aistudio.google.com          | **Free** with limits (15 req/min, 1 500/day); no credits needed |
+| Anthropic     | console.anthropic.com        | ⚠ Direct calls blocked by CORS on GitHub Pages — switch to Gemini/OpenAI or set a proxy URL (see Advanced settings below) |
+| OpenAI        | platform.openai.com/api-keys | Standard bearer token; Azure OpenAI available via Advanced settings |
+| Google Gemini | aistudio.google.com          | **Free** with limits (15 req/min, 1 500/day); Vertex AI via Advanced settings |
 | Ollama        | —                            | Local; configure URL in Settings; API key optional (for `OLLAMA_API_KEY` or reverse proxy) |
 | Custom        | depends on provider          | Any OpenAI-compatible endpoint                                |
 
@@ -489,6 +611,58 @@ In Settings select **Custom (OpenAI-compatible)** and fill in:
   - Any other OpenAI-compatible server
 - **Model** — model name exactly as the endpoint expects (e.g. `meta-llama/llama-3.3-70b-instruct`)
 - **API key** — if required by the endpoint (optional)
+
+### Advanced provider settings
+
+Anthropic, OpenAI, and Gemini providers offer optional **Advanced settings** — a checkbox in Settings → LLM Provider. The default state (empty / unchecked) means a direct call to the provider API. If a provider already has an advanced value saved, the section opens automatically.
+
+#### Anthropic — proxy URL (fixes CORS on GitHub Pages)
+
+The Anthropic API blocks direct browser calls from GitHub Pages. Solution: deploy a Cloudflare Worker as a proxy.
+
+**`worker.js`** — deploy via [dash.cloudflare.com](https://dash.cloudflare.com) → Workers & Pages → Create. Free tier: 100 000 req/day.
+
+```js
+const TARGET = 'https://api.anthropic.com/v1/messages';
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': '*',
+};
+
+export default {
+  async fetch(request) {
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: CORS });
+    }
+    const response = await fetch(TARGET, {
+      method: 'POST',
+      headers: request.headers,
+      body: request.body,
+    });
+    const headers = new Headers(response.headers);
+    for (const [k, v] of Object.entries(CORS)) headers.set(k, v);
+    return new Response(response.body, { status: response.status, headers });
+  },
+};
+```
+
+Settings: Provider `Anthropic` → Advanced → **Proxy URL**: `https://<worker>.workers.dev`
+
+#### OpenAI — Azure OpenAI
+
+Provider `OpenAI` → Advanced:
+- **API URL**: `https://<resource>.openai.azure.com/openai/deployments/<deployment>/chat/completions?api-version=2024-05-01-preview`
+- **Auth header**: `api-key (Azure)`
+- **API key**: your Azure API key (find it in Azure AI Foundry → Deployments)
+
+#### Gemini — Vertex AI
+
+Provider `Google Gemini` → Advanced → **API URL**: Vertex AI base URL; the app automatically appends `/models/<model>:generateContent`.
+
+#### Azure AI Foundry — Claude models
+
+Azure AI Foundry can host Claude models using the native Anthropic API format. Provider `Anthropic` → Advanced → **Proxy URL**: your Azure AI Foundry endpoint → **API key**: your Azure AI Foundry key.
 
 ### Estimated token usage
 
