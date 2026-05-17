@@ -46,7 +46,7 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
 - **Slovník** — překryvný panel ve správě slovíček; zadáš slovo a LLM vrátí stručný slovníkový záznam (překlady s gramatickými kategoriemi + příklady použití); jedním kliknutím přidáš slovo do svého seznamu
 - **Správa slovní zásoby** — ruční zadávání, import z CSV/TXT (s podporou tagů), generování slovíček přes AI (včetně automatického přiřazení tagů), sady per jazyk; tagy se zobrazují jako chipy v seznamu a jsou prohledávatelné
 - **Více AI poskytovatelů** — Anthropic (Claude), OpenAI (GPT), Google (Gemini), Ollama (lokálně), vlastní OpenAI-compatible endpoint
-- **CS/EN rozhraní** — přepínatelný jazyk celého rozhraní včetně nastavení; jazyk UI je nezávislý na mateřském jazyce
+- **CS/EN/ES rozhraní** — přepínatelný jazyk celého rozhraní (čeština, angličtina, španělština); jazyk UI je nezávislý na mateřském jazyce
 - **Mateřský jazyk** — nastavitelný samostatně bez ohledu na jazyk UI; výběr z 32 jazyků; určuje jazyk překladů ve všech AI funkcích (chat, slovník, kvíz, generování slovíček); výchozí hodnota se odvozuje z jazyka UI
 - **Vlastní instrukce pro tutora** — volný text (max 500 znaků) přidaný do systémového promptu; personalizuje styl a zaměření tutora, např. „Always explain grammar rules when correcting" (doporučujeme psát anglicky)
 - **Výchozí záložka** — nastavitelná v Nastavení (Chat / Slovíčka / Flashcards / Kvíz / Uložené); výchozí je Flashcards
@@ -362,6 +362,11 @@ Claude Sonnet a GPT-5 jsou výrazně dražší alternativy. Ollama (lokální) j
 
 - [ ] Statistiky pokroku (růst slovní zásoby, přesnost v čase)
 - [ ] Učební cíle s progress barem
+- [x] Španělština jako třetí jazyk rozhraní (CS/EN/ES)
+- [x] Pokročilá nastavení LLM — overlay „Here Be Dragons": max. tokeny, teplota, přepínač streamingu
+- [x] Onboarding banner pro nové uživatele — průvodce prvním nastavením
+- [x] Proxy URL / endpoint URL override pro Anthropic, OpenAI a Gemini (řeší CORS, Azure, Vertex AI)
+- [x] Větší kroky velikosti písma (předchází auto-zoomu na iOS); volitelné škálování podle systémového písma
 - [x] Filtrování flashcards — výběr podle SM-2 stavu: Dnes (výchozí), Vše, Nová, Obtížná
 - [x] Tmavý režim — přepínač Světlý / Tmavý / Automaticky (systém) v Nastavení
 - [x] Refaktoring do oddělených souborů (`style.css`, `app.js`, `i18n.js`) — bez build nástroje, jen `<link>`/`<script src>`; zlepší udržovatelnost i18n a navigaci v kódu
@@ -418,7 +423,7 @@ The primary purpose of this app is **practicing the vocabulary words you enter y
 - **Dictionary** — overlay panel inside the Vocabulary tab; type any word and the LLM returns a concise dictionary entry (translations with grammatical categories + usage examples); add the word to your list in one click
 - **Vocabulary management** — manual entry, CSV/TXT import (with tag support), in-app AI generation (with automatic tag assignment), per-language sets; tags are displayed as chips in the word list and are searchable
 - **Multi-provider LLM** — Anthropic (Claude), OpenAI (GPT), Google (Gemini), Ollama (local), custom OpenAI-compatible endpoint
-- **CS/EN UI** — switchable interface language including all settings; UI language is independent of native language
+- **CS/EN/ES UI** — switchable interface language (Czech, English, Spanish); UI language is independent of native language
 - **Native language setting** — configurable independently of the UI language; choose from 32 languages; determines the translation language in all AI features (chat, dictionary, quiz, vocabulary generation); defaults to the UI language if not set
 - **Custom tutor instructions** — freeform text (max 500 chars) appended to the system prompt; personalise tutor style and focus, e.g. "Always explain grammar rules when correcting" (writing in English gives best results)
 - **Default tab** — configurable in Settings (Chat / Vocab / Flashcards / Quiz / Saved tips); defaults to Flashcards
@@ -734,6 +739,11 @@ Claude Sonnet and GPT-5 are significantly more expensive alternatives. Ollama (l
 
 - [ ] Progress statistics (vocabulary growth, accuracy over time)
 - [ ] Learning goals with progress bar
+- [x] Spanish as third UI language (CS/EN/ES)
+- [x] Advanced LLM settings — "Here Be Dragons" overlay: max tokens, temperature, streaming toggle
+- [x] First-run onboarding banner guiding new users through initial setup
+- [x] Proxy URL / endpoint URL override for Anthropic, OpenAI, and Gemini (fixes CORS, enables Azure, Vertex AI)
+- [x] Larger font size steps (prevents iOS auto-zoom); optional system font size scaling
 - [x] Flashcard filter — SM-2 based: Today (default), All, New, Hard
 - [x] Dark mode — Light / Dark / Auto (system) toggle in Settings
 - [x] Refactor into separate files (`style.css`, `app.js`, `i18n.js`) — no build tool, just `<link>`/`<script src>`; improves i18n maintainability and code navigation
