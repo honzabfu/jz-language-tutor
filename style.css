@@ -108,8 +108,8 @@ select:focus{outline:2px solid var(--pri)}
 .field textarea{resize:vertical;min-height:60px}
 .hint{font-size:0.8rem;color:var(--mut)}
 .hint-warn{font-size:0.8rem;color:var(--clr-warn-txt);background:var(--clr-warn-bg);border:1px solid var(--clr-warn-bdr);border-radius:var(--rs);padding:6px 8px;line-height:1.45;margin-top:4px}
-.adv-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.8rem;color:var(--mut);user-select:none;padding:2px 0}
-.adv-toggle input{accent-color:var(--pri);cursor:pointer}
+label.adv-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.8rem;font-weight:normal;color:var(--mut);user-select:none;padding:2px 0}
+label.adv-toggle input[type="checkbox"]{accent-color:var(--pri);cursor:pointer;width:auto;border:none;padding:0;background:transparent;flex-shrink:0}
 .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .btn{padding:8px 15px;border-radius:var(--rs);font-size:0.93rem;font-weight:600;cursor:pointer;border:none;transition:all .15s}
 .btn-primary{background:var(--pri);color:#fff}
