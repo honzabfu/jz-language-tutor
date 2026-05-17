@@ -316,11 +316,43 @@
       </div>
       <div style="margin-top:10px" class="btn-row">
         <button id="s-clear-btn" class="btn btn-danger" onclick="clearData()">Smazat vše</button>
+        <button id="s-adv-btn" class="btn btn-warn" onclick="openAdvancedSettings()">⚠ Zde jsou draci</button>
       </div>
       <span id="save-toast" class="save-toast"></span>
     </div>
     <div style="text-align:center;font-size:0.8rem;color:var(--mut);padding-bottom:4px">Language Tutor v1.2.0 · PWA: <span id="s-add-to-home">Přidat na plochu</span> · <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" style="color:var(--mut)" id="s-help-link">Nápověda</a></div>
     <div style="text-align:center;font-size:0.8rem;color:var(--mut);padding-bottom:8px"><a href="https://jan-zak.cz" target="_blank" rel="noopener" style="color:var(--mut)">jan-zak.cz</a> <span id="footer-tagline">— další užitečné aplikace</span></div>
+  </div>
+</div>
+
+<!-- ═══════ ADVANCED SETTINGS OVERLAY ═══════ -->
+
+<div id="advanced-settings-overlay" class="overlay" onclick="if(event.target===this)closeAdvancedSettings()">
+  <div class="sheet">
+    <h2 id="adv-title">⚠ Zde jsou draci</h2>
+    <div class="hint-warn" id="adv-warning" style="margin-bottom:14px">Tato nastavení jsou určena pro pokročilé uživatele. Špatné hodnoty mohou způsobit nefunkčnost nebo vysoké náklady na API.</div>
+    <div class="field">
+      <label id="adv-max-tokens-label">Max. tokenů (chat odpovědi)</label>
+      <input type="number" id="cfg-adv-max-tokens" min="128" max="8192" step="64" style="width:100%">
+      <span class="hint" id="adv-max-tokens-hint">Výchozí: 4096. Řídí maximální délku odpovědí tutora v chatu.</span>
+    </div>
+    <div class="field">
+      <label><span id="adv-temperature-label">Teplota</span>: <span id="cfg-adv-temperature-val">0.70</span></label>
+      <input type="range" id="cfg-adv-temperature" min="0" max="1" step="0.05" style="width:100%" oninput="document.getElementById('cfg-adv-temperature-val').textContent=parseFloat(this.value).toFixed(2)">
+      <span class="hint" id="adv-temperature-hint">0 = deterministický, 1 = kreativnější. Výchozí: 0.70.</span>
+    </div>
+    <div class="field">
+      <label class="adv-toggle">
+        <input type="checkbox" id="cfg-adv-streaming-disabled">
+        <span id="adv-streaming-label">Zakázat streaming odpovědí</span>
+      </label>
+      <span class="hint" id="adv-streaming-hint">Pro vlastní endpointy bez podpory SSE streamingu.</span>
+    </div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-primary" onclick="saveAdvancedSettings()" id="adv-save-btn">Uložit</button>
+      <button class="btn btn-ghost" onclick="closeAdvancedSettings()" id="adv-cancel-btn">Zrušit</button>
+      <button class="btn btn-ghost" onclick="resetAdvancedSettings()" id="adv-reset-btn">Výchozí</button>
+    </div>
   </div>
 </div>
 
