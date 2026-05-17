@@ -612,7 +612,7 @@ function toggleProviderFields(p){
 function updateApiKeyHint(){const el=document.getElementById('apikey-hint');const h=t.apiHints[cfg.provider]||'';el.textContent=cfg.provider==='ollama'?(t.ollamaApiKeyHint||'Volitelné — vyžadováno pouze pokud je Ollama zabezpečena klíčem (OLLAMA_API_KEY) nebo reverse proxy.'):h?t.sGenerateAt(h):'';document.getElementById('apikey-storage-warn').textContent=cfg.provider!=='ollama'?t.apiKeyStorageWarn:'';}
 function updateApiKeyStatus(){const el=document.getElementById('apikey-status');if(cfg.provider==='custom'){el.textContent='';return;}const k=document.getElementById('cfg-apikey')?.value||cfg.apiKey||'';if(cfg.provider==='ollama'){el.innerHTML=k.length>0?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:'';return;}el.innerHTML=k.length>8?`<span class="status-dot status-ok"></span>${t.apiKeySet}`:`<span class="status-dot status-empty"></span>${t.noApiKey}`;}
 function onUiLangChange(l){cfg.uiLang=l;t=I18N[l]||I18N.cs;applyI18n();localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
-function applyFontSize(size){const m={small:'14px',medium:'16px',large:'18px',xl:'21px'};document.documentElement.style.setProperty('--fs',m[size]||'16px');}
+function applyFontSize(size){const m={small:'87.5%',medium:'100%',large:'112.5%',xl:'131.25%'};document.documentElement.style.setProperty('--fs',m[size]||'100%');}
 function applyTheme(){const th=cfg.theme||'auto';if(th==='auto'){document.documentElement.dataset.theme=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}else{document.documentElement.dataset.theme=th;}}
 function saveSettings(){
   cfg.provider=document.getElementById('cfg-provider').value;
