@@ -1812,7 +1812,7 @@ function pwaDismiss(){
 }
 function openPwaGuide(){
   const isInstalled=window.matchMedia('(display-mode:standalone)').matches||!!navigator.standalone;
-  const isIos=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
+  const isIos=/iphone|ipad|ipod/i.test(navigator.userAgent)||(/macintosh/i.test(navigator.userAgent)&&navigator.maxTouchPoints>1);
   if(!isInstalled&&_pwaPrompt){pwaInstall();return;}
   const ios=document.getElementById('pwa-guide-ios');
   const other=document.getElementById('pwa-guide-other');
