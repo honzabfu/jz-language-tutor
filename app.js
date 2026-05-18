@@ -192,7 +192,7 @@ function _loadProviderSettings(p){
 })();
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(cfg.theme==='auto')applyTheme();});
 // Restore password fields when page is recovered from bfcache (iOS Safari clears them for security)
-window.addEventListener('pageshow',e=>{if(e.persisted){const _ak=document.getElementById('cfg-apikey');if(_ak)_ak.value=cfg.apiKey||'';updateApiKeyStatus();}});
+window.addEventListener('pageshow',e=>{if(e.persisted){const _ak=document.getElementById('cfg-apikey');if(_ak)_ak.value=cfg.apiKey||'';updateApiKeyStatus();if('serviceWorker' in navigator){navigator.serviceWorker.getRegistration().then(reg=>{if(reg)reg.update();});}}});
 
 // ══════════════════════════════════════════════
 // NAV
@@ -1845,7 +1845,7 @@ function playWord(word,lang){
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     const hadController=!!navigator.serviceWorker.controller;
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
+    navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
     navigator.serviceWorker.addEventListener('controllerchange',()=>{
       if(hadController){
         document.getElementById('sw-update-banner').classList.add('visible');

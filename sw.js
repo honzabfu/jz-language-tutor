@@ -1,4 +1,4 @@
-const CACHE = 'langtutor-v16';
+const CACHE = 'langtutor-v17';
 const ASSETS = [
 './',
 './index.html',
@@ -41,16 +41,18 @@ e.respondWith(fetch(e.request).catch(() => new Response('Ollama nedostupny', { s
 return;
 }
 
+if (url.origin !== self.location.origin) {
+e.respondWith(fetch(e.request));
+return;
+}
+
+// Network-first for same-origin assets: always serve fresh from network, fall back to cache when offline
 e.respondWith(
-caches.open(CACHE).then(cache =>
-cache.match(e.request).then(cached => {
-const revalidate = fetch(e.request).then(resp => {
-if (e.request.method === 'GET' && resp.status === 200 && url.origin === self.location.origin) {
-cache.put(e.request, resp.clone());
+fetch(e.request).then(resp => {
+if (e.request.method === 'GET' && resp.status === 200) {
+caches.open(CACHE).then(cache => cache.put(e.request, resp.clone()));
 }
 return resp;
-});
-return cached || revalidate;
-})
+}).catch(() => caches.match(e.request))
 );
 });
