@@ -367,6 +367,7 @@ function applyI18n(){
   document.getElementById('pwa-guide-ios-s1').textContent=t.pwaGuideIosStep1;
   document.getElementById('pwa-guide-ios-s2').textContent=t.pwaGuideIosStep2;
   document.getElementById('pwa-guide-ios-s3').textContent=t.pwaGuideIosStep3;
+  document.getElementById('pwa-guide-ios-warn').textContent=t.pwaGuideIosStorageWarn;
   document.getElementById('pwa-guide-close').textContent=t.pwaGuideClose;
   // sw update banner
   document.getElementById('sw-update-banner-text').textContent=t.swUpdateText;
