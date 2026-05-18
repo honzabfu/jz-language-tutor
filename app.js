@@ -722,12 +722,13 @@ function resetAdvancedSettings(){
 }
 
 // ── Cfg editor ──
+const _SETTINGS_KEYS=['lt-backup-dismissed','lt-backup-last-count','lt-backup-reminder-on','lt-cfg','lt-lang','lt-levels','lt-onboarded','lt-pwa-dismissed'];
 function _getAllSettings(){
   const excluded=['lt-vocab-','lt-tips-'];
+  const keySet=new Set(_SETTINGS_KEYS);
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith('lt-')&&!excluded.some(p=>k.startsWith(p)))keySet.add(k);}
   const data={};
-  const keys=[];
-  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith('lt-')&&!excluded.some(p=>k.startsWith(p)))keys.push(k);}
-  keys.sort().forEach(k=>{const raw=localStorage.getItem(k);try{data[k]=JSON.parse(raw);}catch{data[k]=raw;}});
+  [...keySet].sort().forEach(k=>{const raw=localStorage.getItem(k);if(raw===null){data[k]=null;return;}try{data[k]=JSON.parse(raw);}catch{data[k]=raw;}});
   return data;
 }
 function openCfgEditor(){
@@ -745,7 +746,7 @@ function saveCfgEditor(){
   let parsed;
   try{parsed=JSON.parse(ta.value);}catch(e){errEl.textContent=(t.cfgEditorError||'Neplatný JSON:')+' '+e.message;errEl.style.display='';return;}
   const originalKeys=Object.keys(_getAllSettings());
-  Object.entries(parsed).forEach(([k,v])=>localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v)));
+  Object.entries(parsed).forEach(([k,v])=>{if(v===null){localStorage.removeItem(k);}else{localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));}});
   originalKeys.filter(k=>!(k in parsed)).forEach(k=>localStorage.removeItem(k));
   const savedCfg=JSON.parse(localStorage.getItem('lt-cfg')||'{}');
   Object.keys(cfg).forEach(k=>delete cfg[k]);
