@@ -241,6 +241,8 @@ label.adv-toggle input[type="checkbox"]{accent-color:var(--pri);cursor:pointer;w
 /* ── BACKUP REMINDER BANNER ── */
 .backup-reminder{background:var(--clr-warn-bg);border:1px solid var(--clr-warn-bdr);border-radius:var(--rs);padding:10px 14px;margin-bottom:12px}
 .backup-reminder-text{font-size:0.87rem;color:var(--clr-warn-txt);line-height:1.45}
+.nav-icon-wrap{position:relative;line-height:0}
+.backup-badge{position:absolute;top:-1px;right:-3px;width:8px;height:8px;background:var(--warn);border-radius:50%;border:2px solid var(--sur)}
 
 /* ── ONBOARDING BANNER ── */
 .onboarding-banner{background:var(--clr-info-bg);border:1px solid var(--pwa-bdr);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:10px}

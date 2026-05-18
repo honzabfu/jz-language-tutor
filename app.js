@@ -729,27 +729,32 @@ function exportAll(){
   localStorage.setItem('lt-backup-last-count',String(getTotalVocabCount()));
   localStorage.removeItem('lt-backup-dismissed');
   const _brb=document.getElementById('backup-reminder-banner');if(_brb)_brb.style.display='none';
+  _setBackupBadge(false);
 }
 function getTotalVocabCount(){return Object.keys(LANG_META).reduce((sum,l)=>sum+getVocab(l).length,0);}
+function _setBackupBadge(visible){const b=document.getElementById('backup-badge');if(b)b.style.display=visible?'':'none';}
 function checkBackupReminder(){
   const el=document.getElementById('backup-reminder-banner');
-  if(!el)return;
-  if(localStorage.getItem('lt-backup-reminder-on')==='false'){el.style.display='none';return;}
+  if(localStorage.getItem('lt-backup-reminder-on')==='false'){if(el)el.style.display='none';_setBackupBadge(false);return;}
   const lastCount=parseInt(localStorage.getItem('lt-backup-last-count')||'0',10);
   const newWords=getTotalVocabCount()-lastCount;
-  if(newWords<20){el.style.display='none';return;}
+  if(newWords<20){if(el)el.style.display='none';_setBackupBadge(false);return;}
   const dismissed=parseInt(localStorage.getItem('lt-backup-dismissed')||'0',10);
-  if(dismissed&&Date.now()-dismissed<14*24*60*60*1000){el.style.display='none';return;}
+  if(dismissed&&Date.now()-dismissed<14*24*60*60*1000){if(el)el.style.display='none';_setBackupBadge(false);return;}
+  _setBackupBadge(true);
+  if(!el)return;
   document.getElementById('backup-reminder-text').textContent=t.backupReminderTextFn(newWords);
   el.style.display='';
 }
 function dismissBackupReminder(){
   localStorage.setItem('lt-backup-dismissed',String(Date.now()));
   document.getElementById('backup-reminder-banner').style.display='none';
+  _setBackupBadge(false);
 }
 function disableBackupReminder(){
   localStorage.setItem('lt-backup-reminder-on','false');
   document.getElementById('backup-reminder-banner').style.display='none';
+  _setBackupBadge(false);
 }
 function importAll(){
   document.getElementById('backup-import-text').value='';
