@@ -8,9 +8,9 @@ PWA language tutor split into four source files — no build tool, no npm, no bu
 
 | File | Lines | Contents |
 |---|---|---|
-| `index.html` | ~450 | HTML structure only (views, overlays, nav) |
+| `index.html` | ~470 | HTML structure only (views, overlays, nav) |
 | `style.css` | ~240 | All CSS |
-| `app.js` | ~1630 | All JavaScript logic |
+| `app.js` | ~1930 | All JavaScript logic |
 | `i18n.js` | ~6 (long) | `I18N` object with `cs`, `en`, `es` locale strings |
 | `sw.js` | ~56 | Service worker (cache-first, cache key in line 1) |
 
@@ -42,21 +42,29 @@ No lint, no tests, no CI step — changes ship when merged to `main`.
 
 ```js
 {
-  provider,           // 'anthropic' | 'openai' | 'gemini' | 'ollama' | 'custom'
-  model,              // model id string
-  apiKey,             // legacy top-level key (migrated into providerSettings on init)
-  ollamaUrl,          // legacy (migrated)
-  customUrl,          // legacy (migrated)
-  customModel,        // legacy (migrated)
-  feedbackStyle,      // 'gentle' | 'balanced' | 'strict'
-  customInstructions, // string, max 500 chars
-  uiLang,             // 'cs' | 'en' | 'es'  — see UI_LANGS in app.js
-  nativeLang,         // LANG_META key or '' (auto)
-  lessonMode,         // bool
-  fontSize,           // 'small' | 'medium' | 'large' | 'xl'
-  theme,              // 'auto' | 'light' | 'dark'
-  defaultView,        // 'chat' | 'vocab' | 'fc' | 'quiz' | 'tips' (default: 'fc')
-  providerSettings,   // { [provider]: { apiKey, model, url? } }
+  provider,              // 'anthropic' | 'openai' | 'gemini' | 'ollama' | 'custom'
+  model,                 // model id string
+  apiKey,                // legacy top-level key (migrated into providerSettings on init)
+  ollamaUrl,             // legacy (migrated)
+  customUrl,             // legacy (migrated)
+  customModel,           // legacy (migrated)
+  feedbackStyle,         // 'gentle' | 'balanced' | 'strict'
+  customInstructions,    // string, max 500 chars
+  uiLang,                // 'cs' | 'en' | 'es'  — see UI_LANGS in app.js
+  nativeLang,            // LANG_META key or '' (auto)
+  lessonMode,            // bool
+  fontSize,              // 'small' | 'medium' | 'large' | 'xl'
+  theme,                 // 'auto' | 'light' | 'dark'
+  defaultView,           // 'chat' | 'vocab' | 'fc' | 'quiz' | 'tips' (default: 'fc')
+  maxTokens,             // number, default 8192
+  temperature,           // number 0–1 or null (provider default)
+  streamingDisabled,     // bool
+  fcSessionSize,         // number 5–50, default 20
+  quizSessionSize,       // number 5–30, default 10
+  smEasyBonus,           // number 1.0–1.5, default 1.0
+  ttsRate,               // number 0.5–1.5, default 0.9
+  vocabImportDuplicates, // 'skip' | 'merge' | 'overwrite'
+  providerSettings,      // { [provider]: { apiKey, model, url? } }
 }
 ```
 
@@ -69,8 +77,15 @@ No lint, no tests, no CI step — changes ship when merged to `main`.
 | `lt-lang` | last active language |
 | `lt-vocab-<lang>` | vocabulary array for each language |
 | `lt-tips-<lang>` | saved tips array for each language |
+| `lt-onboarded` | `'1'` once onboarding has been shown |
+| `lt-backup-last-count` | total vocab count at last backup export |
+| `lt-backup-dismissed` | Unix ms timestamp when backup banner was last dismissed |
+| `lt-backup-reminder-on` | `'false'` if backup reminder permanently disabled |
+| `lt-pwa-dismissed` | `'1'` once PWA install banner has been dismissed |
 
 On startup `init()` reads `lt-cfg` into `cfg` via `Object.assign`, migrates legacy per-provider fields into `providerSettings`, then calls `navTo(cfg.defaultView || 'fc')`.
+
+Keys that have not yet been written are absent from localStorage (treated as their default). The cfg editor (see below) always shows all known keys — absent ones appear as `null`.
 
 ### Providers / LLM calls (`app.js` ~line 1350)
 
@@ -100,6 +115,19 @@ When adding a new translatable string: add the key to **all** locales in `i18n.j
 
 No changes needed in `applyI18n()`, `getUiLocale()`, or `getNativeLangName()` — they are locale-agnostic.
 
+### Advanced settings / cfg editor
+
+The **⚠ Zde jsou draci** overlay (`#advanced-settings-overlay`) exposes tuneable parameters (max tokens, temperature, streaming, session sizes, SM-2 bonus, TTS rate, import duplicates). These are saved into `cfg` and persisted in `lt-cfg`.
+
+The **Edit config** button (`openCfgEditor()`) opens a second overlay (`#cfg-editor-overlay`) with a monospace textarea. It calls `_getAllSettings()` which collects all `lt-*` keys defined in `_SETTINGS_KEYS` plus any additional `lt-*` keys currently in localStorage (excluding `lt-vocab-*` and `lt-tips-*`), parsed as JSON where possible. Keys not yet in localStorage appear as `null`.
+
+Saving (`saveCfgEditor()`):
+- Iterates the parsed object: `null` → `localStorage.removeItem`, otherwise `localStorage.setItem`
+- Keys present before editing but absent from the saved JSON are also removed
+- Re-reads `lt-cfg` into `cfg` and calls `applyI18n()` + `populateSettingsUI()`
+
+To add a new persistent non-vocabulary key: add it to `_SETTINGS_KEYS` (`app.js` near `openCfgEditor`).
+
 ### Views
 
 Six bottom-nav views: `#chat-view`, `#vocab-view`, `#fc-view`, `#quiz-view`, `#tips-view`, `#settings-view`. Navigation via `navTo(name)` (`app.js` line 185) which toggles `.active` on the matching `.view` and `.nav-btn` elements and runs view-specific setup (e.g. `startFlashcards`, `renderVocabList`, `populateSettingsUI`).
@@ -117,20 +145,20 @@ Six bottom-nav views: `#chat-view`, `#vocab-view`, `#fc-view`, `#quiz-view`, `#t
 | Section banner | Approx. line |
 |---|---|
 | CONSTANTS & STATE | 1 |
-| INIT | 115 |
-| NAV | 182 |
-| I18N | 198 |
-| SETTINGS | 358 |
-| VOCAB STORAGE | 590 |
-| VOCAB VIEW | 598 |
-| SM-2 ALGORITHM | 942 |
-| FLASHCARD VIEW | 959 |
-| QUIZ VIEW | 1024 |
-| CHAT | 1120 |
-| SAVED TIPS | 1244 |
-| LLM PROVIDERS | 1350 |
-| STREAMING PROVIDERS | 1423 |
-| PWA INSTALL PROMPT | 1589 |
+| INIT | 120 |
+| NAV | 197 |
+| I18N | 214 |
+| SETTINGS | 441 |
+| VOCAB STORAGE | 835 |
+| VOCAB VIEW | 843 |
+| SM-2 ALGORITHM | 1196 |
+| FLASHCARD VIEW | 1213 |
+| QUIZ VIEW | 1291 |
+| CHAT | 1386 |
+| SAVED TIPS | 1510 |
+| LLM PROVIDERS | 1616 |
+| STREAMING PROVIDERS | 1696 |
+| PWA INSTALL PROMPT | 1870 |
 
 ## Conventions
 
