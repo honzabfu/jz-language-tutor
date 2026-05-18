@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-PWA language tutor split into four source files — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.3.0**, PWA cache key: `langtutor-v17`.
+PWA language tutor split into four source files — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.3.0**, PWA cache key: `langtutor-v18`.
 
 | File | Lines | Contents |
 |---|---|---|
@@ -24,7 +24,14 @@ python3 -m http.server 8080
 npx serve .
 ```
 
-No lint, no tests, no CI step — changes ship when merged to `main`.
+No lint, no tests. Deployment is via `.github/workflows/deploy.yml`:
+
+- **`main`** → deploys to `gh-pages` branch root → `honzabfu.github.io/jz-language-tutor/`
+- **Any other branch** → deploys to `gh-pages/preview/<branch>/` → `honzabfu.github.io/jz-language-tutor/preview/<branch>/`
+
+Preview SW cache key is patched to `langtutor-preview-<branch>` so it doesn't collide with production cache. Preview folders are deleted automatically when the PR is closed. If an open PR exists for the branch, the bot posts its preview URL as a PR comment.
+
+> **One-time setup:** GitHub Pages must be set to deploy from the `gh-pages` branch (Settings → Pages → Source → Branch: `gh-pages` / `/(root)`). The `gh-pages` branch is created automatically on the first push to `main`.
 
 ## Architecture
 

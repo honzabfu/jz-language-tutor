@@ -1,0 +1,134 @@
+name: Deploy
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # ── Production (main → root) ────────────────────────────────
+  production:
+    name: Production
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          exclude_assets: '.github,CLAUDE.md,LICENSE,README.md,.gitignore,screenshots'
+          keep_files: true
+          commit_message: 'deploy: production from ${{ github.sha }}'
+
+  # ── Preview (any other branch → /preview/<branch>/) ────────
+  preview:
+    name: Preview
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compute names
+        id: vars
+        run: |
+          SAFE=$(echo "${GITHUB_REF_NAME}" | tr '/' '-' | tr -cd 'a-zA-Z0-9-' | cut -c1-60)
+          echo "branch=$SAFE" >> $GITHUB_OUTPUT
+          echo "url=https://honzabfu.github.io/jz-language-tutor/preview/$SAFE/" >> $GITHUB_OUTPUT
+
+      - name: Patch SW cache key for preview
+        run: sed -i "s/langtutor-v[0-9]*/langtutor-preview-${{ steps.vars.outputs.branch }}/g" sw.js
+
+      - name: Deploy preview
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          destination_dir: preview/${{ steps.vars.outputs.branch }}
+          exclude_assets: '.github,CLAUDE.md,LICENSE,README.md,.gitignore,screenshots'
+          keep_files: true
+          commit_message: 'deploy: preview/${{ steps.vars.outputs.branch }} from ${{ github.sha }}'
+
+      - name: Job summary
+        run: |
+          echo "### Preview nasazen" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** ${{ steps.vars.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: PR comment with preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- jz-preview-url -->';
+            const url = '${{ steps.vars.outputs.url }}';
+            const body = `${marker}\n### Preview nasazen\n**URL:** ${url}`;
+
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: `${context.repo.owner}:${context.ref.replace('refs/heads/', '')}`,
+              state: 'open',
+              per_page: 1,
+            });
+
+            if (prs.length === 0) return;
+            const prNumber = prs[0].number;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+
+            const existing = comments.find(c => c.body.includes(marker) && c.user.type === 'Bot');
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body,
+              });
+            }
+
+  # ── Cleanup preview after PR close ─────────────────────────
+  cleanup:
+    name: Cleanup preview
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+
+      - name: Compute branch name
+        id: vars
+        run: |
+          SAFE=$(echo "${{ github.head_ref }}" | tr '/' '-' | tr -cd 'a-zA-Z0-9-' | cut -c1-60)
+          echo "branch=$SAFE" >> $GITHUB_OUTPUT
+
+      - name: Remove preview directory
+        run: |
+          if [ -d "preview/${{ steps.vars.outputs.branch }}" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git rm -rf "preview/${{ steps.vars.outputs.branch }}"
+            git commit -m "cleanup: remove preview/${{ steps.vars.outputs.branch }}"
+            git push origin gh-pages
+          else
+            echo "Preview directory not found, skipping"
+          fi
