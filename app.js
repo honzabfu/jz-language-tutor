@@ -395,7 +395,7 @@ function applyI18n(){
   document.getElementById('sw-dismiss-btn').title=t.bannerDismiss;
   const _ob=id=>document.getElementById(id);
   if(_ob('ob-title'))_ob('ob-title').textContent=t.onboardTitle;
-  if(_ob('ob-step1'))_ob('ob-step1').textContent=t.onboardStep1;
+  if(_ob('ob-step1')){const _ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(/macintosh/i.test(navigator.userAgent)&&navigator.maxTouchPoints>1);const _android=/android/i.test(navigator.userAgent);_ob('ob-step1').textContent=_ios?t.onboardStep1Ios:_android?t.onboardStep1Android:t.onboardStep1Desktop;}
   if(_ob('ob-step2'))_ob('ob-step2').textContent=t.onboardStep2;
   if(_ob('ob-step3'))_ob('ob-step3').textContent=t.onboardStep3;
   if(_ob('ob-dismiss'))_ob('ob-dismiss').textContent=t.onboardDismiss;
