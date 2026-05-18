@@ -723,7 +723,11 @@ function resetAdvancedSettings(){
 
 // ── Cfg editor ──
 function openCfgEditor(){
-  document.getElementById('cfg-editor-textarea').value=JSON.stringify(cfg,null,2);
+  closeAdvancedSettings();
+  const ta=document.getElementById('cfg-editor-textarea');
+  ta.value=JSON.stringify(cfg,null,2);
+  ta.style.height='auto';
+  ta.style.height=ta.scrollHeight+'px';
   document.getElementById('cfg-editor-error').style.display='none';
   document.getElementById('cfg-editor-overlay').classList.add('open');
 }
@@ -739,7 +743,6 @@ function saveCfgEditor(){
   Object.assign(cfg,parsed);
   localStorage.setItem('lt-cfg',JSON.stringify(cfg));
   closeCfgEditor();
-  closeAdvancedSettings();
   applyI18n();
   populateSettingsUI();
   const toast=document.getElementById('save-toast');

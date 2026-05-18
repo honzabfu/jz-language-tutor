@@ -405,8 +405,8 @@
   <div class="sheet">
     <h2 id="cfg-editor-title">Úprava konfigurace</h2>
     <div class="hint-warn" id="cfg-editor-hint" style="margin-bottom:14px">Přímo editujte JSON objekt konfigurace. Neplatný JSON nebo nesprávné hodnoty mohou způsobit nefunkčnost.</div>
-    <textarea id="cfg-editor-textarea" style="width:100%;min-height:260px;font-family:monospace;font-size:12px;border:1px solid var(--border);border-radius:6px;padding:8px;resize:vertical;background:var(--bg);color:var(--text);box-sizing:border-box"></textarea>
-    <div id="cfg-editor-error" style="color:var(--danger,#c0392b);margin-top:6px;display:none;font-size:13px"></div>
+    <textarea id="cfg-editor-textarea" style="width:100%;font-family:monospace;font-size:12px;border:1px solid var(--bdr);border-radius:6px;padding:8px;resize:none;background:var(--bg);color:var(--txt);box-sizing:border-box;overflow-y:hidden"></textarea>
+    <div id="cfg-editor-error" style="color:var(--err);margin-top:6px;display:none;font-size:13px"></div>
     <div class="btn-row" style="margin-top:16px">
       <button class="btn btn-primary" onclick="saveCfgEditor()" id="cfg-editor-save-btn">Uložit</button>
       <button class="btn btn-ghost" onclick="closeCfgEditor()" id="cfg-editor-cancel-btn">Zrušit</button>
