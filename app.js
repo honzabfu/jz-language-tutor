@@ -298,6 +298,9 @@ function applyI18n(){
   document.getElementById('s-save-btn').textContent=t.sSaveBtn;
   document.getElementById('s-export-btn').textContent=t.sExportBtn;
   document.getElementById('s-import-btn').textContent=t.sImportBtn;
+  document.getElementById('backup-reminder-export-btn').textContent=t.backupReminderExport;
+  document.getElementById('backup-reminder-later-btn').textContent=t.backupReminderLater;
+  document.getElementById('backup-reminder-disable-btn').textContent=t.backupReminderDisable;
   document.getElementById('s-clear-btn').textContent=t.sClearBtn;
   document.getElementById('s-add-to-home').textContent=t.sAddToHome;
   document.getElementById('s-help-link').textContent=t.sHelpLink;
@@ -463,6 +466,7 @@ function populateSettingsUI(){
   setModelHint(cfg.provider);
   const _obBanner=document.getElementById('onboarding-banner');
   if(_obBanner)_obBanner.style.display=localStorage.getItem('lt-onboarded')?'none':'flex';
+  checkBackupReminder();
 }
 function dismissOnboarding(){
   localStorage.setItem('lt-onboarded','1');
@@ -722,6 +726,30 @@ function exportAll(){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`langtutor-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();
   // Restore the API key input in case the browser cleared it during download (iOS/bfcache behaviour)
   const _ak=document.getElementById('cfg-apikey');if(_ak)_ak.value=cfg.apiKey||'';
+  localStorage.setItem('lt-backup-last-count',String(getTotalVocabCount()));
+  localStorage.removeItem('lt-backup-dismissed');
+  const _brb=document.getElementById('backup-reminder-banner');if(_brb)_brb.style.display='none';
+}
+function getTotalVocabCount(){return Object.keys(LANG_META).reduce((sum,l)=>sum+getVocab(l).length,0);}
+function checkBackupReminder(){
+  const el=document.getElementById('backup-reminder-banner');
+  if(!el)return;
+  if(localStorage.getItem('lt-backup-reminder-on')==='false'){el.style.display='none';return;}
+  const lastCount=parseInt(localStorage.getItem('lt-backup-last-count')||'0',10);
+  const newWords=getTotalVocabCount()-lastCount;
+  if(newWords<20){el.style.display='none';return;}
+  const dismissed=parseInt(localStorage.getItem('lt-backup-dismissed')||'0',10);
+  if(dismissed&&Date.now()-dismissed<14*24*60*60*1000){el.style.display='none';return;}
+  document.getElementById('backup-reminder-text').textContent=t.backupReminderTextFn(newWords);
+  el.style.display='';
+}
+function dismissBackupReminder(){
+  localStorage.setItem('lt-backup-dismissed',String(Date.now()));
+  document.getElementById('backup-reminder-banner').style.display='none';
+}
+function disableBackupReminder(){
+  localStorage.setItem('lt-backup-reminder-on','false');
+  document.getElementById('backup-reminder-banner').style.display='none';
 }
 function importAll(){
   document.getElementById('backup-import-text').value='';
@@ -748,6 +776,8 @@ function applyBackup(data){
   if(data.tips)Object.keys(data.tips).forEach(l=>setSavedTips(l,data.tips[l]));
   localStorage.setItem('lt-cfg',JSON.stringify(cfg));
   localStorage.setItem('lt-levels',JSON.stringify(langLevels));
+  localStorage.setItem('lt-backup-last-count',String(getTotalVocabCount()));
+  localStorage.removeItem('lt-backup-dismissed');
   t=I18N[cfg.uiLang]||I18N.cs;
   applyI18n();populateSettingsUI();updateProviderBadge();
   alert(t.alertBackupRestored);

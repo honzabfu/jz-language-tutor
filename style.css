@@ -238,6 +238,10 @@ label.adv-toggle input[type="checkbox"]{accent-color:var(--pri);cursor:pointer;w
 /* ── VOCAB COST WARNING ── */
 #vocab-cost-warn{background:var(--clr-warn-bg);color:var(--clr-warn-txt);border-bottom-color:var(--clr-warn-bdr)}
 
+/* ── BACKUP REMINDER BANNER ── */
+.backup-reminder{background:var(--clr-warn-bg);border:1px solid var(--clr-warn-bdr);border-radius:var(--rs);padding:10px 14px;margin-bottom:12px}
+.backup-reminder-text{font-size:0.87rem;color:var(--clr-warn-txt);line-height:1.45}
+
 /* ── ONBOARDING BANNER ── */
 .onboarding-banner{background:var(--clr-info-bg);border:1px solid var(--pwa-bdr);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .onboarding-banner-hd{font-weight:700;font-size:0.97rem;color:var(--prid)}
