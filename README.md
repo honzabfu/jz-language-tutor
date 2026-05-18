@@ -161,6 +161,8 @@ Automatická nabídka instalace na iOS **není** k dispozici — je nutné postu
 3. Přejdi dolů a vyber **„Přidat na plochu"**
 4. Potvrď klepnutím na **„Přidat"**
 
+> **Tip:** Na iOS doporučujeme nainstalovat aplikaci jako první krok a konfiguraci provést přímo v nainstalované aplikaci. Pokud jsi ji nakonfiguroval/a v Safari dříve, exportuj nastavení před instalací (**Nastavení → Export zálohy**) a po přidání na plochu je importuj v nainstalované aplikaci.
+
 #### Desktop (Chrome, Edge)
 
 Menu prohlížeče → **Nainstalovat Language Tutor** (ikona ⊕ v adresním řádku).
@@ -558,6 +560,8 @@ Automatic install prompts are **not available** on iOS — you need to do it man
 2. Tap the **Share** button (⬆) in the bottom toolbar
 3. Scroll down and tap **„Add to Home Screen"**
 4. Confirm by tapping **„Add"**
+
+> **Tip:** On iOS, we recommend installing the app as your first step and configuring it inside the installed app. If you already configured it in Safari, export your settings first (**Settings → Export backup**) and import them in the installed app after installation.
 
 #### Desktop (Chrome, Edge)
 
