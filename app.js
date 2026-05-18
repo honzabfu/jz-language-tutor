@@ -416,6 +416,11 @@ function applyI18n(){
   document.getElementById('adv-save-btn').textContent=t.advSaveBtn;
   document.getElementById('adv-cancel-btn').textContent=t.advCancelBtn;
   document.getElementById('adv-reset-btn').textContent=t.advResetBtn;
+  document.getElementById('adv-cfg-edit-btn').textContent=t.advCfgEditBtn;
+  document.getElementById('cfg-editor-title').textContent=t.cfgEditorTitle;
+  document.getElementById('cfg-editor-hint').textContent=t.cfgEditorHint;
+  document.getElementById('cfg-editor-save-btn').textContent=t.cfgEditorSaveBtn;
+  document.getElementById('cfg-editor-cancel-btn').textContent=t.cfgEditorCancelBtn;
   document.getElementById('s-fc-session-size-label').textContent=t.sFcSessionSizeLabel;
   document.getElementById('s-fc-session-size-hint').textContent=t.sFcSessionSizeHint;
   document.getElementById('s-quiz-session-size-label').textContent=t.sQuizSessionSizeLabel;
@@ -714,6 +719,32 @@ function resetAdvancedSettings(){
   document.getElementById('cfg-tts-rate').value=0.9;document.getElementById('cfg-tts-rate-val').textContent='0.9';
   document.getElementById('cfg-vocab-import-dups').value='skip';
   localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+}
+
+// ── Cfg editor ──
+function openCfgEditor(){
+  document.getElementById('cfg-editor-textarea').value=JSON.stringify(cfg,null,2);
+  document.getElementById('cfg-editor-error').style.display='none';
+  document.getElementById('cfg-editor-overlay').classList.add('open');
+}
+function closeCfgEditor(){
+  document.getElementById('cfg-editor-overlay').classList.remove('open');
+}
+function saveCfgEditor(){
+  const ta=document.getElementById('cfg-editor-textarea');
+  const errEl=document.getElementById('cfg-editor-error');
+  let parsed;
+  try{parsed=JSON.parse(ta.value);}catch(e){errEl.textContent=(t.cfgEditorError||'Neplatný JSON:')+' '+e.message;errEl.style.display='';return;}
+  Object.keys(cfg).forEach(k=>delete cfg[k]);
+  Object.assign(cfg,parsed);
+  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  closeCfgEditor();
+  closeAdvancedSettings();
+  applyI18n();
+  populateSettingsUI();
+  const toast=document.getElementById('save-toast');
+  toast.textContent=t.saveToast;toast.classList.add('visible');
+  setTimeout(()=>toast.classList.remove('visible'),2000);
 }
 
 // ── Export / Import full backup ──
