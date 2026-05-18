@@ -310,6 +310,14 @@
     <div class="card">
       <h3 id="s-data-title">Data & záloha</h3>
       <p id="s-data-desc" style="font-size:0.87rem;color:var(--mut);margin-bottom:12px">Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.</p>
+      <div id="backup-reminder-banner" class="backup-reminder" style="display:none">
+        <p id="backup-reminder-text" class="backup-reminder-text"></p>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn btn-primary btn-sm" id="backup-reminder-export-btn" onclick="exportAll()">Exportovat zálohu</button>
+          <button class="btn btn-ghost btn-sm" id="backup-reminder-later-btn" onclick="dismissBackupReminder()">Připomenout za 14 dní</button>
+          <button class="btn btn-ghost btn-sm" id="backup-reminder-disable-btn" onclick="disableBackupReminder()">Nevypomínat</button>
+        </div>
+      </div>
       <div class="btn-row">
         <button id="s-save-btn" class="btn btn-primary" onclick="saveSettings()">Uložit</button>
         <button id="s-export-btn" class="btn btn-ghost" onclick="exportAll()">Export zálohy</button>
