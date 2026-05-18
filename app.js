@@ -722,12 +722,17 @@ function resetAdvancedSettings(){
 }
 
 // ── Cfg editor ──
+function _getAllSettings(){
+  const excluded=['lt-vocab-','lt-tips-'];
+  const data={};
+  const keys=[];
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith('lt-')&&!excluded.some(p=>k.startsWith(p)))keys.push(k);}
+  keys.sort().forEach(k=>{const raw=localStorage.getItem(k);try{data[k]=JSON.parse(raw);}catch{data[k]=raw;}});
+  return data;
+}
 function openCfgEditor(){
   closeAdvancedSettings();
-  const ta=document.getElementById('cfg-editor-textarea');
-  ta.value=JSON.stringify(cfg,null,2);
-  ta.style.height='auto';
-  ta.style.height=ta.scrollHeight+'px';
+  document.getElementById('cfg-editor-textarea').value=JSON.stringify(_getAllSettings(),null,2);
   document.getElementById('cfg-editor-error').style.display='none';
   document.getElementById('cfg-editor-overlay').classList.add('open');
 }
@@ -739,9 +744,12 @@ function saveCfgEditor(){
   const errEl=document.getElementById('cfg-editor-error');
   let parsed;
   try{parsed=JSON.parse(ta.value);}catch(e){errEl.textContent=(t.cfgEditorError||'Neplatný JSON:')+' '+e.message;errEl.style.display='';return;}
+  const originalKeys=Object.keys(_getAllSettings());
+  Object.entries(parsed).forEach(([k,v])=>localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v)));
+  originalKeys.filter(k=>!(k in parsed)).forEach(k=>localStorage.removeItem(k));
+  const savedCfg=JSON.parse(localStorage.getItem('lt-cfg')||'{}');
   Object.keys(cfg).forEach(k=>delete cfg[k]);
-  Object.assign(cfg,parsed);
-  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  Object.assign(cfg,savedCfg);
   closeCfgEditor();
   applyI18n();
   populateSettingsUI();
