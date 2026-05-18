@@ -144,6 +144,27 @@ Vypiš 50 nejčastějších anglických přídavných jmen.
 Formát: anglické slovo,český překlad,příklad věty
 ```
 
+### Instalace jako aplikace (PWA)
+
+Language Tutor je progresivní webová aplikace (PWA) — lze ji přidat na domovskou obrazovku a používat jako nativní aplikaci bez App Store.
+
+#### Android (Chrome, Edge, Samsung Internet)
+
+Prohlížeč automaticky nabídne instalaci banneru dole na obrazovce. Nebo ji vyvolej ručně: menu ⋮ → **Přidat na plochu** / **Nainstalovat aplikaci**.
+
+#### iOS / iPadOS (Safari)
+
+Automatická nabídka instalace na iOS **není** k dispozici — je nutné postupovat ručně:
+
+1. Otevři aplikaci v **Safari** (Chrome/Firefox na iOS instalaci nepodporují)
+2. Klepni na tlačítko **Sdílet** (⬆) ve spodní liště
+3. Přejdi dolů a vyber **„Přidat na plochu"**
+4. Potvrď klepnutím na **„Přidat"**
+
+#### Desktop (Chrome, Edge)
+
+Menu prohlížeče → **Nainstalovat Language Tutor** (ikona ⊕ v adresním řádku).
+
 ### Kolik slovíček přidávat?
 
 Flashcards a správa slovní zásoby jsou zcela zdarma — žádná AI volání. Při používání **Chat** a **Kvíz** módů ale platí:
@@ -520,6 +541,27 @@ Format: German word,English translation
 List the 50 most common English adjectives.
 Format: word,translation,example sentence
 ```
+
+### Installing as an app (PWA)
+
+Language Tutor is a Progressive Web App (PWA) — you can add it to your home screen and use it like a native app, no App Store needed.
+
+#### Android (Chrome, Edge, Samsung Internet)
+
+The browser automatically offers an install banner at the bottom of the screen. You can also trigger it manually: menu ⋮ → **Add to Home screen** / **Install app**.
+
+#### iOS / iPadOS (Safari)
+
+Automatic install prompts are **not available** on iOS — you need to do it manually:
+
+1. Open the app in **Safari** (Chrome/Firefox on iOS don't support PWA installation)
+2. Tap the **Share** button (⬆) in the bottom toolbar
+3. Scroll down and tap **„Add to Home Screen"**
+4. Confirm by tapping **„Add"**
+
+#### Desktop (Chrome, Edge)
+
+Browser menu → **Install Language Tutor** (or the ⊕ icon in the address bar).
 
 ### How many words should I add?
 

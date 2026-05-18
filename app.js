@@ -362,6 +362,12 @@ function applyI18n(){
   // pwa banner
   document.getElementById('pwa-banner-text').textContent=t.pwaBannerText;
   document.getElementById('pwa-install-btn').textContent=t.pwaInstallBtn;
+  // pwa guide modal
+  document.getElementById('pwa-guide-title').textContent=t.pwaGuideTitle;
+  document.getElementById('pwa-guide-ios-s1').textContent=t.pwaGuideIosStep1;
+  document.getElementById('pwa-guide-ios-s2').textContent=t.pwaGuideIosStep2;
+  document.getElementById('pwa-guide-ios-s3').textContent=t.pwaGuideIosStep3;
+  document.getElementById('pwa-guide-close').textContent=t.pwaGuideClose;
   // sw update banner
   document.getElementById('sw-update-banner-text').textContent=t.swUpdateText;
   document.getElementById('sw-reload-btn').textContent=t.swReloadBtn;
@@ -392,6 +398,7 @@ function applyI18n(){
   if(_ob('ob-step2'))_ob('ob-step2').textContent=t.onboardStep2;
   if(_ob('ob-step3'))_ob('ob-step3').textContent=t.onboardStep3;
   if(_ob('ob-dismiss'))_ob('ob-dismiss').textContent=t.onboardDismiss;
+  if(_ob('ob-step4'))_ob('ob-step4').textContent=t.onboardStep4;
   document.getElementById('s-adv-btn').textContent='⚠ '+t.sAdvSettingsBtn;
   document.getElementById('adv-title').textContent='⚠ '+t.sAdvSettingsBtn;
   document.getElementById('adv-warning').textContent=t.advWarning;
@@ -1802,6 +1809,27 @@ async function pwaInstall(){
 function pwaDismiss(){
   document.getElementById('pwa-banner').classList.remove('visible');
   localStorage.setItem('lt-pwa-dismissed','1');
+}
+function openPwaGuide(){
+  const isInstalled=window.matchMedia('(display-mode:standalone)').matches||!!navigator.standalone;
+  const isIos=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
+  if(!isInstalled&&_pwaPrompt){pwaInstall();return;}
+  const ios=document.getElementById('pwa-guide-ios');
+  const other=document.getElementById('pwa-guide-other');
+  ios.style.display='none';other.style.display='none';
+  if(isInstalled){
+    other.style.display='block';
+    document.getElementById('pwa-guide-other-text').textContent=t.pwaAlreadyInstalled;
+  }else if(isIos){
+    ios.style.display='block';
+  }else{
+    other.style.display='block';
+    document.getElementById('pwa-guide-other-text').textContent=/android/i.test(navigator.userAgent)?t.pwaGuideAndroid:t.pwaGuideDesktop;
+  }
+  document.getElementById('pwa-guide-modal').classList.add('open');
+}
+function closePwaGuide(){
+  document.getElementById('pwa-guide-modal').classList.remove('open');
 }
 
 // ── Web Speech API Pronunciation ──
