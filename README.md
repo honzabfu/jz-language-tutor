@@ -403,7 +403,7 @@ AI chatbots are great tutors but have no memory: next session they know nothing 
 
 **Cost and privacy**
 
-No backend, no account, everything local in the browser. Google Gemini is completely free (15 req/min, 1 500/day) — enough for regular practice with no payment at all.
+No backend, no account, everything local in the browser. Google Gemini is completely free (15 req/min, 1,500/day) — enough for regular practice with no payment at all.
 
 ### Core feature: vocabulary repetition
 
@@ -416,7 +416,7 @@ The primary purpose of this app is **practicing the vocabulary words you enter y
 ### Features
 
 - **Flashcards** — SM-2 spaced repetition: cards surface at precisely the right time; direction toggle (Foreign→Native / Native→Foreign); card filter: **Today** (default — new + due), **All**, **New** (never reviewed), **Hard** (low easiness factor)
-- **Pronunciation** — 🔊 hear correct pronunciation directly in the vocabulary list, on flashcards, and in the word modal; uses native browser web speech API with no API key needed
+- **Pronunciation** — 🔊 hear correct pronunciation directly in the vocabulary list, on flashcards, and in the word modal; uses the browser's native Web Speech API with no API key needed
 - **Quiz mode** — AI tests your vocabulary interactively (question → answer → feedback)
 - **Chat tutor** — conversation in the target language, grammar feedback, translations on demand
 - **Lesson mode** — tutor actively weaves your vocabulary into the dialogue
@@ -434,7 +434,7 @@ The primary purpose of this app is **practicing the vocabulary words you enter y
 
 1. Open the app at **[honzabfu.github.io/jz-language-tutor](https://honzabfu.github.io/jz-language-tutor/)** — or download the full repository and open `index.html` locally in any browser.
 2. Get an API key (required for Chat and Quiz only; Flashcards and vocabulary management work without one):
-   - **Google Gemini** — [aistudio.google.com](https://aistudio.google.com) — free with limits (15 req/min, 1 500/day)
+   - **Google Gemini** — [aistudio.google.com](https://aistudio.google.com) — free with limits (15 req/min, 1,500/day)
    - **Anthropic Claude** — [console.anthropic.com](https://console.anthropic.com)
    - **OpenAI** — [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
    - **Ollama** — runs locally, no key needed, completely free
@@ -599,7 +599,7 @@ Restore: **Settings → Import backup** → load the JSON file.
 |---------------|------------------------------|---------------------------------------------------------------|
 | Anthropic     | console.anthropic.com        | ⚠ Direct calls blocked by CORS on GitHub Pages — switch to Gemini/OpenAI or set a proxy URL (see Advanced settings below) |
 | OpenAI        | platform.openai.com/api-keys | Standard bearer token; Azure OpenAI available via Advanced settings |
-| Google Gemini | aistudio.google.com          | **Free** with limits (15 req/min, 1 500/day); Vertex AI via Advanced settings |
+| Google Gemini | aistudio.google.com          | **Free** with limits (15 req/min, 1,500/day); Vertex AI via Advanced settings |
 | Ollama        | —                            | Local; configure URL in Settings; API key optional (for `OLLAMA_API_KEY` or reverse proxy) |
 | Custom        | depends on provider          | Any OpenAI-compatible endpoint                                |
 
