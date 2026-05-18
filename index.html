@@ -172,6 +172,7 @@
         <li id="ob-step1"></li>
         <li id="ob-step2"></li>
         <li id="ob-step3"></li>
+        <li id="ob-step4"></li>
       </ol>
       <div class="onboarding-banner-footer">
         <button class="btn btn-sm btn-ghost" onclick="dismissOnboarding()" id="ob-dismiss"></button>
@@ -320,7 +321,7 @@
       </div>
       <span id="save-toast" class="save-toast"></span>
     </div>
-    <div style="text-align:center;font-size:0.8rem;color:var(--mut);padding-bottom:4px">Language Tutor v1.3.0 · PWA:<span id="s-add-to-home">Přidat na plochu</span> · <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" style="color:var(--mut)" id="s-help-link">Nápověda</a></div>
+    <div style="text-align:center;font-size:0.8rem;color:var(--mut);padding-bottom:4px">Language Tutor v1.3.0 · PWA:<button id="s-add-to-home" onclick="openPwaGuide()" style="background:none;border:none;padding:0;color:var(--mut);cursor:pointer;font-size:inherit;text-decoration:underline">Přidat na plochu</button> · <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" style="color:var(--mut)" id="s-help-link">Nápověda</a></div>
     <div style="text-align:center;font-size:0.8rem;color:var(--mut);padding-bottom:8px"><a href="https://jan-zak.cz" target="_blank" rel="noopener" style="color:var(--mut)">jan-zak.cz</a> <span id="footer-tagline">— další užitečné aplikace</span></div>
   </div>
 </div>
@@ -395,6 +396,27 @@
   <span id="pwa-banner-text">📲 Přidat Language Tutor na plochu</span>
   <button class="pwa-install-btn" id="pwa-install-btn" onclick="pwaInstall()">Přidat</button>
   <button class="pwa-dismiss-btn" id="pwa-dismiss-btn" onclick="pwaDismiss()" title="Zavřít">×</button>
+</div>
+
+<!-- ═══════ PWA GUIDE MODAL ═══════ -->
+
+<div id="pwa-guide-modal" class="overlay" onclick="if(event.target===this)closePwaGuide()">
+  <div class="sheet">
+    <h2 id="pwa-guide-title">Přidat na plochu</h2>
+    <div id="pwa-guide-ios" style="display:none">
+      <ol style="margin:12px 0;padding-left:1.4em;line-height:1.8">
+        <li id="pwa-guide-ios-s1"></li>
+        <li id="pwa-guide-ios-s2"></li>
+        <li id="pwa-guide-ios-s3"></li>
+      </ol>
+    </div>
+    <div id="pwa-guide-other" style="display:none">
+      <p id="pwa-guide-other-text" style="margin:12px 0;line-height:1.6"></p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="pwa-guide-close" onclick="closePwaGuide()">Zavřít</button>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════ SW UPDATE BANNER ═══════ -->
