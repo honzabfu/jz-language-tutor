@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-PWA language tutor split into ES modules — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.3.0**, PWA cache key: `langtutor-v19`.
+PWA language tutor split into ES modules — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.4.0**, PWA cache key: `langtutor-v19`.
 
 | File | Lines | Contents |
 |---|---|---|
@@ -28,7 +28,7 @@ PWA language tutor split into ES modules — no build tool, no npm, no bundler. 
 
 ## Development
 
-Open `index.html` directly in a browser — no server needed. For PWA/service-worker behaviour, serve over HTTP:
+Because the app uses ES modules (`<script type="module">`), a local HTTP server is required — browsers block ES module imports over `file://` due to CORS. Serve over HTTP:
 
 ```bash
 python3 -m http.server 8080

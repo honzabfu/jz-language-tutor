@@ -55,7 +55,7 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
 
 ### Jak začít
 
-1. Otevři aplikaci na **[honzabfu.github.io/jz-language-tutor](https://honzabfu.github.io/jz-language-tutor/)** — nebo stáhni celý repozitář a otevři `index.html` lokálně v prohlížeči.
+1. Otevři aplikaci na **[honzabfu.github.io/jz-language-tutor](https://honzabfu.github.io/jz-language-tutor/)** — nebo stáhni celý repozitář a spusť lokální HTTP server (např. `python3 -m http.server 8080`) a otevři `http://localhost:8080` v prohlížeči.
 2. Získej API klíč (pro Chat a Kvíz; Flashcards a správu slovíček klíč nepotřebuješ):
    - **Google Gemini** — [aistudio.google.com](https://aistudio.google.com) — zdarma s limitem (15 requestů/min, 1 500/den)
    - **Anthropic Claude** — [console.anthropic.com](https://console.anthropic.com)
@@ -456,7 +456,7 @@ The primary purpose of this app is **practicing the vocabulary words you enter y
 
 ### Getting started
 
-1. Open the app at **[honzabfu.github.io/jz-language-tutor](https://honzabfu.github.io/jz-language-tutor/)** — or download the full repository and open `index.html` locally in any browser.
+1. Open the app at **[honzabfu.github.io/jz-language-tutor](https://honzabfu.github.io/jz-language-tutor/)** — or download the full repository and run a local HTTP server (e.g. `python3 -m http.server 8080`) then open `http://localhost:8080`.
 2. Get an API key (required for Chat and Quiz only; Flashcards and vocabulary management work without one):
    - **Google Gemini** — [aistudio.google.com](https://aistudio.google.com) — free with limits (15 req/min, 1,500/day)
    - **Anthropic Claude** — [console.anthropic.com](https://console.anthropic.com)
