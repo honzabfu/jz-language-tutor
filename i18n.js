@@ -1,5 +1,5 @@
 // ── I18N ──
-const I18N={
+export const I18N={
   cs:{
     appTitle:'Language Tutor',
     settingsTitle:'Nastavení',

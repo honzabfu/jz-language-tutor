@@ -1,9 +1,21 @@
-const CACHE = 'langtutor-v18';
+const CACHE = 'langtutor-v19';
 const ASSETS = [
 './',
 './index.html',
 './style.css',
 './i18n.js',
+'./constants.js',
+'./state.js',
+'./dom.js',
+'./llm.js',
+'./vocab.js',
+'./tips.js',
+'./updates.js',
+'./flashcard.js',
+'./quiz.js',
+'./chat.js',
+'./settings.js',
+'./nav.js',
 './app.js'
 ];
 
