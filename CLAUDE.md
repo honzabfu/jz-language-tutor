@@ -198,12 +198,12 @@ index.html
 | Section | Approx. line |
 |---|---|
 | Imports | 1 |
-| window.* globals (navTo, revealFC, rateFC, playWord, …) | ~20 |
-| populateLangSelects() | ~30 |
-| init() IIFE | ~40 |
-| addEventListener wiring (all views + overlays) | ~100 |
-| PWA install prompt | ~240 |
-| Service Worker registration | ~285 |
+| window.* globals (navTo, startFlashcards, revealFC, rateFC, playWord, …) | ~37 |
+| populateLangSelects() | ~43 |
+| init() IIFE | ~48 |
+| addEventListener wiring (all views + overlays) | ~86 |
+| PWA install prompt | ~256 |
+| Service Worker registration | ~288 |
 
 ## Conventions
 
