@@ -26,13 +26,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Prepare deploy dir
+        run: |
+          mkdir -p /tmp/site
+          cp *.html *.js *.css *.json /tmp/site/
+          cp -r icons /tmp/site/
+          git fetch origin gh-pages 2>/dev/null || true
+          git archive origin/gh-pages preview 2>/dev/null | tar -x -C /tmp/site || true
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
-          exclude_assets: '.github,CLAUDE.md,LICENSE,README.md,.gitignore,screenshots'
-          keep_files: true
+          publish_dir: /tmp/site
           commit_message: 'deploy: production from ${{ github.sha }}'
 
   # ── Preview (any other branch → /preview/<branch>/) ────────
@@ -53,13 +59,18 @@ jobs:
       - name: Patch SW cache key for preview
         run: sed -i "s/langtutor-v[0-9]*/langtutor-preview-${{ steps.vars.outputs.branch }}/g" sw.js
 
+      - name: Prepare deploy dir
+        run: |
+          mkdir -p /tmp/site
+          cp *.html *.js *.css *.json /tmp/site/
+          cp -r icons /tmp/site/
+
       - name: Deploy preview
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
+          publish_dir: /tmp/site
           destination_dir: preview/${{ steps.vars.outputs.branch }}
-          exclude_assets: '.github,CLAUDE.md,LICENSE,README.md,.gitignore,screenshots'
           keep_files: true
           commit_message: 'deploy: preview/${{ steps.vars.outputs.branch }} from ${{ github.sha }}'
 
