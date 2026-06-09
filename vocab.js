@@ -186,6 +186,23 @@ export function previewImport(){
   const lines=raw.split('\n').filter(l=>l.trim()&&!l.startsWith('#'));
   document.getElementById('import-preview').textContent=t.importPreviewLinesFn(lines.length);
 }
+// Parser jednoho CSV řádku s podporou uvozovek dle RFC 4180 ("" = literální uvozovka)
+function parseCsvLine(line){
+  const out=[];let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(inQ){
+      if(c==='"'){if(line[i+1]==='"'){cur+='"';i++;}else inQ=false;}
+      else cur+=c;
+    }
+    else if(c==='"'&&cur===''){inQ=true;}
+    else if(c===','){out.push(cur);cur='';}
+    else cur+=c;
+  }
+  out.push(cur);
+  return out;
+}
+
 export function confirmImport(){
   const t=state.t;
   const raw=document.getElementById('import-text').value.trim();if(!raw)return;
@@ -197,8 +214,8 @@ export function confirmImport(){
   const dupMode=cfg.vocabImportDuplicates||'skip';
   let added=0,skipped=0,merged=0;
   lines.forEach(line=>{
-    const parts=line.split(',');
-    if(parts.length<2){const tp=line.split('\t');if(tp.length<2)return;parts.length=0;parts.push(...tp);}
+    let parts=parseCsvLine(line);
+    if(parts.length<2){const tp=line.split('\t');if(tp.length<2)return;parts=tp;}
     const rev=document.getElementById('import-col-order').value==='reverse';
     const word=(parts[rev?1:0]||'').trim();const trans=(parts[rev?0:1]||'').trim();
     if(!word||!trans)return;
@@ -220,7 +237,8 @@ export function confirmImport(){
 }
 export function exportVocab(){
   const arr=getVocab(state.vocabLang);
-  const lines=arr.map(w=>[w.word,w.translation,w.notes||'',(w.tags||[]).join('|')].join(','));
+  const cell=v=>{v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const lines=arr.map(w=>[w.word,w.translation,w.notes||'',(w.tags||[]).join('|')].map(cell).join(','));
   const blob=new Blob([lines.join('\n')],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`vocab-${state.vocabLang}-${new Date().toISOString().slice(0,10)}.csv`;a.click();
 }
