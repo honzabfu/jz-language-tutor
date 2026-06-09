@@ -1,4 +1,4 @@
-import { state, getLangLevel } from './state.js';
+import { state, getLangLevel, defaultCfg } from './state.js';
 import { LANG_META, UI_LANGS, MODELS, MODELS_METADATA, DEFAULT_PROVIDER_SETTINGS, safeAssign } from './constants.js';
 import { I18N } from './i18n.js';
 import { applyI18n, updateApiKeyHint } from './updates.js';
@@ -397,9 +397,12 @@ export function saveCfgEditor(){
   const originalKeys=Object.keys(_getAllSettings());
   Object.entries(parsed).forEach(([k,v])=>{if(v===null){localStorage.removeItem(k);}else{localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));}});
   originalKeys.filter(k=>!(k in parsed)).forEach(k=>localStorage.removeItem(k));
-  const savedCfg=JSON.parse(localStorage.getItem('lt-cfg')||'{}');
+  let savedCfg;try{savedCfg=JSON.parse(localStorage.getItem('lt-cfg')||'{}');}catch{savedCfg={};}
   Object.keys(cfg).forEach(k=>delete cfg[k]);
-  Object.assign(cfg,savedCfg);
+  Object.assign(cfg,defaultCfg());
+  safeAssign(cfg,savedCfg);
+  if(!cfg.providerSettings||typeof cfg.providerSettings!=='object')cfg.providerSettings={};
+  Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{if(!cfg.providerSettings[p])cfg.providerSettings[p]={...DEFAULT_PROVIDER_SETTINGS[p]};});
   state.t=I18N[cfg.uiLang]||I18N.cs;
   closeCfgEditor();
   applyI18n();
