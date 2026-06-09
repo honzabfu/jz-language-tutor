@@ -11,7 +11,7 @@ export async function safeLLM(msgs,sys,maxTokens=1024,signal){
   if(cfg.provider==='anthropic')return callAnthropic(msgs,sys,maxTokens,signal);
   if(cfg.provider==='openai')return callOpenAI(msgs,sys,maxTokens,signal);
   if(cfg.provider==='gemini')return callGemini(msgs,sys,maxTokens,signal);
-  if(cfg.provider==='ollama')return callOllama(msgs,sys,signal);
+  if(cfg.provider==='ollama')return callOllama(msgs,sys,maxTokens,signal);
   if(cfg.provider==='custom')return callCustom(msgs,sys,maxTokens,signal);
   throw new Error('Unknown provider');
 }
@@ -54,14 +54,16 @@ export async function callGemini(msgs,sys,maxTokens=1024,signal){
   if(text==null){const reason=data.candidates?.[0]?.finishReason||data.promptFeedback?.blockReason||'empty response';throw new Error(reason);}
   return text;
 }
-export async function callOllama(msgs,sys,signal){
+export async function callOllama(msgs,sys,maxTokens=1024,signal){
   const base=(cfg.ollamaUrl||'http://localhost:11434').replace(/\/$/,'');
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
   const headers={'Content-Type':'application/json'};
   if(cfg.apiKey)headers['Authorization']=`Bearer ${cfg.apiKey}`;
-  const res=await fetch(`${base}/api/chat`,{method:'POST',headers,body:JSON.stringify({model:cfg.model,stream:false,...(cfg.temperature!=null?{options:{temperature:cfg.temperature}}:{}),messages:m}),signal});
+  const res=await fetch(`${base}/api/chat`,{method:'POST',headers,body:JSON.stringify({model:cfg.model,stream:false,options:{num_predict:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{})},messages:m}),signal});
   if(!res.ok)await httpErr(res);
-  return(await res.json()).message.content;
+  const d4=await res.json();
+  if(d4.done_reason==='length')throw new Error('MAX_TOKENS');
+  return d4.message.content;
 }
 export async function callCustom(msgs,sys,maxTokens=1024,signal){
   const base=(cfg.customUrl||'').replace(/\/$/,'');
@@ -104,8 +106,12 @@ export async function callAnthropicStream(msgs,sys,maxTokens,signal,onChunk){
   const url=_aps.proxyUrl||'https://api.anthropic.com/v1/messages';
   const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{}),stream:true,system:sys||undefined,messages:filteredMsgs}),signal});
   if(!res.ok)await httpErr(res);
-  let full='';
-  await readSSE(res,data=>{if(data.type==='content_block_delta'&&data.delta?.text){onChunk(data.delta.text);full+=data.delta.text;}});
+  let full='',truncated=false;
+  await readSSE(res,data=>{
+    if(data.type==='content_block_delta'&&data.delta?.text){onChunk(data.delta.text);full+=data.delta.text;}
+    if(data.type==='message_delta'&&data.delta?.stop_reason==='max_tokens')truncated=true;
+  });
+  if(truncated)throw new Error('MAX_TOKENS');
   return full;
 }
 export async function callOpenAIStream(msgs,sys,maxTokens,signal,onChunk){
@@ -116,8 +122,12 @@ export async function callOpenAIStream(msgs,sys,maxTokens,signal,onChunk){
   const _oaiAuth=_ops.authHeader==='api-key'?{'api-key':cfg.apiKey}:{'Authorization':`Bearer ${cfg.apiKey}`};
   const res=await fetch(_oaiUrl,{method:'POST',headers:{'Content-Type':'application/json',..._oaiAuth},body:JSON.stringify({model:cfg.model,max_completion_tokens:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{}),stream:true,messages:m}),signal});
   if(!res.ok)await httpErr(res);
-  let full='';
-  await readSSE(res,data=>{const text=data.choices?.[0]?.delta?.content;if(text){onChunk(text);full+=text;}});
+  let full='',truncated=false;
+  await readSSE(res,data=>{
+    const text=data.choices?.[0]?.delta?.content;if(text){onChunk(text);full+=text;}
+    if(data.choices?.[0]?.finish_reason==='length')truncated=true;
+  });
+  if(truncated)throw new Error('MAX_TOKENS');
   return full;
 }
 export async function callGeminiStream(msgs,sys,maxTokens,signal,onChunk){
@@ -129,16 +139,20 @@ export async function callGeminiStream(msgs,sys,maxTokens,signal,onChunk){
   const _gBase=(_gps.endpointUrl||'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/,'');
   const res=await fetch(`${_gBase}/models/${cfg.model}:streamGenerateContent?alt=sse`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':cfg.apiKey},body:JSON.stringify(body),signal});
   if(!res.ok)await httpErr(res);
-  let full='';
-  await readSSE(res,data=>{const text=data.candidates?.[0]?.content?.parts?.[0]?.text;if(text){onChunk(text);full+=text;}});
+  let full='',truncated=false;
+  await readSSE(res,data=>{
+    const text=data.candidates?.[0]?.content?.parts?.[0]?.text;if(text){onChunk(text);full+=text;}
+    if(data.candidates?.[0]?.finishReason==='MAX_TOKENS')truncated=true;
+  });
+  if(truncated)throw new Error('MAX_TOKENS');
   return full;
 }
-export async function callOllamaStream(msgs,sys,signal,onChunk){
+export async function callOllamaStream(msgs,sys,maxTokens,signal,onChunk){
   const base=(cfg.ollamaUrl||'http://localhost:11434').replace(/\/$/,'');
   const m=sys?[{role:'system',content:sys},...msgs.filter(x=>x.role==='user'||x.role==='assistant')]:msgs.filter(x=>x.role==='user'||x.role==='assistant');
   const headers={'Content-Type':'application/json'};
   if(cfg.apiKey)headers['Authorization']=`Bearer ${cfg.apiKey}`;
-  const res=await fetch(`${base}/api/chat`,{method:'POST',headers,body:JSON.stringify({model:cfg.model,stream:true,...(cfg.temperature!=null?{options:{temperature:cfg.temperature}}:{}),messages:m}),signal});
+  const res=await fetch(`${base}/api/chat`,{method:'POST',headers,body:JSON.stringify({model:cfg.model,stream:true,options:{num_predict:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{})},messages:m}),signal});
   if(!res.ok)await httpErr(res);
   const reader=res.body.getReader();
   const decoder=new TextDecoder();
@@ -150,7 +164,7 @@ export async function callOllamaStream(msgs,sys,signal,onChunk){
     const lines=buf.split('\n');buf=lines.pop();
     for(const line of lines){
       if(!line.trim())continue;
-      try{const data=JSON.parse(line);const text=data.message?.content;if(text){onChunk(text);full+=text;}if(data.done)return full;}catch{}
+      try{const data=JSON.parse(line);const text=data.message?.content;if(text){onChunk(text);full+=text;}if(data.done){if(data.done_reason==='length')throw new Error('MAX_TOKENS');return full;}}catch(e){if(e.message==='MAX_TOKENS')throw e;}
     }
   }
   return full;
@@ -163,8 +177,12 @@ export async function callCustomStream(msgs,sys,maxTokens,signal,onChunk){
   if(cfg.apiKey)headers['Authorization']=`Bearer ${cfg.apiKey}`;
   const res=await fetch(`${base}/chat/completions`,{method:'POST',headers,body:JSON.stringify({model:cfg.customModel,max_tokens:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{}),stream:true,messages:m}),signal});
   if(!res.ok)await httpErr(res);
-  let full='';
-  await readSSE(res,data=>{const text=data.choices?.[0]?.delta?.content;if(text){onChunk(text);full+=text;}});
+  let full='',truncated=false;
+  await readSSE(res,data=>{
+    const text=data.choices?.[0]?.delta?.content;if(text){onChunk(text);full+=text;}
+    if(data.choices?.[0]?.finish_reason==='length')truncated=true;
+  });
+  if(truncated)throw new Error('MAX_TOKENS');
   return full;
 }
 export async function safeLLMStream(msgs,sys,maxTokens=1024,signal,onChunk){
@@ -172,7 +190,7 @@ export async function safeLLMStream(msgs,sys,maxTokens=1024,signal,onChunk){
   if(cfg.provider==='anthropic')return callAnthropicStream(msgs,sys,maxTokens,signal,onChunk);
   if(cfg.provider==='openai')return callOpenAIStream(msgs,sys,maxTokens,signal,onChunk);
   if(cfg.provider==='gemini')return callGeminiStream(msgs,sys,maxTokens,signal,onChunk);
-  if(cfg.provider==='ollama')return callOllamaStream(msgs,sys,signal,onChunk);
+  if(cfg.provider==='ollama')return callOllamaStream(msgs,sys,maxTokens,signal,onChunk);
   if(cfg.provider==='custom')return callCustomStream(msgs,sys,maxTokens,signal,onChunk);
   throw new Error('Unknown provider');
 }
