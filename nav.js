@@ -1,4 +1,5 @@
 import { state } from './state.js';
+import { abortPending } from './llm.js';
 import { renderVocabList } from './vocab.js';
 import { startFlashcards } from './flashcard.js';
 import { startQuiz } from './quiz.js';
@@ -7,6 +8,7 @@ import { renderTipsList } from './tips.js';
 import { updateInputPlaceholder, updateEmptyState } from './updates.js';
 
 export function navTo(name){
+  abortPending();
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById(name+'-view').classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
