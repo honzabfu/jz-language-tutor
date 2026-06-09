@@ -21,7 +21,7 @@ export async function callAnthropic(msgs,sys,maxTokens=1024,signal){
   const filteredMsgs=msgs.filter(m=>m.role==='user'||m.role==='assistant');
   const _aps=cfg.providerSettings.anthropic||{};
   const url=_aps.proxyUrl||'https://api.anthropic.com/v1/messages';
-  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{}),system:sys||undefined,messages:filteredMsgs}),signal});
+  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{}),system:sys||undefined,messages:filteredMsgs}),signal});
   if(!res.ok)await httpErr(res);
   const d1=await res.json();
   if(d1.stop_reason==='max_tokens')throw new Error('MAX_TOKENS');
@@ -102,7 +102,7 @@ export async function callAnthropicStream(msgs,sys,maxTokens,signal,onChunk){
   const filteredMsgs=msgs.filter(m=>m.role==='user'||m.role==='assistant');
   const _aps=cfg.providerSettings.anthropic||{};
   const url=_aps.proxyUrl||'https://api.anthropic.com/v1/messages';
-  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{}),stream:true,system:sys||undefined,messages:filteredMsgs}),signal});
+  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:cfg.model,max_tokens:maxTokens,...(cfg.temperature!=null?{temperature:cfg.temperature}:{}),stream:true,system:sys||undefined,messages:filteredMsgs}),signal});
   if(!res.ok)await httpErr(res);
   let full='';
   await readSSE(res,data=>{if(data.type==='content_block_delta'&&data.delta?.text){onChunk(data.delta.text);full+=data.delta.text;}});
