@@ -169,7 +169,7 @@ export async function fetchModels(provider,apiKey,ollamaUrl){
       .map(m=>({id:m.id,name:m.id}));
   }
   if(provider==='gemini'){
-    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}&pageSize=50`);
+    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=50',{headers:{'x-goog-api-key':apiKey}});
     if(!r.ok)throw new Error(r.status);
     const d=await r.json();
     return (d.models||[])

@@ -46,7 +46,7 @@ export async function callGemini(msgs,sys,maxTokens=1024,signal){
   if(sys)body.system_instruction={parts:[{text:sys}]};
   const _gps=cfg.providerSettings.gemini||{};
   const _gBase=(_gps.endpointUrl||'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/,'');
-  const res=await fetch(`${_gBase}/models/${cfg.model}:generateContent?key=${cfg.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal});
+  const res=await fetch(`${_gBase}/models/${cfg.model}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':cfg.apiKey},body:JSON.stringify(body),signal});
   if(!res.ok)await httpErr(res);
   const data=await res.json();
   if(data.candidates?.[0]?.finishReason==='MAX_TOKENS')throw new Error('MAX_TOKENS');
@@ -127,7 +127,7 @@ export async function callGeminiStream(msgs,sys,maxTokens,signal,onChunk){
   if(sys)body.system_instruction={parts:[{text:sys}]};
   const _gps=cfg.providerSettings.gemini||{};
   const _gBase=(_gps.endpointUrl||'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/,'');
-  const res=await fetch(`${_gBase}/models/${cfg.model}:streamGenerateContent?key=${cfg.apiKey}&alt=sse`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal});
+  const res=await fetch(`${_gBase}/models/${cfg.model}:streamGenerateContent?alt=sse`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':cfg.apiKey},body:JSON.stringify(body),signal});
   if(!res.ok)await httpErr(res);
   let full='';
   await readSSE(res,data=>{const text=data.candidates?.[0]?.content?.parts?.[0]?.text;if(text){onChunk(text);full+=text;}});
