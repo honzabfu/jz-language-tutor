@@ -108,7 +108,7 @@ export const SORT_MODES=['alpha','due','new'];
 export const UI_LANG_NATIVE_FALLBACK={cs:'czech',en:'english',es:'spanish'};
 export const UI_LANG_LOCALE={cs:'cs-CZ',en:'en-US',es:'es-ES'};
 
-export function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+export function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 export function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 
 export function renderMarkdown(text){

@@ -2,7 +2,7 @@ import { state } from './state.js';
 import { getLangLevel, getNativeLangName, getUiLocale } from './state.js';
 import { esc, uid, LANG_META, SORT_MODES } from './constants.js';
 import { safeLLM, abortPending, resolveErr, clean } from './llm.js';
-import { syncLangSelectors } from './dom.js';
+import { syncLangSelectors, playWord } from './dom.js';
 
 const { cfg, langLevels } = state;
 
@@ -52,7 +52,7 @@ export function renderVocabList(){
     const sel=state.bulkSelectMode&&state.selectedIds.has(w.id);
     const el=document.createElement('div');el.className='vocab-item'+(sel?' selected':'');
     const tagsHtml=(w.tags&&w.tags.length)?`<div class="tag-chips">${w.tags.map(tg=>`<span class="tag-chip">${esc(tg)}</span>`).join('')}</div>`:'';
-    const inner=`<div class="wi"><div class="word">${esc(w.word)}</div><div class="trans">${esc(w.translation)}${w.notes?` · <em>${esc(w.notes)}</em>`:''}</div>${tagsHtml}</div><button class="speak-btn" onclick="event.stopPropagation();playWord('${w.word.replace(/'/g,"\\'")}','${state.vocabLang}')" title="${t.pronounceBtn||'Hear pronunciation'}">🔊</button><span class="sm2-badge ${cls}">${badge}</span>`;
+    const inner=`<div class="wi"><div class="word">${esc(w.word)}</div><div class="trans">${esc(w.translation)}${w.notes?` · <em>${esc(w.notes)}</em>`:''}</div>${tagsHtml}</div><button class="speak-btn" title="${t.pronounceBtn||'Hear pronunciation'}">🔊</button><span class="sm2-badge ${cls}">${badge}</span>`;
     if(state.bulkSelectMode){
       el.innerHTML=`<input type="checkbox" class="cb"${sel?' checked':''}>${inner}`;
       el.addEventListener('click',()=>toggleItemSelect(w.id));
@@ -60,6 +60,7 @@ export function renderVocabList(){
       el.innerHTML=inner;
       el.addEventListener('click',()=>openWordModal(w));
     }
+    el.querySelector('.speak-btn').addEventListener('click',e=>{e.stopPropagation();playWord(w.word,state.vocabLang);});
     list.appendChild(el);
   });
 }

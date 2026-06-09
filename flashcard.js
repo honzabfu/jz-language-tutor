@@ -1,7 +1,7 @@
 import { state, getUiLocale } from './state.js';
 import { esc } from './constants.js';
 import { getVocab, setVocab, newSM2 } from './vocab.js';
-import { syncLangSelectors } from './dom.js';
+import { syncLangSelectors, playWord } from './dom.js';
 
 const { cfg } = state;
 
@@ -78,7 +78,7 @@ export function renderFC(){
     <div class="fc-card" onclick="revealFC()">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
         <div class="fc-word">${esc(_front)}</div>
-        <button class="speak-btn" onclick="event.stopPropagation();playWord('${w.word.replace(/'/g,"\\'")}','${document.getElementById('fc-lang-select').value}')" title="${t.pronounceBtn||'Hear pronunciation'}">🔊</button>
+        <button class="speak-btn" title="${t.pronounceBtn||'Hear pronunciation'}">🔊</button>
       </div>
       ${_frontNotes}
       <div class="fc-translation" id="fc-trans">${esc(_back)}${_backNotes}</div>
@@ -93,6 +93,7 @@ export function renderFC(){
         <button class="fc-btn fc-btn-5" onclick="rateFC(5)">⭐<br>${t.fcRate5}</button>
       </div>
     </div>`;
+  body.querySelector('.speak-btn').addEventListener('click',e=>{e.stopPropagation();playWord(w.word,document.getElementById('fc-lang-select').value);});
 }
 
 export function revealFC(){

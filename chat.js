@@ -196,11 +196,3 @@ export function appendStreamingMsg(){
     }
   };
 }
-
-export function playWord(word,lang){
-  if(!word)return;
-  if(window.speechSynthesis.speaking)window.speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(word);
-  u.lang=LANG_META[lang]?.lang||lang;u.rate=cfg.ttsRate??0.9;
-  window.speechSynthesis.speak(u);
-}

@@ -1,7 +1,7 @@
 import { state } from './state.js';
 import { LANG_META, DEFAULT_PROVIDER_SETTINGS } from './constants.js';
 import { I18N } from './i18n.js';
-import { autoResize } from './dom.js';
+import { autoResize, playWord } from './dom.js';
 import {
   previewImport, loadFile, confirmImport, closeImportModal, closeImportOutside,
   importVocab, exportVocab, openWordModal, closeWordModal, closeWordModalOutside,
@@ -16,7 +16,7 @@ import { toggleFcDirection, onFCLangChange, onFCFilterChange, startFlashcards, r
 import { onQuizLangChange, startQuiz, quizKey, quizSend } from './quiz.js';
 import {
   onSettingsLevelLangChange, setMode, clearChat, onLangChange, onKey,
-  sendMessage, switchFbTab, playWord
+  sendMessage, switchFbTab
 } from './chat.js';
 import {
   populateSettingsUI, dismissOnboarding, onProviderChange, autoSaveProviderCfg,
@@ -38,7 +38,6 @@ window.navTo = navTo;
 window.startFlashcards = startFlashcards;
 window.revealFC = revealFC;
 window.rateFC = rateFC;
-window.playWord = playWord;
 
 function populateLangSelects(){
   const opts=Object.entries(LANG_META).sort(([,a],[,b])=>a.native.localeCompare(b.native)).map(([k,m])=>`<option value="${k}">${m.flag} ${m.native}</option>`).join('');
