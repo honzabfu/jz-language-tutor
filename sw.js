@@ -1,4 +1,4 @@
-const CACHE = 'langtutor-v20';
+const CACHE = 'langtutor-v21';
 const ASSETS = [
 './',
 './index.html',
@@ -58,10 +58,16 @@ e.respondWith(fetch(e.request));
 return;
 }
 
-// Network-first for same-origin assets: always serve fresh from network, fall back to cache when offline
+if (e.request.method !== 'GET') {
+return;
+}
+
+// Network-first for same-origin assets. cache:'no-cache' revalidates against the
+// server (ETag) and bypasses the HTTP cache TTL (GitHub Pages: max-age=600), so a
+// deploy can never mix old and new ES modules; offline falls back to the SW cache.
 e.respondWith(
-fetch(e.request).then(resp => {
-if (e.request.method === 'GET' && resp.status === 200) {
+fetch(e.request.url, { cache: 'no-cache' }).then(resp => {
+if (resp.status === 200) {
 caches.open(CACHE).then(cache => cache.put(e.request, resp.clone()));
 }
 return resp;
