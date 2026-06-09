@@ -1,3 +1,14 @@
+import { state } from './state.js';
+import { LANG_META } from './constants.js';
+
+export function playWord(word,lang){
+  if(!word)return;
+  if(window.speechSynthesis.speaking)window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(word);
+  u.lang=LANG_META[lang]?.lang||lang;u.rate=state.cfg.ttsRate??0.9;
+  window.speechSynthesis.speak(u);
+}
+
 export function syncLangSelectors(l){
   ['lang-select','vocab-lang-select','fc-lang-select','quiz-lang-select','tips-lang-select'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.value=l;

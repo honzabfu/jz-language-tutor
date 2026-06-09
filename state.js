@@ -1,8 +1,7 @@
 import { MODELS, DEFAULT_PROVIDER_SETTINGS, LANG_META, UI_LANG_NATIVE_FALLBACK, UI_LANG_LOCALE } from './constants.js';
 
-export const state={
-  _abortCtrl: null,
-  cfg: {
+export function defaultCfg(){
+  return{
     provider:           'gemini',
     model:              MODELS.gemini[0],
     apiKey:             '',
@@ -30,7 +29,12 @@ export const state={
     ttsRate:            0.9,
     vocabImportDuplicates: 'skip',
     providerSettings:   {},
-  },
+  };
+}
+
+export const state={
+  _abortCtrl: null,
+  cfg: defaultCfg(),
   langLevels: {},
   t: null,
   sortIdx: 0,

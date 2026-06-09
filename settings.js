@@ -1,5 +1,5 @@
-import { state, getLangLevel } from './state.js';
-import { LANG_META, UI_LANGS, MODELS, MODELS_METADATA, DEFAULT_PROVIDER_SETTINGS } from './constants.js';
+import { state, getLangLevel, defaultCfg } from './state.js';
+import { LANG_META, UI_LANGS, MODELS, MODELS_METADATA, DEFAULT_PROVIDER_SETTINGS, safeAssign } from './constants.js';
 import { I18N } from './i18n.js';
 import { applyI18n, updateApiKeyHint } from './updates.js';
 import { getVocab, setVocab, setApplyBackupFn } from './vocab.js';
@@ -169,7 +169,7 @@ export async function fetchModels(provider,apiKey,ollamaUrl){
       .map(m=>({id:m.id,name:m.id}));
   }
   if(provider==='gemini'){
-    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}&pageSize=50`);
+    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=50',{headers:{'x-goog-api-key':apiKey}});
     if(!r.ok)throw new Error(r.status);
     const d=await r.json();
     return (d.models||[])
@@ -397,9 +397,12 @@ export function saveCfgEditor(){
   const originalKeys=Object.keys(_getAllSettings());
   Object.entries(parsed).forEach(([k,v])=>{if(v===null){localStorage.removeItem(k);}else{localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));}});
   originalKeys.filter(k=>!(k in parsed)).forEach(k=>localStorage.removeItem(k));
-  const savedCfg=JSON.parse(localStorage.getItem('lt-cfg')||'{}');
+  let savedCfg;try{savedCfg=JSON.parse(localStorage.getItem('lt-cfg')||'{}');}catch{savedCfg={};}
   Object.keys(cfg).forEach(k=>delete cfg[k]);
-  Object.assign(cfg,savedCfg);
+  Object.assign(cfg,defaultCfg());
+  safeAssign(cfg,savedCfg);
+  if(!cfg.providerSettings||typeof cfg.providerSettings!=='object')cfg.providerSettings={};
+  Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{if(!cfg.providerSettings[p])cfg.providerSettings[p]={...DEFAULT_PROVIDER_SETTINGS[p]};});
   state.t=I18N[cfg.uiLang]||I18N.cs;
   closeCfgEditor();
   applyI18n();
@@ -479,10 +482,11 @@ export function confirmBackupImport(){
 }
 
 export function applyBackup(data){
-  if(data.cfg)Object.assign(cfg,data.cfg);
-  if(data.langLevels)Object.assign(langLevels,data.langLevels);
-  if(data.vocab)Object.keys(data.vocab).forEach(l=>setVocab(l,data.vocab[l]));
-  if(data.tips)Object.keys(data.tips).forEach(l=>setSavedTips(l,data.tips[l]));
+  if(data.cfg)safeAssign(cfg,data.cfg);
+  if(data.langLevels)safeAssign(langLevels,data.langLevels);
+  Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{if(!cfg.providerSettings||typeof cfg.providerSettings!=='object')cfg.providerSettings={};if(!cfg.providerSettings[p])cfg.providerSettings[p]={...DEFAULT_PROVIDER_SETTINGS[p]};});
+  if(data.vocab)Object.keys(data.vocab).forEach(l=>{if(LANG_META[l]&&Array.isArray(data.vocab[l]))setVocab(l,data.vocab[l]);});
+  if(data.tips)Object.keys(data.tips).forEach(l=>{if(LANG_META[l]&&Array.isArray(data.tips[l]))setSavedTips(l,data.tips[l]);});
   localStorage.setItem('lt-cfg',JSON.stringify(cfg));
   localStorage.setItem('lt-levels',JSON.stringify(langLevels));
   localStorage.setItem('lt-backup-last-count',String(getTotalVocabCount()));

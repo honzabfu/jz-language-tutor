@@ -49,7 +49,7 @@ export function appendMsg(role,text,translation){
   const bubble=document.createElement('div');bubble.className='bubble';bubble.innerHTML=renderMarkdown(text);wrap.appendChild(bubble);
   const meta=document.createElement('div');meta.className='msg-meta';meta.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});wrap.appendChild(meta);
   if(role==='tutor'&&translation){
-    const td=document.createElement('div');td.className='translation';td.innerHTML=`<strong>${t.translationLabel}:</strong> ${translation}`;
+    const td=document.createElement('div');td.className='translation';td.innerHTML=`<strong>${t.translationLabel}:</strong> ${esc(translation)}`;
     const btn=document.createElement('button');btn.className='translate-btn';btn.textContent=t.translateBtn;
     btn.onclick=()=>{const v=td.style.display!=='none'&&td.style.display!=='';td.style.display=v?'none':'block';btn.textContent=v?t.translateBtn:t.hideTranslation;};
     wrap.appendChild(btn);wrap.appendChild(td);
@@ -187,7 +187,7 @@ export function appendStreamingMsg(){
       wrap.appendChild(meta);
       if(translation){
         const td=document.createElement('div');td.className='translation';
-        td.innerHTML=`<strong>${t.translationLabel}:</strong> ${translation}`;
+        td.innerHTML=`<strong>${t.translationLabel}:</strong> ${esc(translation)}`;
         const btn=document.createElement('button');btn.className='translate-btn';btn.textContent=t.translateBtn;
         btn.onclick=()=>{const v=td.style.display!=='none'&&td.style.display!=='';td.style.display=v?'none':'block';btn.textContent=v?t.translateBtn:t.hideTranslation;};
         wrap.appendChild(btn);wrap.appendChild(td);
@@ -195,12 +195,4 @@ export function appendStreamingMsg(){
       scrollBottom();
     }
   };
-}
-
-export function playWord(word,lang){
-  if(!word)return;
-  if(window.speechSynthesis.speaking)window.speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(word);
-  u.lang=LANG_META[lang]?.lang||lang;u.rate=cfg.ttsRate??0.9;
-  window.speechSynthesis.speak(u);
 }

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-PWA language tutor split into ES modules — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.4.1**, PWA cache key: `langtutor-v19`.
+PWA language tutor split into ES modules — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.4.2**, PWA cache key: `langtutor-v20`.
 
 | File | Lines | Contents |
 |---|---|---|
@@ -13,14 +13,14 @@ PWA language tutor split into ES modules — no build tool, no npm, no bundler. 
 | `i18n.js` | ~900 | `I18N` object with `cs`, `en`, `es` locale strings (exported) |
 | `constants.js` | ~126 | MODELS_METADATA, LANG_META, UI_LANGS, UI_LANG_*, esc(), uid(), renderMarkdown() |
 | `state.js` | ~69 | Shared mutable `state` object; getLangLevel(), getNativeLangName(), getUiLocale() |
-| `dom.js` | ~7 | syncLangSelectors(), autoResize() — breaks circular deps |
+| `dom.js` | ~17 | playWord(), syncLangSelectors(), autoResize() — breaks circular deps |
 | `llm.js` | ~178 | All LLM providers, streaming, safeLLM(), safeLLMStream(), abortPending() |
 | `vocab.js` | ~359 | Vocab CRUD, newSM2(), import/export, dictionary, generate, renderVocabList() |
 | `tips.js` | ~115 | Saved tips CRUD, renderTipsList(), attachFeedbackCard() |
 | `updates.js` | ~243 | applyI18n(), updateModeBadge(), updateInputPlaceholder(), updateEmptyState(), updateApiKeyHint() |
 | `flashcard.js` | ~112 | sm2Update(), startFlashcards(), renderFC(), revealFC(), rateFC() |
 | `quiz.js` | ~112 | startQuiz(), quizAsk(), quizSend() |
-| `chat.js` | ~206 | sendMessage(), appendMsg(), SSE streaming, playWord() |
+| `chat.js` | ~200 | sendMessage(), appendMsg(), SSE streaming |
 | `settings.js` | ~498 | populateSettingsUI(), saveSettings(), export/import backup, cfg editor |
 | `nav.js` | ~20 | navTo() |
 | `app.js` | ~294 | Entry point: init(), addEventListener wiring, PWA install, SW registration |
@@ -128,7 +128,7 @@ When adding a new translatable string: add the key to **all** locales in `i18n.j
 
 1. **`i18n.js`** — add a new locale object (copy `en`, translate all ~150 keys). Pay attention to arrow-function keys with pluralization (`fcDoneDesc`, `fcPendingFn`, `bulkCountFn`, `alertImportDoneFn`, `confirmDeleteLearnedFn`, `confirmDeleteSelectedFn`, `sm2DaysFn`).
 2. **`constants.js`** — add `{code:'xx', flag:'🏳️', label:'Language name'}` to `UI_LANGS`.
-3. **`state.js` line 18** — extend the `uiLang` auto-detection chain: `navigator.language.startsWith('xx')?'xx':…`
+3. **`state.js`** — in `defaultCfg()` extend the `uiLang` auto-detection chain: `navigator.language.startsWith('xx')?'xx':…`
 4. **`constants.js` `UI_LANG_NATIVE_FALLBACK`** — add `xx: 'languagename'` (key into `LANG_META`).
 5. **`constants.js` `UI_LANG_LOCALE`** — add `xx: 'xx-XX'` (BCP 47 locale tag for `toLocaleDateString`).
 
@@ -183,14 +183,15 @@ index.html
         │     ├── state.js, constants.js, vocab.js, dom.js
         ├── quiz.js        (startQuiz, quizSend, …)
         │     ├── state.js, constants.js, llm.js, vocab.js, dom.js
-        ├── chat.js        (sendMessage, appendMsg, playWord, …)
+        ├── chat.js        (sendMessage, appendMsg, …)
         │     ├── state.js, constants.js, llm.js, vocab.js
         │     ├── dom.js, tips.js, updates.js
         ├── tips.js        (CRUD, renderTipsList, attachFeedbackCard)
         │     ├── state.js, constants.js
         ├── llm.js         (safeLLM, safeLLMStream, all providers)
         │     └── state.js, constants.js
-        └── dom.js         (syncLangSelectors, autoResize — no deps)
+        └── dom.js         (playWord, syncLangSelectors, autoResize)
+              └── state.js, constants.js
 ```
 
 ### `app.js` structure (entry point, ~294 lines)
@@ -198,7 +199,7 @@ index.html
 | Section | Approx. line |
 |---|---|
 | Imports | 1 |
-| window.* globals (navTo, startFlashcards, revealFC, rateFC, playWord, …) | ~37 |
+| window.* globals (navTo, startFlashcards, revealFC, rateFC) | ~37 |
 | populateLangSelects() | ~43 |
 | init() IIFE | ~48 |
 | addEventListener wiring (all views + overlays) | ~86 |
@@ -209,7 +210,7 @@ index.html
 
 - **HTML** (`index.html`): views + overlays only; no inline `<style>`, `<script>`, or event handler attributes (`onclick`, `onchange`, etc.)
 - **Event wiring**: all `addEventListener` calls live in `app.js`; element IDs must exist in `index.html` before wiring
-- **Dynamic HTML onclick**: `renderFC()` and `renderVocabList()` generate HTML strings with `onclick="..."` — these call globals exposed as `window.navTo`, `window.revealFC`, `window.rateFC`, `window.playWord` in `app.js`
+- **Dynamic HTML onclick**: `renderFC()` and `renderVocabList()` generate HTML strings; static buttons use `onclick="..."` calling globals exposed as `window.navTo`, `window.revealFC`, `window.rateFC` in `app.js`. Anything containing user data (speak buttons) is wired via `addEventListener` after `innerHTML` — never interpolate user data into onclick strings
 - **Modules**: each file is a native ES module (`export`/`import`); `app.js` loaded as `<script type="module">`
 - **Shared state**: all mutable state lives in the exported `state` object (`state.js`); `const { cfg } = state` is safe at module level (object reference, never reassigned); `state.t` must be read at call time (`const t = state.t`) because it gets replaced on UI language change
 - **Vocab CRUD**: `getVocab(lang)` / `setVocab(lang, arr)` (`vocab.js`) — always read-modify-write the full array

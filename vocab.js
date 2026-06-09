@@ -2,7 +2,7 @@ import { state } from './state.js';
 import { getLangLevel, getNativeLangName, getUiLocale } from './state.js';
 import { esc, uid, LANG_META, SORT_MODES } from './constants.js';
 import { safeLLM, abortPending, resolveErr, clean } from './llm.js';
-import { syncLangSelectors } from './dom.js';
+import { syncLangSelectors, playWord } from './dom.js';
 
 const { cfg, langLevels } = state;
 
@@ -52,7 +52,7 @@ export function renderVocabList(){
     const sel=state.bulkSelectMode&&state.selectedIds.has(w.id);
     const el=document.createElement('div');el.className='vocab-item'+(sel?' selected':'');
     const tagsHtml=(w.tags&&w.tags.length)?`<div class="tag-chips">${w.tags.map(tg=>`<span class="tag-chip">${esc(tg)}</span>`).join('')}</div>`:'';
-    const inner=`<div class="wi"><div class="word">${esc(w.word)}</div><div class="trans">${esc(w.translation)}${w.notes?` · <em>${esc(w.notes)}</em>`:''}</div>${tagsHtml}</div><button class="speak-btn" onclick="event.stopPropagation();playWord('${w.word.replace(/'/g,"\\'")}','${state.vocabLang}')" title="${t.pronounceBtn||'Hear pronunciation'}">🔊</button><span class="sm2-badge ${cls}">${badge}</span>`;
+    const inner=`<div class="wi"><div class="word">${esc(w.word)}</div><div class="trans">${esc(w.translation)}${w.notes?` · <em>${esc(w.notes)}</em>`:''}</div>${tagsHtml}</div><button class="speak-btn" title="${t.pronounceBtn||'Hear pronunciation'}">🔊</button><span class="sm2-badge ${cls}">${badge}</span>`;
     if(state.bulkSelectMode){
       el.innerHTML=`<input type="checkbox" class="cb"${sel?' checked':''}>${inner}`;
       el.addEventListener('click',()=>toggleItemSelect(w.id));
@@ -60,6 +60,7 @@ export function renderVocabList(){
       el.innerHTML=inner;
       el.addEventListener('click',()=>openWordModal(w));
     }
+    el.querySelector('.speak-btn').addEventListener('click',e=>{e.stopPropagation();playWord(w.word,state.vocabLang);});
     list.appendChild(el);
   });
 }
@@ -185,6 +186,23 @@ export function previewImport(){
   const lines=raw.split('\n').filter(l=>l.trim()&&!l.startsWith('#'));
   document.getElementById('import-preview').textContent=t.importPreviewLinesFn(lines.length);
 }
+// Parser jednoho CSV řádku s podporou uvozovek dle RFC 4180 ("" = literální uvozovka)
+function parseCsvLine(line){
+  const out=[];let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(inQ){
+      if(c==='"'){if(line[i+1]==='"'){cur+='"';i++;}else inQ=false;}
+      else cur+=c;
+    }
+    else if(c==='"'&&cur===''){inQ=true;}
+    else if(c===','){out.push(cur);cur='';}
+    else cur+=c;
+  }
+  out.push(cur);
+  return out;
+}
+
 export function confirmImport(){
   const t=state.t;
   const raw=document.getElementById('import-text').value.trim();if(!raw)return;
@@ -196,8 +214,8 @@ export function confirmImport(){
   const dupMode=cfg.vocabImportDuplicates||'skip';
   let added=0,skipped=0,merged=0;
   lines.forEach(line=>{
-    const parts=line.split(',');
-    if(parts.length<2){const tp=line.split('\t');if(tp.length<2)return;parts.length=0;parts.push(...tp);}
+    let parts=parseCsvLine(line);
+    if(parts.length<2){const tp=line.split('\t');if(tp.length<2)return;parts=tp;}
     const rev=document.getElementById('import-col-order').value==='reverse';
     const word=(parts[rev?1:0]||'').trim();const trans=(parts[rev?0:1]||'').trim();
     if(!word||!trans)return;
@@ -219,7 +237,8 @@ export function confirmImport(){
 }
 export function exportVocab(){
   const arr=getVocab(state.vocabLang);
-  const lines=arr.map(w=>[w.word,w.translation,w.notes||'',(w.tags||[]).join('|')].join(','));
+  const cell=v=>{v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const lines=arr.map(w=>[w.word,w.translation,w.notes||'',(w.tags||[]).join('|')].map(cell).join(','));
   const blob=new Blob([lines.join('\n')],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`vocab-${state.vocabLang}-${new Date().toISOString().slice(0,10)}.csv`;a.click();
 }

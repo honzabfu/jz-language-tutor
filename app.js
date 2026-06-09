@@ -1,7 +1,7 @@
 import { state } from './state.js';
-import { LANG_META, DEFAULT_PROVIDER_SETTINGS } from './constants.js';
+import { LANG_META, DEFAULT_PROVIDER_SETTINGS, safeAssign } from './constants.js';
 import { I18N } from './i18n.js';
-import { autoResize } from './dom.js';
+import { autoResize, playWord } from './dom.js';
 import {
   previewImport, loadFile, confirmImport, closeImportModal, closeImportOutside,
   importVocab, exportVocab, openWordModal, closeWordModal, closeWordModalOutside,
@@ -16,7 +16,7 @@ import { toggleFcDirection, onFCLangChange, onFCFilterChange, startFlashcards, r
 import { onQuizLangChange, startQuiz, quizKey, quizSend } from './quiz.js';
 import {
   onSettingsLevelLangChange, setMode, clearChat, onLangChange, onKey,
-  sendMessage, switchFbTab, playWord
+  sendMessage, switchFbTab
 } from './chat.js';
 import {
   populateSettingsUI, dismissOnboarding, onProviderChange, autoSaveProviderCfg,
@@ -38,7 +38,6 @@ window.navTo = navTo;
 window.startFlashcards = startFlashcards;
 window.revealFC = revealFC;
 window.rateFC = rateFC;
-window.playWord = playWord;
 
 function populateLangSelects(){
   const opts=Object.entries(LANG_META).sort(([,a],[,b])=>a.native.localeCompare(b.native)).map(([k,m])=>`<option value="${k}">${m.flag} ${m.native}</option>`).join('');
@@ -46,14 +45,16 @@ function populateLangSelects(){
 }
 
 (function init(){
-  try{Object.assign(state.cfg,JSON.parse(localStorage.getItem('lt-cfg')||'{}'));}catch{}
-  try{Object.assign(state.langLevels,JSON.parse(localStorage.getItem('lt-levels')||'{}'));}catch{}
+  try{safeAssign(state.cfg,JSON.parse(localStorage.getItem('lt-cfg')||'{}'));}catch{}
+  try{safeAssign(state.langLevels,JSON.parse(localStorage.getItem('lt-levels')||'{}'));}catch{}
   Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{if(!state.cfg.providerSettings[p])state.cfg.providerSettings[p]={...DEFAULT_PROVIDER_SETTINGS[p]};});
-  if(state.cfg.apiKey)['anthropic','openai','gemini','custom'].forEach(p=>{if(!state.cfg.providerSettings[p].apiKey)state.cfg.providerSettings[p].apiKey=state.cfg.apiKey;});
   const _ps=state.cfg.providerSettings[state.cfg.provider];
-  if(state.cfg.provider!=='custom'&&!_ps.model&&state.cfg.model)_ps.model=state.cfg.model;
-  if(state.cfg.provider==='ollama'&&!_ps.url&&state.cfg.ollamaUrl)_ps.url=state.cfg.ollamaUrl;
-  if(state.cfg.provider==='custom'){if(!_ps.url&&state.cfg.customUrl)_ps.url=state.cfg.customUrl;if(!_ps.model&&state.cfg.customModel)_ps.model=state.cfg.customModel;}
+  if(_ps){
+    if(state.cfg.apiKey&&!_ps.apiKey)_ps.apiKey=state.cfg.apiKey;
+    if(state.cfg.provider!=='custom'&&!_ps.model&&state.cfg.model)_ps.model=state.cfg.model;
+    if(state.cfg.provider==='ollama'&&!_ps.url&&state.cfg.ollamaUrl)_ps.url=state.cfg.ollamaUrl;
+    if(state.cfg.provider==='custom'){if(!_ps.url&&state.cfg.customUrl)_ps.url=state.cfg.customUrl;if(!_ps.model&&state.cfg.customModel)_ps.model=state.cfg.customModel;}
+  }
   applyFontSize(state.cfg.fontSize||'medium');
   applyTheme();
   populateLangSelects();
