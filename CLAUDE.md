@@ -11,20 +11,20 @@ PWA language tutor split into ES modules — no build tool, no npm, no bundler. 
 | `index.html` | ~615 | HTML structure only (views, overlays, nav) — no inline event handlers |
 | `style.css` | ~260 | All CSS |
 | `i18n.js` | ~900 | `I18N` object with `cs`, `en`, `es` locale strings (exported) |
-| `constants.js` | ~126 | MODELS_METADATA, LANG_META, UI_LANGS, UI_LANG_*, esc(), uid(), renderMarkdown() |
-| `state.js` | ~69 | Shared mutable `state` object; getLangLevel(), getNativeLangName(), getUiLocale() |
+| `constants.js` | ~136 | MODELS_METADATA, LANG_META, UI_LANGS, UI_LANG_*, esc(), uid(), safeAssign(), renderMarkdown() |
+| `state.js` | ~73 | Shared mutable `state` object; defaultCfg(), getLangLevel(), getNativeLangName(), getUiLocale() |
 | `dom.js` | ~17 | playWord(), syncLangSelectors(), autoResize() — breaks circular deps |
-| `llm.js` | ~178 | All LLM providers, streaming, safeLLM(), safeLLMStream(), abortPending() |
-| `vocab.js` | ~359 | Vocab CRUD, newSM2(), import/export, dictionary, generate, renderVocabList() |
+| `llm.js` | ~196 | All LLM providers, streaming, safeLLM(), safeLLMStream(), abortPending() |
+| `vocab.js` | ~378 | Vocab CRUD, newSM2(), CSV import/export (RFC 4180), dictionary, generate, renderVocabList() |
 | `tips.js` | ~115 | Saved tips CRUD, renderTipsList(), attachFeedbackCard() |
 | `updates.js` | ~243 | applyI18n(), updateModeBadge(), updateInputPlaceholder(), updateEmptyState(), updateApiKeyHint() |
 | `flashcard.js` | ~112 | sm2Update(), startFlashcards(), renderFC(), revealFC(), rateFC() |
 | `quiz.js` | ~112 | startQuiz(), quizAsk(), quizSend() |
 | `chat.js` | ~200 | sendMessage(), appendMsg(), SSE streaming |
-| `settings.js` | ~498 | populateSettingsUI(), saveSettings(), export/import backup, cfg editor |
-| `nav.js` | ~20 | navTo() |
+| `settings.js` | ~502 | populateSettingsUI(), saveSettings(), export/import backup, cfg editor |
+| `nav.js` | ~22 | navTo() — also aborts any in-flight LLM call |
 | `app.js` | ~294 | Entry point: init(), addEventListener wiring, PWA install, SW registration |
-| `sw.js` | ~70 | Service worker (network-first for JS/HTML, cache key in line 1) |
+| `sw.js` | ~76 | Service worker (network-first with `cache:'no-cache'` revalidation, cache key in line 1) |
 
 ## Development
 
@@ -102,7 +102,7 @@ Preview SW cache key is patched to `langtutor-preview-<branch>` so it doesn't co
 | `lt-backup-reminder-on` | `'false'` if backup reminder permanently disabled |
 | `lt-pwa-dismissed` | `'1'` once PWA install banner has been dismissed |
 
-On startup `init()` reads `lt-cfg` into `cfg` via `Object.assign`, migrates legacy per-provider fields into `providerSettings`, then calls `navTo(cfg.defaultView || 'fc')`.
+On startup `init()` reads `lt-cfg` into `cfg` via `safeAssign()` (a prototype-pollution-safe `Object.assign`), migrates legacy per-provider fields into `providerSettings` (active provider only), then calls `navTo(cfg.defaultView || 'fc')`.
 
 Keys that have not yet been written are absent from localStorage (treated as their default). The cfg editor (see below) always shows all known keys — absent ones appear as `null`.
 
@@ -113,10 +113,12 @@ Entry point: `safeLLM(msgs, sys, maxTokens, signal)` dispatches to per-provider 
 - `callAnthropicStream` / `callAnthropic` — SSE streaming (Anthropic-native format)
 - `callOpenAIStream` / `callOpenAI` — OpenAI-compatible `/chat/completions`
 - `callGeminiStream` / `callGemini` — Gemini generateContent
-- `callOllamaStream` / `callOllama` — Ollama (OpenAI-compatible)
+- `callOllamaStream` / `callOllama` — Ollama (native `/api/chat`; `maxTokens` → `options.num_predict`)
 - `callCustomStream` / `callCustom` — user-configured OpenAI-compatible endpoint
 
 Model metadata (tiers, capabilities, recommended flag) lives in `MODELS_METADATA` (`constants.js`).
+
+API keys are sent in headers, never in URLs (Gemini: `x-goog-api-key`). Anthropic direct browser calls require the `anthropic-dangerous-direct-browser-access: true` header. All streaming variants detect truncation (stop/finish reason) and throw `MAX_TOKENS`, same as the non-streaming ones.
 
 ### I18N (`i18n.js`, `updates.js`)
 
@@ -143,7 +145,7 @@ The **Edit config** button (`openCfgEditor()`) opens a second overlay (`#cfg-edi
 Saving (`saveCfgEditor()`):
 - Iterates the parsed object: `null` → `localStorage.removeItem`, otherwise `localStorage.setItem`
 - Keys present before editing but absent from the saved JSON are also removed
-- Re-reads `lt-cfg` into `cfg` and calls `applyI18n()` + `populateSettingsUI()`
+- Resets `cfg` to `defaultCfg()` (`state.js`), merges saved `lt-cfg` over it via `safeAssign()`, re-ensures `providerSettings` defaults, then calls `applyI18n()` + `populateSettingsUI()`
 
 To add a new persistent non-vocabulary key: add it to `_SETTINGS_KEYS` (`settings.js` near `openCfgEditor`).
 
@@ -217,5 +219,6 @@ index.html
 - **Settings save**: `saveSettings()` (`settings.js`) reads all `#cfg-*` inputs into `cfg`, then `localStorage.setItem('lt-cfg', JSON.stringify(cfg))`
 - **Provider settings**: per-provider state lives in `cfg.providerSettings[provider]`; use `_saveProviderSettings(p)` / `_loadProviderSettings(p)` before switching providers
 - **Overlays (modals)**: `.overlay.open` shows the sheet; close by removing `.open`
-- **XSS safety**: use `esc(str)` (`constants.js`) to HTML-escape strings before injecting into `innerHTML`
+- **XSS safety**: use `esc(str)` (`constants.js`) to HTML-escape strings before injecting into `innerHTML` — it escapes `& < > " '`, so it is attribute-safe
+- **Untrusted JSON**: never `Object.assign` parsed JSON from localStorage or backup files onto live objects — use `safeAssign()` (`constants.js`), which skips `__proto__`/`constructor`/`prototype`; backup import additionally validates that vocab/tips are arrays and languages exist in `LANG_META`
 - **Service worker cache**: bump the version string in `sw.js` line 1 whenever cached assets change; add new JS files to the `ASSETS` array
