@@ -111,6 +111,16 @@ export const UI_LANG_LOCALE={cs:'cs-CZ',en:'en-US',es:'es-ES'};
 export function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 export function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 
+// Object.assign pro nedůvěryhodný JSON — přeskakuje klíče, které by zasáhly prototyp
+export function safeAssign(target,src){
+  if(!src||typeof src!=='object')return target;
+  for(const k of Object.keys(src)){
+    if(k==='__proto__'||k==='constructor'||k==='prototype')continue;
+    target[k]=src[k];
+  }
+  return target;
+}
+
 export function renderMarkdown(text){
   const inline=s=>s
     .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')

@@ -1,5 +1,5 @@
 import { state } from './state.js';
-import { LANG_META, DEFAULT_PROVIDER_SETTINGS } from './constants.js';
+import { LANG_META, DEFAULT_PROVIDER_SETTINGS, safeAssign } from './constants.js';
 import { I18N } from './i18n.js';
 import { autoResize, playWord } from './dom.js';
 import {
@@ -45,8 +45,8 @@ function populateLangSelects(){
 }
 
 (function init(){
-  try{Object.assign(state.cfg,JSON.parse(localStorage.getItem('lt-cfg')||'{}'));}catch{}
-  try{Object.assign(state.langLevels,JSON.parse(localStorage.getItem('lt-levels')||'{}'));}catch{}
+  try{safeAssign(state.cfg,JSON.parse(localStorage.getItem('lt-cfg')||'{}'));}catch{}
+  try{safeAssign(state.langLevels,JSON.parse(localStorage.getItem('lt-levels')||'{}'));}catch{}
   Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{if(!state.cfg.providerSettings[p])state.cfg.providerSettings[p]={...DEFAULT_PROVIDER_SETTINGS[p]};});
   const _ps=state.cfg.providerSettings[state.cfg.provider];
   if(_ps){
