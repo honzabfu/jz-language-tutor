@@ -222,7 +222,6 @@ export function toggleProviderFields(p){
   const isOllama=p==='ollama',isCustom=p==='custom',isAnthropic=p==='anthropic',isOpenAI=p==='openai',isGemini=p==='gemini';
   const hasAdvanced=isAnthropic||isOpenAI||isGemini;
   document.getElementById('field-apikey').style.display='';
-  document.getElementById('s-anthropic-hint').style.display=isAnthropic?'':'none';
   document.getElementById('field-advanced').style.display=hasAdvanced?'':'none';
   document.getElementById('field-anthropic-proxy-url').style.display=isAnthropic?'':'none';
   document.getElementById('field-openai-endpoint-url').style.display=isOpenAI?'':'none';

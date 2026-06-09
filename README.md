@@ -88,7 +88,8 @@ buenos días,dobré ráno
 - Oddělovač: čárka nebo tabulátor
 - Třetí sloupec (poznámka) a čtvrtý sloupec (tagy) jsou nepovinné
 - Více tagů v jednom poli odděl znakem `|` (pipe), např. `pozdravy|A1|běžná mluva`
-- Prázdné řádky a duplicity jsou automaticky přeskočeny
+- Hodnoty obsahující čárku nebo uvozovky uzavři do uvozovek dle CSV standardu (např. `"říct, pravit"`; uvozovka uvnitř hodnoty se zdvojí: `""`) — export aplikace quotuje automaticky
+- Prázdné řádky a duplicity jsou automaticky přeskočeny (chování duplicit — přeskočit / sloučit / přepsat — lze změnit v ⚠ Pokročilých nastaveních)
 - **Pořadí sloupců**: v importním modalu lze přepnout na `Překlad, Cizí jazyk` — hodí se, pokud máš soubory v opačném pořadí sloupců
 
 #### Vyhledání v integrovaném slovníku
@@ -243,7 +244,7 @@ Obnova: **Nastavení → Import zálohy** → nahraj JSON soubor.
 
 | Poskytovatel  | Zdroj API klíče              | Poznámky                                                      |
 |---------------|------------------------------|---------------------------------------------------------------|
-| Anthropic     | console.anthropic.com        | ⚠ Přímé volání blokováno CORS z GitHub Pages — přejdi na Gemini/OpenAI nebo nastav proxy URL (viz Pokročilá nastavení níže) |
+| Anthropic     | console.anthropic.com        | Přímé volání z prohlížeče funguje; volitelná proxy URL pro skrytí klíče nebo Azure AI Foundry (viz Pokročilá nastavení níže) |
 | OpenAI        | platform.openai.com/api-keys | Standardní bearer token; Azure OpenAI přes Pokročilá nastavení |
 | Google Gemini | aistudio.google.com          | **Zdarma** s limitem (15 req/min, 1 500/den); Vertex AI přes Pokročilá nastavení |
 | Ollama        | —                            | Lokální; URL nastav v Nastavení; API klíč volitelný (pro `OLLAMA_API_KEY` nebo reverse proxy) |
@@ -267,9 +268,9 @@ V Nastavení vyber **Vlastní (OpenAI-compatible)** a zadej:
 
 Providery Anthropic, OpenAI a Gemini nabízejí volitelná **Pokročilá nastavení** — zaškrtávací políčko v Nastavení → LLM Poskytovatel. Výchozí stav (prázdné pole / políčko nezaškrtnuté) odpovídá přímému volání příslušného API. Pokud má provider uloženou pokročilou hodnotu, sekce se otevře automaticky.
 
-#### Anthropic — proxy URL (řeší CORS z GitHub Pages)
+#### Anthropic — volitelná proxy URL
 
-Anthropic API blokuje přímé volání z GitHub Pages. Řešení: Cloudflare Worker jako proxy.
+Anthropic API podporuje přímé volání z prohlížeče (aplikace posílá vyžadovanou hlavičku `anthropic-dangerous-direct-browser-access`), takže proxy není nutná. Hodí se, pokud nechceš mít API klíč uložený v prohlížeči, nebo pro Azure AI Foundry (níže). Příklad: Cloudflare Worker jako proxy.
 
 **`worker.js`** — nasazení přes [dash.cloudflare.com](https://dash.cloudflare.com) → Workers & Pages → Create. Free tier: 100 000 req/den.
 
@@ -400,6 +401,7 @@ Claude Sonnet a GPT-5 jsou výrazně dražší alternativy. Ollama (lokální) j
 - [x] Mateřský jazyk — nastavitelný nezávisle na jazyce UI; výběr z 32 jazyků; překlady ve všech AI funkcích (chat, slovník, kvíz, generování slovíček) se řídí tímto nastavením
 - [x] Vlastní instrukce pro tutora — volný text (max 500 znaků) přidaný do systémového promptu; živý čítač znaků; hint pro psaní v angličtině
 - [x] Výchozí záložka — nastavitelná v Nastavení; výchozí hodnota Flashcards
+- [x] Bezpečnostní a funkční opravy z code review — odstranění XSS, oprava CORS hlavičky pro přímá volání Anthropic, API klíče v hlavičkách místo URL, CSV dle RFC 4180, validace importu zálohy, revalidace assetů v service workeru (#147–#158, #160)
 
 ---
 
@@ -489,7 +491,8 @@ buenos días,good morning
 - Separator: comma or tab
 - Third column (note) and fourth column (tags) are optional
 - Separate multiple tags with `|` (pipe), e.g. `greetings|A1|informal`
-- Empty lines and duplicates are skipped automatically
+- Values containing a comma or quotes can be wrapped in quotes per the CSV standard (e.g. `"to say, to tell"`; double a quote inside a value: `""`) — the app's export quotes automatically
+- Empty lines and duplicates are skipped automatically (duplicate handling — skip / merge / overwrite — is configurable in ⚠ Advanced settings)
 - **Column order**: the import modal lets you switch to `Translation, Foreign word` — useful if your CSV files have the columns in reverse order
 
 #### Built-in dictionary lookup
@@ -644,7 +647,7 @@ Restore: **Settings → Import backup** → load the JSON file.
 
 | Provider      | API key source               | Notes                                                         |
 |---------------|------------------------------|---------------------------------------------------------------|
-| Anthropic     | console.anthropic.com        | ⚠ Direct calls blocked by CORS on GitHub Pages — switch to Gemini/OpenAI or set a proxy URL (see Advanced settings below) |
+| Anthropic     | console.anthropic.com        | Direct browser calls work; optional proxy URL to keep the key out of the browser or for Azure AI Foundry (see Advanced settings below) |
 | OpenAI        | platform.openai.com/api-keys | Standard bearer token; Azure OpenAI available via Advanced settings |
 | Google Gemini | aistudio.google.com          | **Free** with limits (15 req/min, 1,500/day); Vertex AI via Advanced settings |
 | Ollama        | —                            | Local; configure URL in Settings; API key optional (for `OLLAMA_API_KEY` or reverse proxy) |
@@ -668,9 +671,9 @@ In Settings select **Custom (OpenAI-compatible)** and fill in:
 
 Anthropic, OpenAI, and Gemini providers offer optional **Advanced settings** — a checkbox in Settings → LLM Provider. The default state (empty / unchecked) means a direct call to the provider API. If a provider already has an advanced value saved, the section opens automatically.
 
-#### Anthropic — proxy URL (fixes CORS on GitHub Pages)
+#### Anthropic — optional proxy URL
 
-The Anthropic API blocks direct browser calls from GitHub Pages. Solution: deploy a Cloudflare Worker as a proxy.
+The Anthropic API supports direct browser calls (the app sends the required `anthropic-dangerous-direct-browser-access` header), so a proxy is not required. It is useful if you prefer to keep your API key out of the browser, or for Azure AI Foundry (below). Example: a Cloudflare Worker as a proxy.
 
 **`worker.js`** — deploy via [dash.cloudflare.com](https://dash.cloudflare.com) → Workers & Pages → Create. Free tier: 100 000 req/day.
 
@@ -801,6 +804,7 @@ Claude Sonnet and GPT-5 are significantly more expensive alternatives. Ollama (l
 - [x] Native language setting — configurable independently of the UI language; 32 languages available; translation target in chat, dictionary, quiz and vocabulary generation follows this setting
 - [x] Custom tutor instructions — freeform text (max 500 chars) appended to the system prompt; live character counter; hint to write in English for best results
 - [x] Default tab — configurable in Settings; defaults to Flashcards
+- [x] Security & robustness fixes from code review — XSS removal, fixed Anthropic CORS header for direct browser calls, API keys in headers instead of URLs, RFC 4180 CSV, backup import validation, service-worker asset revalidation (#147–#158, #160)
 
 ---
 

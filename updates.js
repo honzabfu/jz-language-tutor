@@ -44,7 +44,6 @@ export function applyI18n(){
   document.getElementById('s-custom-model-label').textContent=t.sCustomModelLabel;
   document.getElementById('s-apikey-label').textContent=t.sApiKeyLabel;
   document.getElementById('s-ollama-hint').textContent=t.sOllamaHint;
-  document.getElementById('s-anthropic-hint').textContent=t.sAnthropicHint;
   document.getElementById('s-advanced-label').textContent=t.sAdvancedLabel;
   document.getElementById('s-anthropic-proxy-label').textContent=t.sAnthropicProxyLabel;
   document.getElementById('s-anthropic-proxy-hint').textContent=t.sAnthropicProxyHint;
