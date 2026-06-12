@@ -227,9 +227,12 @@ export function confirmImport(){
   const existing=new Map(arr.map(w=>[w.word.toLowerCase(),w]));
   const dupMode=cfg.vocabImportDuplicates||'skip';
   let added=0,skipped=0,merged=0;
+  // Sloupne anti-formula-injection prefix ' z vlastního exportu (viz exportVocab)
+  const unesc=v=>/^'[=+\-@\t\r]/.test(v)?v.slice(1):v;
   importRows(raw).forEach(row=>{
     let parts=row;
     if(parts.length<2){const tp=(parts[0]||'').split('\t');if(tp.length<2)return;parts=tp;}
+    parts=parts.map(unesc);
     const rev=document.getElementById('import-col-order').value==='reverse';
     const word=(parts[rev?1:0]||'').trim();const trans=(parts[rev?0:1]||'').trim();
     if(!word||!trans)return;
@@ -251,7 +254,8 @@ export function confirmImport(){
 }
 export function exportVocab(){
   const arr=getVocab(state.vocabLang);
-  const cell=v=>{v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  // Prefix ' neutralizuje formula injection při otevření v Excelu/Sheets; confirmImport ho zpětně sloupne
+  const cell=v=>{v=String(v??'');if(/^[=+\-@\t\r]/.test(v))v="'"+v;return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
   const lines=arr.map(w=>[w.word,w.translation,w.notes||'',(w.tags||[]).join('|')].map(cell).join(','));
   const blob=new Blob([lines.join('\n')],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`vocab-${state.vocabLang}-${new Date().toISOString().slice(0,10)}.csv`;a.click();
