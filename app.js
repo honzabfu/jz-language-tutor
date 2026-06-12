@@ -47,6 +47,8 @@ function populateLangSelects(){
 (function init(){
   try{safeAssign(state.cfg,JSON.parse(localStorage.getItem('lt-cfg')||'{}'));}catch{}
   try{safeAssign(state.langLevels,JSON.parse(localStorage.getItem('lt-levels')||'{}'));}catch{}
+  // ručně editovaný lt-cfg (cfg editor) může obsahovat providerSettings:null — nesmí shodit init
+  if(!state.cfg.providerSettings||typeof state.cfg.providerSettings!=='object')state.cfg.providerSettings={};
   Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{if(!state.cfg.providerSettings[p])state.cfg.providerSettings[p]={...DEFAULT_PROVIDER_SETTINGS[p]};});
   const _ps=state.cfg.providerSettings[state.cfg.provider];
   if(_ps){

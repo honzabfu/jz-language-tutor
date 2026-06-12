@@ -402,6 +402,7 @@ export function saveCfgEditor(){
   safeAssign(cfg,savedCfg);
   if(!cfg.providerSettings||typeof cfg.providerSettings!=='object')cfg.providerSettings={};
   Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{if(!cfg.providerSettings[p])cfg.providerSettings[p]={...DEFAULT_PROVIDER_SETTINGS[p]};});
+  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
   state.t=I18N[cfg.uiLang]||I18N.cs;
   closeCfgEditor();
   applyI18n();
