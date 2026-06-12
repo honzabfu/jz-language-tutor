@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-PWA language tutor split into ES modules — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.4.6**, PWA cache key: `langtutor-v24`.
+PWA language tutor split into ES modules — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.4.7**, PWA cache key: `langtutor-v25`.
 
 | File | Lines | Contents |
 |---|---|---|
@@ -13,15 +13,15 @@ PWA language tutor split into ES modules — no build tool, no npm, no bundler. 
 | `i18n.js` | ~900 | `I18N` object with `cs`, `en`, `es` locale strings (exported) |
 | `constants.js` | ~136 | MODELS_METADATA, LANG_META, UI_LANGS, UI_LANG_*, esc(), uid(), safeAssign(), renderMarkdown() |
 | `state.js` | ~73 | Shared mutable `state` object; defaultCfg(), getLangLevel(), getNativeLangName(), getUiLocale() |
-| `dom.js` | ~17 | playWord(), syncLangSelectors(), autoResize() — breaks circular deps |
-| `llm.js` | ~196 | All LLM providers, streaming, safeLLM(), safeLLMStream(), abortPending() |
-| `vocab.js` | ~378 | Vocab CRUD, newSM2(), CSV import/export (RFC 4180), dictionary, generate, renderVocabList() |
+| `dom.js` | ~26 | playWord(), syncLangSelectors(), setActiveLang(), autoResize() — breaks circular deps |
+| `llm.js` | ~203 | PROVIDERS registry, streaming, safeLLM(), safeLLMStream(), abortPending(), hasApiAccess() |
+| `vocab.js` | ~389 | Vocab CRUD, newSM2(), CSV import/export (RFC 4180), dictionary, generate, renderVocabList() |
 | `tips.js` | ~115 | Saved tips CRUD, renderTipsList(), attachFeedbackCard() |
 | `updates.js` | ~243 | applyI18n(), updateModeBadge(), updateInputPlaceholder(), updateEmptyState(), updateApiKeyHint() |
 | `flashcard.js` | ~112 | sm2Update(), startFlashcards(), renderFC(), revealFC(), rateFC() |
 | `quiz.js` | ~112 | startQuiz(), quizAsk(), quizSend() |
 | `chat.js` | ~200 | sendMessage(), appendMsg(), SSE streaming |
-| `settings.js` | ~502 | populateSettingsUI(), saveSettings(), export/import backup, cfg editor |
+| `settings.js` | ~530 | populateSettingsUI(), saveSettings(), export/import backup, cfg editor |
 | `nav.js` | ~22 | navTo() — also aborts any in-flight LLM call |
 | `app.js` | ~294 | Entry point: init(), addEventListener wiring, PWA install, SW registration |
 | `sw.js` | ~76 | Service worker (network-first with `cache:'no-cache'` revalidation, cache key in line 1) |
@@ -108,17 +108,18 @@ Keys that have not yet been written are absent from localStorage (treated as the
 
 ### Providers / LLM calls (`llm.js`)
 
-Entry point: `safeLLM(msgs, sys, maxTokens, signal)` dispatches to per-provider async functions:
+Entry points `safeLLM(msgs, sys, maxTokens, signal)` and `safeLLMStream(…, onChunk)` dispatch through the `PROVIDERS` registry — one entry per provider (`anthropic`, `openai`, `gemini`, `ollama`, `custom`) with:
 
-- `callAnthropicStream` / `callAnthropic` — SSE streaming (Anthropic-native format)
-- `callOpenAIStream` / `callOpenAI` — OpenAI-compatible `/chat/completions`
-- `callGeminiStream` / `callGemini` — Gemini generateContent
-- `callOllamaStream` / `callOllama` — Ollama (native `/api/chat`; `maxTokens` → `options.num_predict`)
-- `callCustomStream` / `callCustom` — user-configured OpenAI-compatible endpoint
+- `request(msgs, sys, maxTokens, stream)` → `{url, headers, body}` (driver adds `Content-Type` and `fetch`es)
+- `parse(d)` — extracts text from the non-streaming response, throws `MAX_TOKENS` on truncation
+- `sse` — `true` = SSE (`data:` lines, `readSSE`), `false` = NDJSON (Ollama, `readNDJSON`)
+- `chunk(data, out)` — streaming event handler; `out.text(t)` appends, `out.truncated`/`out.done` flags
 
-Model metadata (tiers, capabilities, recommended flag) lives in `MODELS_METADATA` (`constants.js`).
+`openai` and `custom` share `parse`/`chunk` (`_openAiParse`/`_openAiChunk`). Both stream readers flush the `TextDecoder` and process a final line without trailing `\n`; they yield (`setTimeout 0`) once per network chunk. To add a provider: add a registry entry (plus `MODELS_METADATA`, `DEFAULT_PROVIDER_SETTINGS` in `constants.js` and settings UI fields).
 
-API keys are sent in headers, never in URLs (Gemini: `x-goog-api-key`). Anthropic direct browser calls require the `anthropic-dangerous-direct-browser-access: true` header. All streaming variants detect truncation (stop/finish reason) and throw `MAX_TOKENS`, same as the non-streaming ones.
+`hasApiAccess()` (exported from `llm.js`) is the single "is the LLM usable" predicate used by chat, quiz, vocab generate, and the provider badge. Model metadata (tiers, capabilities, recommended flag) lives in `MODELS_METADATA` (`constants.js`).
+
+API keys are sent in headers, never in URLs (Gemini: `x-goog-api-key`). Anthropic direct browser calls require the `anthropic-dangerous-direct-browser-access: true` header. All streaming paths detect truncation (stop/finish reason) and throw `MAX_TOKENS`, same as the non-streaming ones.
 
 ### I18N (`i18n.js`, `updates.js`)
 
@@ -178,7 +179,7 @@ index.html
         │     ├── quiz.js, settings.js, tips.js, updates.js
         ├── settings.js    (populateSettingsUI, saveSettings, backup)
         │     ├── state.js, constants.js, i18n.js
-        │     ├── updates.js, vocab.js, tips.js, dom.js
+        │     ├── updates.js, vocab.js, tips.js, dom.js, llm.js
         ├── vocab.js       (CRUD, SM-2 init, render, dict, generate)
         │     ├── state.js, constants.js, dom.js, llm.js
         ├── flashcard.js   (sm2Update, startFlashcards, renderFC, …)
@@ -190,9 +191,9 @@ index.html
         │     ├── dom.js, tips.js, updates.js
         ├── tips.js        (CRUD, renderTipsList, attachFeedbackCard)
         │     ├── state.js, constants.js
-        ├── llm.js         (safeLLM, safeLLMStream, all providers)
-        │     └── state.js, constants.js
-        └── dom.js         (playWord, syncLangSelectors, autoResize)
+        ├── llm.js         (safeLLM, safeLLMStream, PROVIDERS registry, hasApiAccess)
+        │     └── state.js
+        └── dom.js         (playWord, syncLangSelectors, setActiveLang, autoResize)
               └── state.js, constants.js
 ```
 
