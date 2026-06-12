@@ -3,7 +3,7 @@ import { LANG_META, UI_LANGS, MODELS, MODELS_METADATA, DEFAULT_PROVIDER_SETTINGS
 import { I18N } from './i18n.js';
 import { applyI18n, updateApiKeyHint } from './updates.js';
 import { getVocab, setVocab, setApplyBackupFn } from './vocab.js';
-import { syncLangSelectors } from './dom.js';
+import { setActiveLang } from './dom.js';
 import { hasApiAccess } from './llm.js';
 import { getSavedTips, setSavedTips } from './tips.js';
 
@@ -412,7 +412,7 @@ export function saveCfgEditor(){
   Object.keys(langLevels).forEach(k=>delete langLevels[k]);
   try{safeAssign(langLevels,JSON.parse(localStorage.getItem('lt-levels')||'{}'));}catch{}
   const _sl=localStorage.getItem('lt-lang');
-  if(_sl&&LANG_META[_sl]){state.currentLang=_sl;state.vocabLang=_sl;state.tipsLang=_sl;syncLangSelectors(_sl);}
+  if(_sl&&LANG_META[_sl])setActiveLang(_sl);
   state.t=I18N[cfg.uiLang]||I18N.cs;
   closeCfgEditor();
   applyFontSize(cfg.fontSize||'medium');

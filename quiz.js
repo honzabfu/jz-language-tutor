@@ -2,12 +2,12 @@ import { state, getLangLevel, getNativeLangName } from './state.js';
 import { LANG_META, renderMarkdown } from './constants.js';
 import { safeLLM, abortPending, resolveErr, clean, hasApiAccess } from './llm.js';
 import { getVocab } from './vocab.js';
-import { syncLangSelectors, autoResize } from './dom.js';
+import { setActiveLang, autoResize } from './dom.js';
 
 const { cfg } = state;
 
 export function onQuizLangChange(l){
-  state.currentLang=l;state.vocabLang=l;localStorage.setItem('lt-lang',l);syncLangSelectors(l);startQuiz();
+  setActiveLang(l);startQuiz();
 }
 
 export function startQuiz(){

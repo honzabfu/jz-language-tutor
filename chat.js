@@ -2,7 +2,7 @@ import { state, getLangLevel, getNativeLangName } from './state.js';
 import { LANG_META, esc, renderMarkdown } from './constants.js';
 import { safeLLMStream, abortPending, resolveErr, clean, hasApiAccess } from './llm.js';
 import { getVocab } from './vocab.js';
-import { syncLangSelectors } from './dom.js';
+import { setActiveLang } from './dom.js';
 import { saveTip, attachFeedbackCard } from './tips.js';
 import { updateModeBadge, updateEmptyState, updateInputPlaceholder } from './updates.js';
 
@@ -28,7 +28,7 @@ export function clearChat(){
 }
 
 export function onLangChange(l){
-  state.currentLang=l;state.vocabLang=l;localStorage.setItem('lt-lang',l);syncLangSelectors(l);
+  setActiveLang(l);
   updateEmptyState();updateInputPlaceholder();updateModeBadge();clearChat();
   const lls=document.getElementById('cfg-level-lang-select');
   if(lls){lls.value=l;document.getElementById('cfg-level').value=getLangLevel(l);}

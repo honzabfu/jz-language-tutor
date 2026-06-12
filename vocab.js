@@ -2,7 +2,7 @@ import { state } from './state.js';
 import { getLangLevel, getNativeLangName, getUiLocale } from './state.js';
 import { esc, uid, LANG_META, SORT_MODES } from './constants.js';
 import { safeLLM, abortPending, resolveErr, clean, hasApiAccess } from './llm.js';
-import { syncLangSelectors, playWord } from './dom.js';
+import { setActiveLang, playWord } from './dom.js';
 
 const { cfg, langLevels } = state;
 
@@ -15,7 +15,7 @@ export function newSM2(){return{interval:1,ef:2.5,due:Date.now(),reps:0};}
 // ── VOCAB VIEW ──
 
 export function onVocabLangChange(l){
-  state.currentLang=l;state.vocabLang=l;localStorage.setItem('lt-lang',l);syncLangSelectors(l);
+  setActiveLang(l);
   const lls=document.getElementById('cfg-level-lang-select');
   if(lls){lls.value=l;document.getElementById('cfg-level').value=getLangLevel(l);}
   renderVocabList();

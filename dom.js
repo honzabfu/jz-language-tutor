@@ -15,4 +15,12 @@ export function syncLangSelectors(l){
   });
 }
 
+// Jediné místo pro přepnutí aktivního jazyka — nastaví všechna zrcadlená pole,
+// persistuje lt-lang a synchronizuje selecty všech views
+export function setActiveLang(l){
+  state.currentLang=l;state.vocabLang=l;state.tipsLang=l;
+  localStorage.setItem('lt-lang',l);
+  syncLangSelectors(l);
+}
+
 export function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}

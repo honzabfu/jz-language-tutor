@@ -1,7 +1,7 @@
 import { state, getUiLocale } from './state.js';
 import { esc } from './constants.js';
 import { getVocab, setVocab, newSM2 } from './vocab.js';
-import { syncLangSelectors, playWord } from './dom.js';
+import { setActiveLang, playWord } from './dom.js';
 
 const { cfg } = state;
 
@@ -29,7 +29,7 @@ export function toggleFcDirection(){
 }
 
 export function onFCLangChange(l){
-  state.currentLang=l;state.vocabLang=l;localStorage.setItem('lt-lang',l);syncLangSelectors(l);startFlashcards(l);
+  setActiveLang(l);startFlashcards(l);
 }
 
 export function onFCFilterChange(v){

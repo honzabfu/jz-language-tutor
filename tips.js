@@ -1,12 +1,12 @@
 import { state } from './state.js';
 import { getUiLocale } from './state.js';
 import { esc, uid } from './constants.js';
-import { syncLangSelectors } from './dom.js';
+import { setActiveLang } from './dom.js';
 
 export function getSavedTips(lang){try{return JSON.parse(localStorage.getItem('lt-tips-'+lang)||'[]');}catch{return[];}}
 export function setSavedTips(lang,arr){localStorage.setItem('lt-tips-'+(lang||state.currentLang),JSON.stringify(arr));}
 
-export function onTipsLangChange(l){state.currentLang=l;state.tipsLang=l;state.vocabLang=l;localStorage.setItem('lt-lang',l);syncLangSelectors(l);renderTipsList();}
+export function onTipsLangChange(l){setActiveLang(l);renderTipsList();}
 export function setTipsFilter(filter,btn){state.tipsFilter=filter;document.querySelectorAll('.tips-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTipsList();}
 
 export function saveTip(btn,text,type){
