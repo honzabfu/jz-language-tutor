@@ -11,20 +11,20 @@ PWA language tutor split into ES modules — no build tool, no npm, no bundler. 
 | `index.html` | ~615 | HTML structure only (views, overlays, nav) — no inline event handlers |
 | `style.css` | ~260 | All CSS |
 | `i18n.js` | ~900 | `I18N` object with `cs`, `en`, `es` locale strings (exported) |
-| `constants.js` | ~136 | MODELS_METADATA, LANG_META, UI_LANGS, UI_LANG_*, esc(), uid(), safeAssign(), renderMarkdown() |
+| `constants.js` | ~113 | MODELS_METADATA, LANG_META, UI_LANGS, UI_LANG_*, esc(), uid(), safeAssign(), renderMarkdown() |
 | `state.js` | ~73 | Shared mutable `state` object; defaultCfg(), getLangLevel(), getNativeLangName(), getUiLocale() |
 | `dom.js` | ~26 | playWord(), syncLangSelectors(), setActiveLang(), autoResize() — breaks circular deps |
 | `llm.js` | ~203 | PROVIDERS registry, streaming, safeLLM(), safeLLMStream(), abortPending(), hasApiAccess() |
-| `vocab.js` | ~389 | Vocab CRUD, newSM2(), CSV import/export (RFC 4180), dictionary, generate, renderVocabList() |
-| `tips.js` | ~115 | Saved tips CRUD, renderTipsList(), attachFeedbackCard() |
+| `vocab.js` | ~393 | Vocab CRUD, newSM2(), CSV import/export (RFC 4180), dictionary, generate, renderVocabList() |
+| `tips.js` | ~119 | Saved tips CRUD, renderTipsList(), attachFeedbackCard() |
 | `updates.js` | ~243 | applyI18n(), updateModeBadge(), updateInputPlaceholder(), updateEmptyState(), updateApiKeyHint() |
-| `flashcard.js` | ~112 | sm2Update(), startFlashcards(), renderFC(), revealFC(), rateFC() |
-| `quiz.js` | ~112 | startQuiz(), quizAsk(), quizSend() |
-| `chat.js` | ~200 | sendMessage(), appendMsg(), SSE streaming |
-| `settings.js` | ~530 | populateSettingsUI(), saveSettings(), export/import backup, cfg editor |
+| `flashcard.js` | ~114 | sm2Update(), startFlashcards(), renderFC(), revealFC(), rateFC() |
+| `quiz.js` | ~111 | startQuiz(), quizAsk(), quizSend() |
+| `chat.js` | ~212 | sendMessage(), appendMsg(), makeReplyExtractor(), SSE streaming |
+| `settings.js` | ~537 | populateSettingsUI(), saveSettings(), export/import backup, cfg editor |
 | `nav.js` | ~22 | navTo() — also aborts any in-flight LLM call |
-| `app.js` | ~294 | Entry point: init(), addEventListener wiring, PWA install, SW registration |
-| `sw.js` | ~76 | Service worker (network-first with `cache:'no-cache'` revalidation, cache key in line 1) |
+| `app.js` | ~297 | Entry point: init(), addEventListener wiring, PWA install, SW registration |
+| `sw.js` | ~79 | Service worker (network-first with `cache:'no-cache'` revalidation, cache key in line 1) |
 
 ## Development
 
@@ -146,7 +146,8 @@ The **Edit config** button (`openCfgEditor()`) opens a second overlay (`#cfg-edi
 Saving (`saveCfgEditor()`):
 - Iterates the parsed object: `null` → `localStorage.removeItem`, otherwise `localStorage.setItem`
 - Keys present before editing but absent from the saved JSON are also removed
-- Resets `cfg` to `defaultCfg()` (`state.js`), merges saved `lt-cfg` over it via `safeAssign()`, re-ensures `providerSettings` defaults, then calls `applyI18n()` + `populateSettingsUI()`
+- Resets `cfg` to `defaultCfg()` (`state.js`), merges saved `lt-cfg` over it via `safeAssign()`, re-ensures `providerSettings` defaults (non-object → `{}`) and **re-persists the sanitized `lt-cfg`**
+- Reloads `lt-levels` into `state.langLevels` and `lt-lang` via `setActiveLang()` (so the next save can't overwrite the edit with a stale in-memory copy), then calls `applyFontSize()` + `applyTheme()` + `applyI18n()` + `populateSettingsUI()`
 
 To add a new persistent non-vocabulary key: add it to `_SETTINGS_KEYS` (`settings.js` near `openCfgEditor`).
 
@@ -156,7 +157,7 @@ Six bottom-nav views: `#chat-view`, `#vocab-view`, `#fc-view`, `#quiz-view`, `#t
 
 ### SM-2 (`vocab.js`, `flashcard.js`)
 
-`newSM2()` (`vocab.js`) and `sm2Update(sm2, q)` (`flashcard.js`) implement the SM-2 algorithm. Each vocab word has a `.sm2` field `{interval, reps, ef, due}`. `due` is a Unix timestamp (ms). Cards are due when `sm2.due <= Date.now()`.
+`newSM2()` (`vocab.js`) and `sm2Update(sm2, q)` (`flashcard.js`) implement the SM-2 algorithm. Each vocab word has a `.sm2` field `{interval, reps, ef, due}`. `due` is a Unix timestamp (ms). Cards are due when `sm2.due <= Date.now()`. Per canonical SM-2, a failing grade (`q < 3`) restarts repetitions **without changing the E-Factor**.
 
 ### Flashcards direction
 
@@ -217,9 +218,9 @@ index.html
 - **Modules**: each file is a native ES module (`export`/`import`); `app.js` loaded as `<script type="module">`
 - **Shared state**: all mutable state lives in the exported `state` object (`state.js`); `const { cfg } = state` is safe at module level (object reference, never reassigned); `state.t` must be read at call time (`const t = state.t`) because it gets replaced on UI language change
 - **Vocab CRUD**: `getVocab(lang)` / `setVocab(lang, arr)` (`vocab.js`) — always read-modify-write the full array
-- **Settings save**: `saveSettings()` (`settings.js`) reads all `#cfg-*` inputs into `cfg`, then `localStorage.setItem('lt-cfg', JSON.stringify(cfg))`
+- **Settings save**: `saveSettings()` (`settings.js`) reads all `#cfg-*` inputs into `cfg`, then persists via the `saveCfg()` helper (the only place in `settings.js` that writes `lt-cfg`)
 - **Provider settings**: per-provider state lives in `cfg.providerSettings[provider]`; use `_saveProviderSettings(p)` / `_loadProviderSettings(p)` before switching providers
 - **Overlays (modals)**: `.overlay.open` shows the sheet; close by removing `.open`
 - **XSS safety**: use `esc(str)` (`constants.js`) to HTML-escape strings before injecting into `innerHTML` — it escapes `& < > " '`, so it is attribute-safe
-- **Untrusted JSON**: never `Object.assign` parsed JSON from localStorage or backup files onto live objects — use `safeAssign()` (`constants.js`), which skips `__proto__`/`constructor`/`prototype`; backup import additionally validates that vocab/tips are arrays and languages exist in `LANG_META`
+- **Untrusted JSON**: never `Object.assign` parsed JSON from localStorage or backup files onto live objects — use `safeAssign()` (`constants.js`), which skips `__proto__`/`constructor`/`prototype`; backup import additionally validates that vocab/tips are arrays, languages exist in `LANG_META`, item fields are strings (non-conforming items are dropped, `id`/`notes`/`tags`/`sm2`/`date` normalized), and asks for explicit confirmation when the imported cfg changes any API endpoint URL (`_collectEndpointUrls()` in `settings.js` — API keys are sent to those URLs)
 - **Service worker cache**: bump the version string in `sw.js` line 1 whenever cached assets change; add new JS files to the `ASSETS` array
