@@ -85,7 +85,8 @@ export async function sendMessage(){
   state._abortCtrl=new AbortController();
   input.value='';input.style.height='auto';document.getElementById('send-btn').disabled=true;
   appendMsg('user',text,null);
-  state.chatHistory.push({role:'user',content:text});
+  const userMsg={role:'user',content:text};
+  state.chatHistory.push(userMsg);
   setTyping(true);
   let streamingBubble=null;
   let displayedText='';
@@ -109,9 +110,16 @@ export async function sendMessage(){
     if(msgWrap)attachFeedbackCard(msgWrap,parsed.feedback);
   }catch(err){
     setTyping(false);
-    if(err.name==='AbortError'){if(streamingBubble&&displayedText)streamingBubble.finalize(displayedText,null);return;}
-    if(streamingBubble&&displayedText){streamingBubble.finalize(displayedText,null);}
-    else{appendMsg('tutor',resolveErr(err),null);}
+    // userMsg hledáme přes indexOf — abortnutý starý request může doběhnout až poté,
+    // co nový sendMessage do historie přidal další zprávy
+    const idx=state.chatHistory.indexOf(userMsg);
+    if(streamingBubble&&displayedText){
+      streamingBubble.finalize(displayedText,null);
+      if(idx>=0)state.chatHistory.splice(idx+1,0,{role:'assistant',content:displayedText});
+    }else if(idx>=0){
+      state.chatHistory.splice(idx,1);
+    }
+    if(err.name!=='AbortError')appendMsg('tutor',resolveErr(err),null);
   }
 }
 
