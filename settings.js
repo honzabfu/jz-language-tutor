@@ -474,7 +474,6 @@ export function importAll(){
 }
 
 export function closeBackupModal(){document.getElementById('backup-import-modal').classList.remove('open');}
-export function closeBackupModalOutside(e){if(e.target===document.getElementById('backup-import-modal'))closeBackupModal();}
 
 export function loadBackupFile(e){
   const f=e.target.files[0];if(!f)return;

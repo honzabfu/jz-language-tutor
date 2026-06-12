@@ -100,7 +100,6 @@ export function openWordModal(word){
   setTimeout(()=>document.getElementById('modal-word').focus(),100);
 }
 export function closeWordModal(){document.getElementById('word-modal').classList.remove('open');state.editingWordId=null;}
-export function closeWordModalOutside(e){if(e.target===document.getElementById('word-modal'))closeWordModal();}
 export function saveWord(){
   const t=state.t;
   const word=document.getElementById('modal-word').value.trim();
@@ -175,7 +174,6 @@ export function importVocab(){
   document.getElementById('import-modal').classList.add('open');
 }
 export function closeImportModal(){document.getElementById('import-modal').classList.remove('open');}
-export function closeImportOutside(e){if(e.target===document.getElementById('import-modal'))closeImportModal();}
 export function loadFile(e){
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
@@ -276,7 +274,6 @@ export function openDictModal(word){
   setTimeout(()=>{const inp=document.getElementById('dict-input');inp.focus();if(word)dictLookup();},100);
 }
 export function closeDictModal(){abortPending();document.getElementById('dict-modal').classList.remove('open');}
-export function closeDictModalOutside(e){if(e.target===document.getElementById('dict-modal'))closeDictModal();}
 export function dictKey(e){if(e.key==='Enter')dictLookup();}
 export async function dictLookup(){
   const word=document.getElementById('dict-input').value.trim();if(!word)return;
@@ -321,7 +318,6 @@ export function openGenerateModal(){
   setTimeout(()=>document.getElementById('gen-topic').focus(),100);
 }
 export function closeGenModal(){abortPending();document.getElementById('gen-modal').classList.remove('open');}
-export function closeGenModalOutside(e){if(e.target===document.getElementById('gen-modal'))closeGenModal();}
 export function showGenForm(){
   document.getElementById('gen-form').style.display='';
   document.getElementById('gen-preview').style.display='none';
