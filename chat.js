@@ -12,7 +12,7 @@ export function onSettingsLevelLangChange(l){
   document.getElementById('cfg-level').value=getLangLevel(l);
 }
 
-export function setMode(lesson){cfg.lessonMode=lesson;updateModeBadge();}
+export function setMode(lesson){cfg.lessonMode=lesson;updateModeBadge();localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
 
 export function clearChat(){
   abortPending();
