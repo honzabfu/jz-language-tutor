@@ -214,7 +214,12 @@ function importRows(raw){
 export function confirmImport(){
   const t=state.t;
   const raw=document.getElementById('import-text').value.trim();if(!raw)return;
-  try{const d=JSON.parse(raw);if(d.version&&d.vocab){applyBackupImport(d);closeImportModal();return;}}catch{}
+  let backup=null;
+  try{const d=JSON.parse(raw);if(d.version&&d.vocab)backup=d;}catch{}
+  if(backup){
+    try{applyBackupImport(backup);}catch(e){alert(`${t.errGeneric} ${e.message}`);}
+    closeImportModal();return;
+  }
   const lang=document.getElementById('import-lang-sel').value;
   const arr=getVocab(lang);
   const existing=new Map(arr.map(w=>[w.word.toLowerCase(),w]));

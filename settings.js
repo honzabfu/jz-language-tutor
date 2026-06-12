@@ -478,7 +478,10 @@ export function confirmBackupImport(){
   const t=state.t;
   const raw=document.getElementById('backup-import-text').value.trim();
   if(!raw)return;
-  try{const data=JSON.parse(raw);closeBackupModal();applyBackup(data);}catch{alert(t.alertInvalidJson);}
+  let data;
+  try{data=JSON.parse(raw);}catch{alert(t.alertInvalidJson);return;}
+  closeBackupModal();
+  try{applyBackup(data);}catch(e){alert(`${t.errGeneric} ${e.message}`);}
 }
 
 // Adresy, na které llm.js odesílá API klíče — jejich změnu při importu zálohy musí uživatel potvrdit
