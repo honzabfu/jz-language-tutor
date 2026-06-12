@@ -89,6 +89,7 @@ buenos días,dobré ráno
 - Třetí sloupec (poznámka) a čtvrtý sloupec (tagy) jsou nepovinné
 - Více tagů v jednom poli odděl znakem `|` (pipe), např. `pozdravy|A1|běžná mluva`
 - Hodnoty obsahující čárku nebo uvozovky uzavři do uvozovek dle CSV standardu (např. `"říct, pravit"`; uvozovka uvnitř hodnoty se zdvojí: `""`) — export aplikace quotuje automaticky
+- Hodnota v uvozovkách smí obsahovat i nový řádek (víceřádkové poznámky) — export i import si s tím poradí
 - Prázdné řádky a duplicity jsou automaticky přeskočeny (chování duplicit — přeskočit / sloučit / přepsat — lze změnit v ⚠ Pokročilých nastaveních)
 - **Pořadí sloupců**: v importním modalu lze přepnout na `Překlad, Cizí jazyk` — hodí se, pokud máš soubory v opačném pořadí sloupců
 
@@ -188,6 +189,8 @@ Při používání více zařízení (telefon + počítač apod.):
 **Nastavení → Export zálohy** — exportuje jeden JSON soubor se vším: nastavením (včetně pokročilých nastavení providera), všemi slovíčky (všechny jazyky) a SM-2 daty.
 
 Obnova: **Nastavení → Import zálohy** → nahraj JSON soubor.
+
+> 🔒 Pokud importovaná záloha mění adresy API serverů (proxy / endpoint / Ollama / custom URL), aplikace si před obnovou vyžádá potvrzení se seznamem adres — na tyto adresy se odesílají API klíče, proto neimportuj zálohy z nedůvěryhodných zdrojů.
 
 **Kompatibilita záloh:**
 - Záloha z nové verze → stará aplikace: neznámá pole jsou ignorována, ostatní obnoveno správně.
@@ -492,6 +495,7 @@ buenos días,good morning
 - Third column (note) and fourth column (tags) are optional
 - Separate multiple tags with `|` (pipe), e.g. `greetings|A1|informal`
 - Values containing a comma or quotes can be wrapped in quotes per the CSV standard (e.g. `"to say, to tell"`; double a quote inside a value: `""`) — the app's export quotes automatically
+- A quoted value may also contain line breaks (multi-line notes) — both export and import handle this
 - Empty lines and duplicates are skipped automatically (duplicate handling — skip / merge / overwrite — is configurable in ⚠ Advanced settings)
 - **Column order**: the import modal lets you switch to `Translation, Foreign word` — useful if your CSV files have the columns in reverse order
 
@@ -591,6 +595,8 @@ When using multiple devices (phone + computer etc.):
 **Settings → Export backup** — exports a single JSON file containing everything: config (including advanced provider settings), all vocabulary (all languages), and SM-2 progress data.
 
 Restore: **Settings → Import backup** → load the JSON file.
+
+> 🔒 If an imported backup changes API endpoint addresses (proxy / endpoint / Ollama / custom URL), the app asks for confirmation with the list of addresses before restoring — your API keys are sent to these addresses, so never import backups from untrusted sources.
 
 **Backup compatibility:**
 - New backup → old app: unknown fields are ignored; everything else restores correctly.
