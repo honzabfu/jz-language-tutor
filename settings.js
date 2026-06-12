@@ -3,6 +3,7 @@ import { LANG_META, UI_LANGS, MODELS, MODELS_METADATA, DEFAULT_PROVIDER_SETTINGS
 import { I18N } from './i18n.js';
 import { applyI18n, updateApiKeyHint } from './updates.js';
 import { getVocab, setVocab, setApplyBackupFn } from './vocab.js';
+import { syncLangSelectors } from './dom.js';
 import { getSavedTips, setSavedTips } from './tips.js';
 
 const { cfg } = state;
@@ -403,8 +404,16 @@ export function saveCfgEditor(){
   if(!cfg.providerSettings||typeof cfg.providerSettings!=='object')cfg.providerSettings={};
   Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{if(!cfg.providerSettings[p])cfg.providerSettings[p]={...DEFAULT_PROVIDER_SETTINGS[p]};});
   localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  // lt-levels a lt-lang se musí znovu načíst z právě přepsaného localStorage,
+  // jinak je příští uložení tiše přepíše starou kopií z paměti
+  Object.keys(langLevels).forEach(k=>delete langLevels[k]);
+  try{safeAssign(langLevels,JSON.parse(localStorage.getItem('lt-levels')||'{}'));}catch{}
+  const _sl=localStorage.getItem('lt-lang');
+  if(_sl&&LANG_META[_sl]){state.currentLang=_sl;state.vocabLang=_sl;state.tipsLang=_sl;syncLangSelectors(_sl);}
   state.t=I18N[cfg.uiLang]||I18N.cs;
   closeCfgEditor();
+  applyFontSize(cfg.fontSize||'medium');
+  applyTheme();
   applyI18n();
   populateSettingsUI();
   const toast=document.getElementById('save-toast');
@@ -510,6 +519,7 @@ export function applyBackup(data){
   localStorage.setItem('lt-backup-last-count',String(getTotalVocabCount()));
   localStorage.removeItem('lt-backup-dismissed');
   state.t=I18N[cfg.uiLang]||I18N.cs;
+  applyFontSize(cfg.fontSize||'medium');applyTheme();
   applyI18n();populateSettingsUI();updateProviderBadge();
   alert(state.t.alertBackupRestored);
 }
