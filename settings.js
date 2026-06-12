@@ -4,6 +4,7 @@ import { I18N } from './i18n.js';
 import { applyI18n, updateApiKeyHint } from './updates.js';
 import { getVocab, setVocab, setApplyBackupFn } from './vocab.js';
 import { syncLangSelectors } from './dom.js';
+import { hasApiAccess } from './llm.js';
 import { getSavedTips, setSavedTips } from './tips.js';
 
 const { cfg } = state;
@@ -294,7 +295,7 @@ export function saveSettings(){
 
 export function updateProviderBadge(){
   const lb={anthropic:'Claude',openai:'GPT',gemini:'Gemini',ollama:'Ollama',custom:'Custom'};
-  const ok=cfg.provider==='ollama'||(cfg.provider==='custom'&&!!cfg.customUrl&&!!cfg.customModel)||(cfg.apiKey&&cfg.apiKey.length>8);
+  const ok=hasApiAccess();
   const text=lb[cfg.provider]||cfg.provider;
   const cls='provider-badge'+(ok?'':' warn');
   ['provider-badge','quiz-provider-badge'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=text;el.className=cls;}});

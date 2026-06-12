@@ -1,6 +1,6 @@
 import { state, getLangLevel, getNativeLangName } from './state.js';
 import { LANG_META, esc, renderMarkdown } from './constants.js';
-import { safeLLMStream, abortPending, resolveErr, clean } from './llm.js';
+import { safeLLMStream, abortPending, resolveErr, clean, hasApiAccess } from './llm.js';
 import { getVocab } from './vocab.js';
 import { syncLangSelectors } from './dom.js';
 import { saveTip, attachFeedbackCard } from './tips.js';
@@ -80,7 +80,7 @@ export async function sendMessage(){
   const t=state.t;
   const input=document.getElementById('msg-input');
   const text=input.value.trim();if(!text)return;
-  if(cfg.provider!=='ollama'&&cfg.provider!=='custom'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendMsg('tutor',t.errNoKey,null);return;}
+  if(!hasApiAccess()){appendMsg('tutor',t.errNoKey,null);return;}
   abortPending();
   state._abortCtrl=new AbortController();
   input.value='';input.style.height='auto';document.getElementById('send-btn').disabled=true;

@@ -1,7 +1,7 @@
 import { state } from './state.js';
 import { getLangLevel, getNativeLangName, getUiLocale } from './state.js';
 import { esc, uid, LANG_META, SORT_MODES } from './constants.js';
-import { safeLLM, abortPending, resolveErr, clean } from './llm.js';
+import { safeLLM, abortPending, resolveErr, clean, hasApiAccess } from './llm.js';
 import { syncLangSelectors, playWord } from './dom.js';
 
 const { cfg, langLevels } = state;
@@ -306,9 +306,6 @@ export function dictAddToVocab(){
 
 // ── GENERATE VOCAB ──
 
-export function hasApiAccess(){
-  return cfg.provider==='ollama'||(cfg.provider==='custom'&&!!cfg.customUrl&&!!cfg.customModel)||(cfg.apiKey&&cfg.apiKey.length>8);
-}
 export function openGenerateModal(){
   document.getElementById('gen-topic').value='';
   const hasApi=hasApiAccess();const t=state.t;
