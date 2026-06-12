@@ -266,7 +266,7 @@ export function openDictModal(word){
   document.getElementById('dict-modal').classList.add('open');
   setTimeout(()=>{const inp=document.getElementById('dict-input');inp.focus();if(word)dictLookup();},100);
 }
-export function closeDictModal(){document.getElementById('dict-modal').classList.remove('open');}
+export function closeDictModal(){abortPending();document.getElementById('dict-modal').classList.remove('open');}
 export function closeDictModalOutside(e){if(e.target===document.getElementById('dict-modal'))closeDictModal();}
 export function dictKey(e){if(e.key==='Enter')dictLookup();}
 export async function dictLookup(){
@@ -279,13 +279,15 @@ export async function dictLookup(){
   const nativeLang=getNativeLangName();
   const sys=`You are a concise bilingual ${targetLang}–${nativeLang} dictionary. Reply with ONLY valid JSON, no markdown fences, no extra text. Keep all fields brief.`;
   const userPrompt=`Look up: "${word}"\nReturn JSON with fields:\n- "entry": plain-text dictionary entry in ${targetLang}, max 3 lines: word+colon on line 1, grammatical category+main translations on line 2, one short usage example in ${targetLang} on line 3\n- "word": the headword/lemma in ${targetLang}\n- "translation": main translations in ${nativeLang} as short comma-separated string (max 5 words)\n- "notes": one short grammatical note or typical collocation in ${targetLang} (e.g. verb government, gender, typical preposition); empty string if not applicable`;
+  abortPending();state._abortCtrl=new AbortController();
   try{
-    const raw=await safeLLM([{role:'user',content:userPrompt}],sys,4096);
+    const raw=await safeLLM([{role:'user',content:userPrompt}],sys,4096,state._abortCtrl.signal);
     let json;try{json=JSON.parse(clean(raw));}catch{throw new Error(t.errParseLlm);}
     dictResult=json;
     resEl.innerHTML=`<div class="dict-entry">${esc(json.entry)}</div>`;
     document.getElementById('dict-add-btn').style.display='';
   }catch(err){
+    if(err.name==='AbortError')return;
     resEl.innerHTML=`<div class="dict-msg" style="color:var(--err)">${resolveErr(err)}</div>`;
   }
 }
