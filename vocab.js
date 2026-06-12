@@ -183,24 +183,32 @@ export function previewImport(){
   const raw=document.getElementById('import-text').value.trim();
   if(!raw){document.getElementById('import-preview').textContent='';return;}
   try{const d=JSON.parse(raw);if(d.version&&d.vocab){document.getElementById('import-preview').textContent=t.importPreviewBackup;return;}}catch{}
-  const lines=raw.split('\n').filter(l=>l.trim()&&!l.startsWith('#'));
-  document.getElementById('import-preview').textContent=t.importPreviewLinesFn(lines.length);
+  document.getElementById('import-preview').textContent=t.importPreviewLinesFn(importRows(raw).length);
 }
-// Parser jednoho CSV řádku s podporou uvozovek dle RFC 4180 ("" = literální uvozovka)
-function parseCsvLine(line){
-  const out=[];let cur='',inQ=false;
-  for(let i=0;i<line.length;i++){
-    const c=line[i];
+// CSV parser celého textu dle RFC 4180 ("" = literální uvozovka) — pole v uvozovkách
+// smí obsahovat čárky i nové řádky (exportVocab je tak legitimně produkuje)
+function parseCsv(text){
+  const rows=[];let row=[],cur='',inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
     if(inQ){
-      if(c==='"'){if(line[i+1]==='"'){cur+='"';i++;}else inQ=false;}
+      if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else inQ=false;}
       else cur+=c;
     }
     else if(c==='"'&&cur===''){inQ=true;}
-    else if(c===','){out.push(cur);cur='';}
+    else if(c===','){row.push(cur);cur='';}
+    else if(c==='\n'||c==='\r'){
+      if(c==='\r'&&text[i+1]==='\n')i++;
+      row.push(cur);rows.push(row);row=[];cur='';
+    }
     else cur+=c;
   }
-  out.push(cur);
-  return out;
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows;
+}
+// Řádky k importu: vynechá prázdné a komentáře (#); komentář uvnitř pole v uvozovkách komentářem není
+function importRows(raw){
+  return parseCsv(raw).filter(r=>r.some(f=>f.trim())&&!(r[0]||'').startsWith('#'));
 }
 
 export function confirmImport(){
@@ -208,14 +216,13 @@ export function confirmImport(){
   const raw=document.getElementById('import-text').value.trim();if(!raw)return;
   try{const d=JSON.parse(raw);if(d.version&&d.vocab){applyBackupImport(d);closeImportModal();return;}}catch{}
   const lang=document.getElementById('import-lang-sel').value;
-  const lines=raw.split('\n').filter(l=>l.trim()&&!l.startsWith('#'));
   const arr=getVocab(lang);
   const existing=new Map(arr.map(w=>[w.word.toLowerCase(),w]));
   const dupMode=cfg.vocabImportDuplicates||'skip';
   let added=0,skipped=0,merged=0;
-  lines.forEach(line=>{
-    let parts=parseCsvLine(line);
-    if(parts.length<2){const tp=line.split('\t');if(tp.length<2)return;parts=tp;}
+  importRows(raw).forEach(row=>{
+    let parts=row;
+    if(parts.length<2){const tp=(parts[0]||'').split('\t');if(tp.length<2)return;parts=tp;}
     const rev=document.getElementById('import-col-order').value==='reverse';
     const word=(parts[rev?1:0]||'').trim();const trans=(parts[rev?0:1]||'').trim();
     if(!word||!trans)return;
