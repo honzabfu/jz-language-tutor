@@ -14,8 +14,6 @@ export function onSettingsLevelLangChange(l){
 
 export function setMode(lesson){cfg.lessonMode=lesson;updateModeBadge();}
 
-export function toggleLessonMode(){setMode(!cfg.lessonMode);}
-
 export function clearChat(){
   abortPending();
   state.chatHistory=[];state.currentFbData=null;

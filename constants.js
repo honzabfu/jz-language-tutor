@@ -26,31 +26,8 @@ export const MODELS_METADATA={
   custom:[]
 };
 
-export function getModelsForProvider(provider){
+function getModelsForProvider(provider){
   return (MODELS_METADATA[provider]||[]).map(m=>m.id);
-}
-export function getModelMetadata(id){
-  for(const provider of Object.keys(MODELS_METADATA)){
-    const model=MODELS_METADATA[provider].find(m=>m.id===id);
-    if(model)return{...model,provider};
-  }
-  return null;
-}
-export function getModelsByTier(provider,tier){
-  return (MODELS_METADATA[provider]||[]).filter(m=>m.tier===tier).map(m=>m.id);
-}
-export function getModelsByCapability(provider,capability){
-  return (MODELS_METADATA[provider]||[]).filter(m=>m.capability===capability).map(m=>m.id);
-}
-export function getRecommendedModels(provider){
-  return (MODELS_METADATA[provider]||[]).filter(m=>m.recommended).map(m=>m.id);
-}
-export function getModelsForLevel(provider,level){
-  const all=(MODELS_METADATA[provider]||[]);
-  const tierFilter=level==='advanced'?['budget','standard','premium']
-                   :level==='intermediate'?['budget','standard']
-                   :['budget'];
-  return all.filter(m=>tierFilter.includes(m.tier)&&m.recommended).map(m=>m.id);
 }
 
 export const MODELS={
