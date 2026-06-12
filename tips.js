@@ -41,7 +41,7 @@ export function renderTipsList(){
     if(state.tipsBulkSelectMode){
       const cb=document.createElement('input');cb.type='checkbox';cb.className='cb';cb.checked=sel;
       el.appendChild(cb);el.appendChild(content);
-      el.addEventListener('click',()=>toggleTipSelect(tip.id));
+      el.addEventListener('click',()=>toggleTipSelect(tip.id,el));
     }else{
       el.appendChild(content);
       const delBtn=document.createElement('button');delBtn.className='tips-delete-btn';delBtn.textContent='×';delBtn.title=t.modalDeleteBtn;
@@ -54,10 +54,13 @@ export function renderTipsList(){
 
 export function deleteTip(id){setSavedTips(state.tipsLang,getSavedTips(state.tipsLang).filter(tp=>tp.id!==id));renderTipsList();}
 
-export function toggleTipSelect(id){
-  if(state.selectedTipIds.has(id))state.selectedTipIds.delete(id);else state.selectedTipIds.add(id);
+// In-place varianta — viz toggleItemSelect ve vocab.js
+export function toggleTipSelect(id,el){
+  const sel=!state.selectedTipIds.has(id);
+  if(sel)state.selectedTipIds.add(id);else state.selectedTipIds.delete(id);
   document.getElementById('tips-bulk-count').textContent=state.t.bulkCountFn(state.selectedTipIds.size);
-  renderTipsList();
+  el.classList.toggle('selected',sel);
+  const cb=el.querySelector('.cb');if(cb)cb.checked=sel;
 }
 export function toggleTipsBulkMode(){
   state.tipsBulkSelectMode=!state.tipsBulkSelectMode;state.selectedTipIds.clear();

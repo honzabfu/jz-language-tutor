@@ -55,7 +55,7 @@ export function renderVocabList(){
     const inner=`<div class="wi"><div class="word">${esc(w.word)}</div><div class="trans">${esc(w.translation)}${w.notes?` · <em>${esc(w.notes)}</em>`:''}</div>${tagsHtml}</div><button class="speak-btn" title="${t.pronounceBtn||'Hear pronunciation'}">🔊</button><span class="sm2-badge ${cls}">${badge}</span>`;
     if(state.bulkSelectMode){
       el.innerHTML=`<input type="checkbox" class="cb"${sel?' checked':''}>${inner}`;
-      el.addEventListener('click',()=>toggleItemSelect(w.id));
+      el.addEventListener('click',()=>toggleItemSelect(w.id,el));
     }else{
       el.innerHTML=inner;
       el.addEventListener('click',()=>openWordModal(w));
@@ -141,10 +141,14 @@ export function toggleBulkMode(){
   document.getElementById('bulk-count').textContent=state.t.bulkCountFn(0);
   renderVocabList();
 }
-export function toggleItemSelect(id){
-  if(state.selectedIds.has(id))state.selectedIds.delete(id);else state.selectedIds.add(id);
+// Přepíná jen kliknutý řádek in-place — full re-render při každém tapu
+// znamenal parse celého slovníku, přestavbu seznamu a ztrátu scroll pozice
+export function toggleItemSelect(id,el){
+  const sel=!state.selectedIds.has(id);
+  if(sel)state.selectedIds.add(id);else state.selectedIds.delete(id);
   document.getElementById('bulk-count').textContent=state.t.bulkCountFn(state.selectedIds.size);
-  renderVocabList();
+  el.classList.toggle('selected',sel);
+  const cb=el.querySelector('.cb');if(cb)cb.checked=sel;
 }
 export function bulkSelectAll(){
   const q=(document.getElementById('vocab-search').value||'').toLowerCase();
