@@ -481,8 +481,23 @@ export function confirmBackupImport(){
   try{const data=JSON.parse(raw);closeBackupModal();applyBackup(data);}catch{alert(t.alertInvalidJson);}
 }
 
+// Adresy, na které llm.js odesílá API klíče — jejich změnu při importu zálohy musí uživatel potvrdit
+function _collectEndpointUrls(c){
+  const urls={};
+  if(!c||typeof c!=='object')return urls;
+  ['anthropicProxyUrl','openaiEndpointUrl','geminiEndpointUrl','ollamaUrl','customUrl'].forEach(k=>{if(c[k])urls[k]=String(c[k]);});
+  const ps=c.providerSettings;
+  if(ps&&typeof ps==='object')Object.keys(ps).forEach(p=>{const s=ps[p];if(s&&typeof s==='object')['proxyUrl','endpointUrl','url'].forEach(k=>{if(s[k])urls[`${p}.${k}`]=String(s[k]);});});
+  return urls;
+}
+
 export function applyBackup(data){
-  if(data.cfg)safeAssign(cfg,data.cfg);
+  if(data.cfg){
+    const cur=_collectEndpointUrls(cfg);
+    const changed=Object.entries(_collectEndpointUrls(data.cfg)).filter(([k,v])=>v!==(cur[k]||''));
+    if(changed.length&&!confirm(state.t.sImportUrlWarningFn(changed.map(([k,v])=>`${k}: ${v}`).join('\n'))))return;
+    safeAssign(cfg,data.cfg);
+  }
   if(data.langLevels)safeAssign(langLevels,data.langLevels);
   Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{if(!cfg.providerSettings||typeof cfg.providerSettings!=='object')cfg.providerSettings={};if(!cfg.providerSettings[p])cfg.providerSettings[p]={...DEFAULT_PROVIDER_SETTINGS[p]};});
   if(data.vocab)Object.keys(data.vocab).forEach(l=>{if(LANG_META[l]&&Array.isArray(data.vocab[l]))setVocab(l,data.vocab[l]);});
