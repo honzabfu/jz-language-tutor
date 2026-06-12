@@ -12,6 +12,14 @@ const { langLevels } = state;
 
 setApplyBackupFn(applyBackup);
 
+function saveCfg(){localStorage.setItem('lt-cfg', JSON.stringify(cfg));}
+
+function showSaveToast(){
+  const toast=document.getElementById('save-toast');
+  toast.textContent=state.t.saveToast;toast.classList.add('visible');
+  setTimeout(()=>toast.classList.remove('visible'),2000);
+}
+
 function _saveProviderSettings(p){
   const ps=cfg.providerSettings[p]||(cfg.providerSettings[p]={});
   ps.apiKey=(document.getElementById('cfg-apikey')?.value||'').trim();
@@ -89,7 +97,7 @@ export function onProviderChange(p){
   document.getElementById('cfg-model').value=cfg.model;
   toggleProviderFields(p);updateApiKeyHint();updateApiKeyStatus();
   setModelHint(p);
-  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  saveCfg();
   updateProviderBadge();
   if(p==='ollama')fetchAndRebuildModels();
 }
@@ -105,18 +113,18 @@ export function autoSaveProviderCfg(){
   cfg.customUrl=(document.getElementById('cfg-custom-url')?.value||'').trim();
   cfg.customModel=(document.getElementById('cfg-custom-model')?.value||'').trim();
   _saveProviderSettings(cfg.provider);
-  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  saveCfg();
   updateProviderBadge();
   updateApiKeyStatus();
 }
 
 export function onLevelChange(val){const lang=document.getElementById('cfg-level-lang-select').value;langLevels[lang]=val;localStorage.setItem('lt-levels',JSON.stringify(langLevels));}
-export function onFeedbackStyleChange(val){cfg.feedbackStyle=val;localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
-export function onNativeLangChange(val){cfg.nativeLang=val;localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
-export function onFontSizeChange(val){cfg.fontSize=val;applyFontSize(val);localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
-export function onThemeChange(val){cfg.theme=val;applyTheme();localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
-export function onDefaultViewChange(val){cfg.defaultView=val;localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
-export function onCustomInstructionsChange(val){cfg.customInstructions=val.trim();localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
+export function onFeedbackStyleChange(val){cfg.feedbackStyle=val;saveCfg();}
+export function onNativeLangChange(val){cfg.nativeLang=val;saveCfg();}
+export function onFontSizeChange(val){cfg.fontSize=val;applyFontSize(val);saveCfg();}
+export function onThemeChange(val){cfg.theme=val;applyTheme();saveCfg();}
+export function onDefaultViewChange(val){cfg.defaultView=val;saveCfg();}
+export function onCustomInstructionsChange(val){cfg.customInstructions=val.trim();saveCfg();}
 
 export function rebuildModelList(p,models){
   const s=document.getElementById('cfg-model');
@@ -248,7 +256,7 @@ export function updateApiKeyStatus(){
 }
 
 export function onUiLangChange(l){
-  cfg.uiLang=l;state.t=I18N[l]||I18N.cs;applyI18n();localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  cfg.uiLang=l;state.t=I18N[l]||I18N.cs;applyI18n();saveCfg();
 }
 
 export function applyFontSize(size){
@@ -284,12 +292,9 @@ export function saveSettings(){
   cfg.theme=document.getElementById('cfg-theme').value;
   applyTheme();
   cfg.defaultView=document.getElementById('cfg-default-view').value;
-  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  saveCfg();
   updateProviderBadge();
-  const t=state.t;
-  const toast=document.getElementById('save-toast');
-  toast.textContent=t.saveToast;toast.classList.add('visible');
-  setTimeout(()=>toast.classList.remove('visible'),2000);
+  showSaveToast();
   updateApiKeyStatus();
 }
 
@@ -331,7 +336,6 @@ export function onAdvTemperatureDefaultChange(checked){
 }
 
 export function saveAdvancedSettings(){
-  const t=state.t;
   const mt=parseInt(document.getElementById('cfg-adv-max-tokens').value,10);
   cfg.maxTokens=(!isNaN(mt)&&mt>=128&&mt<=8192)?mt:8192;
   const useProviderDefault=document.getElementById('cfg-adv-temperature-default').checked;
@@ -343,11 +347,9 @@ export function saveAdvancedSettings(){
   const _sebv=parseFloat(document.getElementById('cfg-sm-easy-bonus').value);cfg.smEasyBonus=(!isNaN(_sebv)&&_sebv>=1.0&&_sebv<=1.5)?_sebv:1.0;
   const _ttsv=parseFloat(document.getElementById('cfg-tts-rate').value);cfg.ttsRate=(!isNaN(_ttsv)&&_ttsv>=0.5&&_ttsv<=1.5)?_ttsv:0.9;
   cfg.vocabImportDuplicates=document.getElementById('cfg-vocab-import-dups').value;
-  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  saveCfg();
   closeAdvancedSettings();
-  const toast=document.getElementById('save-toast');
-  toast.textContent=t.saveToast;toast.classList.add('visible');
-  setTimeout(()=>toast.classList.remove('visible'),2000);
+  showSaveToast();
 }
 
 export function resetAdvancedSettings(){
@@ -364,7 +366,7 @@ export function resetAdvancedSettings(){
   document.getElementById('cfg-sm-easy-bonus').value=1.0;document.getElementById('cfg-sm-easy-bonus-val').textContent='1.00';
   document.getElementById('cfg-tts-rate').value=0.9;document.getElementById('cfg-tts-rate-val').textContent='0.9';
   document.getElementById('cfg-vocab-import-dups').value='skip';
-  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  saveCfg();
 }
 
 export const _SETTINGS_KEYS=['lt-backup-dismissed','lt-backup-last-count','lt-backup-reminder-on','lt-cfg','lt-lang','lt-levels','lt-onboarded','lt-pwa-dismissed'];
@@ -404,7 +406,7 @@ export function saveCfgEditor(){
   safeAssign(cfg,savedCfg);
   if(!cfg.providerSettings||typeof cfg.providerSettings!=='object')cfg.providerSettings={};
   Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{if(!cfg.providerSettings[p])cfg.providerSettings[p]={...DEFAULT_PROVIDER_SETTINGS[p]};});
-  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  saveCfg();
   // lt-levels a lt-lang se musí znovu načíst z právě přepsaného localStorage,
   // jinak je příští uložení tiše přepíše starou kopií z paměti
   Object.keys(langLevels).forEach(k=>delete langLevels[k]);
@@ -417,9 +419,7 @@ export function saveCfgEditor(){
   applyTheme();
   applyI18n();
   populateSettingsUI();
-  const toast=document.getElementById('save-toast');
-  toast.textContent=state.t.saveToast;toast.classList.add('visible');
-  setTimeout(()=>toast.classList.remove('visible'),2000);
+  showSaveToast();
 }
 
 export function exportAll(){
@@ -515,7 +515,7 @@ export function applyBackup(data){
   Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{if(!cfg.providerSettings||typeof cfg.providerSettings!=='object')cfg.providerSettings={};if(!cfg.providerSettings[p])cfg.providerSettings[p]={...DEFAULT_PROVIDER_SETTINGS[p]};});
   if(data.vocab)Object.keys(data.vocab).forEach(l=>{if(LANG_META[l]&&Array.isArray(data.vocab[l]))setVocab(l,data.vocab[l]);});
   if(data.tips)Object.keys(data.tips).forEach(l=>{if(LANG_META[l]&&Array.isArray(data.tips[l]))setSavedTips(l,data.tips[l]);});
-  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  saveCfg();
   localStorage.setItem('lt-levels',JSON.stringify(langLevels));
   localStorage.setItem('lt-backup-last-count',String(getTotalVocabCount()));
   localStorage.removeItem('lt-backup-dismissed');
