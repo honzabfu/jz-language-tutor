@@ -149,7 +149,7 @@ export function renderFeedback(tab){
 
 export function makeReplyExtractor(onDisplayText){
   const KEY='"reply"';
-  let st='before',km=0,escaped=false;
+  let st='before',km=0,escaped=false,uni=null; // uni !== null → sbírají se 4 hex znaky \uXXXX
   return function feed(chunk){
     let out='';
     for(const ch of chunk){
@@ -163,7 +163,15 @@ export function makeReplyExtractor(onDisplayText){
         if(ch==='"')st='in_reply';
         else if(ch!==' '&&ch!=='\t'&&ch!=='\n'&&ch!=='\r'){st='before';km=ch===KEY[0]?1:0;}
       }else if(st==='in_reply'){
-        if(escaped){out+=ch==='n'?'\n':ch==='t'?'\t':ch;escaped=false;}
+        if(uni!==null){
+          uni+=ch;
+          if(uni.length===4){const code=parseInt(uni,16);if(!isNaN(code))out+=String.fromCharCode(code);uni=null;}
+        }
+        else if(escaped){
+          if(ch==='u')uni='';
+          else out+=ch==='n'?'\n':ch==='t'?'\t':ch==='r'?'\r':ch;
+          escaped=false;
+        }
         else if(ch==='\\'){escaped=true;}
         else if(ch==='"'){st='done';}
         else{out+=ch;}
