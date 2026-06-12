@@ -7,14 +7,15 @@ const { cfg } = state;
 
 export function sm2Update(sm,q){
   let{interval,ef,reps}=sm;
+  // SM-2: neúspěch (q<3) restartuje opakování BEZE změny E-Factoru
   if(q<3){reps=0;interval=1;}
   else{
     if(reps===0)interval=1;
     else if(reps===1)interval=6;
     else interval=Math.round(interval*ef*(q===5?(cfg.smEasyBonus??1):1));
     reps++;
+    ef=Math.max(1.3,ef+(0.1-(5-q)*(0.08+(5-q)*0.02)));
   }
-  ef=Math.max(1.3,ef+(0.1-(5-q)*(0.08+(5-q)*0.02)));
   return{interval,ef,reps,due:Date.now()+interval*86400000};
 }
 
