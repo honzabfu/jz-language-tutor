@@ -1,13 +1,13 @@
 import { state, getLangLevel, getNativeLangName } from './state.js';
 import { LANG_META, renderMarkdown } from './constants.js';
-import { safeLLM, abortPending, resolveErr, clean } from './llm.js';
+import { safeLLM, abortPending, resolveErr, clean, hasApiAccess } from './llm.js';
 import { getVocab } from './vocab.js';
-import { syncLangSelectors, autoResize } from './dom.js';
+import { setActiveLang, autoResize } from './dom.js';
 
 const { cfg } = state;
 
 export function onQuizLangChange(l){
-  state.currentLang=l;state.vocabLang=l;localStorage.setItem('lt-lang',l);syncLangSelectors(l);startQuiz();
+  setActiveLang(l);startQuiz();
 }
 
 export function startQuiz(){
@@ -39,8 +39,7 @@ export async function quizAsk(lang){
   const quizSys=`You are a language quiz tutor testing the student on ${meta.name}. Student level: ${levelMap[getLangLevel(lang)]||'A1-A2'}. Vary question formats naturally (fill-in-the-blank, translate, use in a sentence, etc.). Respond ONLY with valid JSON, no markdown.`;
   const quizPrompt=`Test this specific word: "${word.word}" (meaning: "${word.translation}"). Do NOT reveal the translation to the student.
 Respond ONLY with JSON: {"question":"<question in ${meta.name}; if the task requires translation, you may include a ${getNativeLangName()} instruction>","targetWord":"${word.word}"}`;
-  if(cfg.provider==='custom'&&(!cfg.customUrl||!cfg.customModel)){appendQuizMsg('tutor',t.errNoKey);return;}
-  if(cfg.provider!=='ollama'&&cfg.provider!=='custom'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendQuizMsg('tutor',t.errNoKey);return;}
+  if(!hasApiAccess()){appendQuizMsg('tutor',t.errNoKey);return;}
   abortPending();
   state._abortCtrl=new AbortController();
   setQuizTyping(true);
@@ -48,8 +47,8 @@ Respond ONLY with JSON: {"question":"<question in ${meta.name}; if the task requ
   try{raw=await safeLLM([{role:'user',content:quizPrompt}],quizSys,8192,state._abortCtrl.signal);}
   catch(err){setQuizTyping(false);if(err.name==='AbortError')return;appendQuizMsg('tutor',resolveErr(err));return;}
   setQuizTyping(false);
-  try{const p=JSON.parse(clean(raw));appendQuizMsg('tutor',p.question);state.quizHistory.push({role:'assistant-question',word:p.targetWord,content:p.question});}
-  catch{appendQuizMsg('tutor',clean(raw));}
+  try{const p=JSON.parse(clean(raw));appendQuizMsg('tutor',p.question);state.quizHistory.push({role:'assistant-question',word:p.targetWord||word.word,content:p.question});}
+  catch{const q=clean(raw);appendQuizMsg('tutor',q);state.quizHistory.push({role:'assistant-question',word:word.word,content:q});}
 }
 
 export function quizKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();quizSend();}}

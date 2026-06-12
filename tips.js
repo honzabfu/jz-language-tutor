@@ -1,12 +1,12 @@
 import { state } from './state.js';
 import { getUiLocale } from './state.js';
 import { esc, uid } from './constants.js';
-import { syncLangSelectors } from './dom.js';
+import { setActiveLang } from './dom.js';
 
 export function getSavedTips(lang){try{return JSON.parse(localStorage.getItem('lt-tips-'+lang)||'[]');}catch{return[];}}
 export function setSavedTips(lang,arr){localStorage.setItem('lt-tips-'+(lang||state.currentLang),JSON.stringify(arr));}
 
-export function onTipsLangChange(l){state.currentLang=l;state.tipsLang=l;state.vocabLang=l;localStorage.setItem('lt-lang',l);syncLangSelectors(l);renderTipsList();}
+export function onTipsLangChange(l){setActiveLang(l);renderTipsList();}
 export function setTipsFilter(filter,btn){state.tipsFilter=filter;document.querySelectorAll('.tips-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTipsList();}
 
 export function saveTip(btn,text,type){
@@ -41,7 +41,7 @@ export function renderTipsList(){
     if(state.tipsBulkSelectMode){
       const cb=document.createElement('input');cb.type='checkbox';cb.className='cb';cb.checked=sel;
       el.appendChild(cb);el.appendChild(content);
-      el.addEventListener('click',()=>toggleTipSelect(tip.id));
+      el.addEventListener('click',()=>toggleTipSelect(tip.id,el));
     }else{
       el.appendChild(content);
       const delBtn=document.createElement('button');delBtn.className='tips-delete-btn';delBtn.textContent='×';delBtn.title=t.modalDeleteBtn;
@@ -54,15 +54,19 @@ export function renderTipsList(){
 
 export function deleteTip(id){setSavedTips(state.tipsLang,getSavedTips(state.tipsLang).filter(tp=>tp.id!==id));renderTipsList();}
 
-export function toggleTipSelect(id){
-  if(state.selectedTipIds.has(id))state.selectedTipIds.delete(id);else state.selectedTipIds.add(id);
+// In-place varianta — viz toggleItemSelect ve vocab.js
+export function toggleTipSelect(id,el){
+  const sel=!state.selectedTipIds.has(id);
+  if(sel)state.selectedTipIds.add(id);else state.selectedTipIds.delete(id);
   document.getElementById('tips-bulk-count').textContent=state.t.bulkCountFn(state.selectedTipIds.size);
-  renderTipsList();
+  el.classList.toggle('selected',sel);
+  const cb=el.querySelector('.cb');if(cb)cb.checked=sel;
 }
 export function toggleTipsBulkMode(){
   state.tipsBulkSelectMode=!state.tipsBulkSelectMode;state.selectedTipIds.clear();
   document.getElementById('tips-bulk-bar').style.display=state.tipsBulkSelectMode?'flex':'none';
   document.getElementById('tips-bulk-mode-btn').textContent=state.tipsBulkSelectMode?state.t.bulkModeOff:state.t.bulkModeOn;
+  document.getElementById('tips-bulk-count').textContent=state.t.bulkCountFn(0);
   renderTipsList();
 }
 export function tipsSelectAll(){

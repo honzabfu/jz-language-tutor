@@ -3,12 +3,12 @@ import { LANG_META, DEFAULT_PROVIDER_SETTINGS, safeAssign } from './constants.js
 import { I18N } from './i18n.js';
 import { autoResize, playWord } from './dom.js';
 import {
-  previewImport, loadFile, confirmImport, closeImportModal, closeImportOutside,
-  importVocab, exportVocab, openWordModal, closeWordModal, closeWordModalOutside,
+  previewImport, loadFile, confirmImport, closeImportModal,
+  importVocab, exportVocab, openWordModal, closeWordModal,
   saveWord, deleteWord, deleteLearnedWords, toggleBulkMode, bulkSelectAll, deleteSelectedWords,
   swapWordTrans, renderVocabList, cycleSort, onVocabLangChange,
-  openGenerateModal, closeGenModal, closeGenModalOutside, generateVocab, showGenForm, confirmGenerateImport,
-  openDictModal, closeDictModal, closeDictModalOutside, dictLookup, dictAddToVocab, dictKey
+  openGenerateModal, closeGenModal, generateVocab, showGenForm, confirmGenerateImport,
+  openDictModal, closeDictModal, dictLookup, dictAddToVocab, dictKey
 } from './vocab.js';
 import { renderTipsList, onTipsLangChange, setTipsFilter, toggleTipsBulkMode, tipsSelectAll, deleteBulkTips } from './tips.js';
 import { applyI18n, updateModeBadge, updateEmptyState, updateInputPlaceholder } from './updates.js';
@@ -28,7 +28,7 @@ import {
   saveAdvancedSettings, resetAdvancedSettings,
   openCfgEditor, closeCfgEditor, saveCfgEditor,
   exportAll, dismissBackupReminder, disableBackupReminder,
-  importAll, closeBackupModal, closeBackupModalOutside, loadBackupFile, confirmBackupImport,
+  importAll, closeBackupModal, loadBackupFile, confirmBackupImport,
   clearData
 } from './settings.js';
 import { navTo } from './nav.js';
@@ -47,6 +47,8 @@ function populateLangSelects(){
 (function init(){
   try{safeAssign(state.cfg,JSON.parse(localStorage.getItem('lt-cfg')||'{}'));}catch{}
   try{safeAssign(state.langLevels,JSON.parse(localStorage.getItem('lt-levels')||'{}'));}catch{}
+  // ručně editovaný lt-cfg (cfg editor) může obsahovat providerSettings:null — nesmí shodit init
+  if(!state.cfg.providerSettings||typeof state.cfg.providerSettings!=='object')state.cfg.providerSettings={};
   Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{if(!state.cfg.providerSettings[p])state.cfg.providerSettings[p]={...DEFAULT_PROVIDER_SETTINGS[p]};});
   const _ps=state.cfg.providerSettings[state.cfg.provider];
   if(_ps){
@@ -212,7 +214,7 @@ document.getElementById('nav-tips').addEventListener('click',()=>navTo('tips'));
 document.getElementById('nav-settings').addEventListener('click',()=>navTo('settings'));
 
 // Word modal
-document.getElementById('word-modal').addEventListener('click',closeWordModalOutside);
+document.getElementById('word-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeWordModal();});
 document.getElementById('modal-word-speak-btn').addEventListener('click',()=>{const w=document.getElementById('modal-word').value;if(w)playWord(w,state.vocabLang);});
 document.getElementById('modal-swap-btn').addEventListener('click',swapWordTrans);
 document.getElementById('modal-save-btn').addEventListener('click',saveWord);
@@ -220,7 +222,7 @@ document.getElementById('modal-cancel-btn').addEventListener('click',closeWordMo
 document.getElementById('modal-delete-btn').addEventListener('click',deleteWord);
 
 // Import modal
-document.getElementById('import-modal').addEventListener('click',closeImportOutside);
+document.getElementById('import-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeImportModal();});
 document.getElementById('import-text').addEventListener('input',previewImport);
 document.getElementById('import-confirm-btn').addEventListener('click',confirmImport);
 document.getElementById('import-cancel-btn').addEventListener('click',closeImportModal);
@@ -228,14 +230,14 @@ document.getElementById('import-file-btn').addEventListener('click',()=>document
 document.getElementById('file-input').addEventListener('change',loadFile);
 
 // Backup import modal
-document.getElementById('backup-import-modal').addEventListener('click',closeBackupModalOutside);
+document.getElementById('backup-import-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeBackupModal();});
 document.getElementById('backup-import-btn').addEventListener('click',confirmBackupImport);
 document.getElementById('backup-cancel-btn').addEventListener('click',closeBackupModal);
 document.getElementById('backup-file-btn').addEventListener('click',()=>document.getElementById('backup-file-input').click());
 document.getElementById('backup-file-input').addEventListener('change',loadBackupFile);
 
 // Generate modal
-document.getElementById('gen-modal').addEventListener('click',closeGenModalOutside);
+document.getElementById('gen-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeGenModal();});
 document.getElementById('gen-topic').addEventListener('keydown',e=>{if(e.key==='Enter')generateVocab();});
 document.getElementById('gen-action-btn').addEventListener('click',generateVocab);
 document.getElementById('gen-cancel-btn').addEventListener('click',closeGenModal);
@@ -243,7 +245,7 @@ document.getElementById('gen-import-selected-btn').addEventListener('click',conf
 document.getElementById('gen-back-btn').addEventListener('click',showGenForm);
 
 // Dictionary modal
-document.getElementById('dict-modal').addEventListener('click',closeDictModalOutside);
+document.getElementById('dict-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeDictModal();});
 document.getElementById('dict-input').addEventListener('keydown',dictKey);
 document.getElementById('dict-lookup-btn').addEventListener('click',dictLookup);
 document.getElementById('dict-add-btn').addEventListener('click',dictAddToVocab);

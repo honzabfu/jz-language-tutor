@@ -1,4 +1,4 @@
-const CACHE = 'langtutor-v22';
+const CACHE = 'langtutor-v26';
 const ASSETS = [
 './',
 './index.html',
@@ -16,7 +16,10 @@ const ASSETS = [
 './chat.js',
 './settings.js',
 './nav.js',
-'./app.js'
+'./app.js',
+'./manifest.json',
+'./icons/icon-192.png',
+'./icons/icon-512.png'
 ];
 
 self.addEventListener('install', e => {

@@ -1,14 +1,24 @@
 import { state, getLangLevel, defaultCfg } from './state.js';
-import { LANG_META, UI_LANGS, MODELS, MODELS_METADATA, DEFAULT_PROVIDER_SETTINGS, safeAssign } from './constants.js';
+import { LANG_META, UI_LANGS, MODELS, MODELS_METADATA, DEFAULT_PROVIDER_SETTINGS, safeAssign, uid } from './constants.js';
 import { I18N } from './i18n.js';
 import { applyI18n, updateApiKeyHint } from './updates.js';
 import { getVocab, setVocab, setApplyBackupFn } from './vocab.js';
+import { setActiveLang } from './dom.js';
+import { hasApiAccess } from './llm.js';
 import { getSavedTips, setSavedTips } from './tips.js';
 
 const { cfg } = state;
 const { langLevels } = state;
 
 setApplyBackupFn(applyBackup);
+
+function saveCfg(){localStorage.setItem('lt-cfg', JSON.stringify(cfg));}
+
+function showSaveToast(){
+  const toast=document.getElementById('save-toast');
+  toast.textContent=state.t.saveToast;toast.classList.add('visible');
+  setTimeout(()=>toast.classList.remove('visible'),2000);
+}
 
 function _saveProviderSettings(p){
   const ps=cfg.providerSettings[p]||(cfg.providerSettings[p]={});
@@ -87,7 +97,7 @@ export function onProviderChange(p){
   document.getElementById('cfg-model').value=cfg.model;
   toggleProviderFields(p);updateApiKeyHint();updateApiKeyStatus();
   setModelHint(p);
-  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  saveCfg();
   updateProviderBadge();
   if(p==='ollama')fetchAndRebuildModels();
 }
@@ -103,18 +113,18 @@ export function autoSaveProviderCfg(){
   cfg.customUrl=(document.getElementById('cfg-custom-url')?.value||'').trim();
   cfg.customModel=(document.getElementById('cfg-custom-model')?.value||'').trim();
   _saveProviderSettings(cfg.provider);
-  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  saveCfg();
   updateProviderBadge();
   updateApiKeyStatus();
 }
 
 export function onLevelChange(val){const lang=document.getElementById('cfg-level-lang-select').value;langLevels[lang]=val;localStorage.setItem('lt-levels',JSON.stringify(langLevels));}
-export function onFeedbackStyleChange(val){cfg.feedbackStyle=val;localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
-export function onNativeLangChange(val){cfg.nativeLang=val;localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
-export function onFontSizeChange(val){cfg.fontSize=val;applyFontSize(val);localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
-export function onThemeChange(val){cfg.theme=val;applyTheme();localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
-export function onDefaultViewChange(val){cfg.defaultView=val;localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
-export function onCustomInstructionsChange(val){cfg.customInstructions=val.trim();localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
+export function onFeedbackStyleChange(val){cfg.feedbackStyle=val;saveCfg();}
+export function onNativeLangChange(val){cfg.nativeLang=val;saveCfg();}
+export function onFontSizeChange(val){cfg.fontSize=val;applyFontSize(val);saveCfg();}
+export function onThemeChange(val){cfg.theme=val;applyTheme();saveCfg();}
+export function onDefaultViewChange(val){cfg.defaultView=val;saveCfg();}
+export function onCustomInstructionsChange(val){cfg.customInstructions=val.trim();saveCfg();}
 
 export function rebuildModelList(p,models){
   const s=document.getElementById('cfg-model');
@@ -246,7 +256,7 @@ export function updateApiKeyStatus(){
 }
 
 export function onUiLangChange(l){
-  cfg.uiLang=l;state.t=I18N[l]||I18N.cs;applyI18n();localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  cfg.uiLang=l;state.t=I18N[l]||I18N.cs;applyI18n();saveCfg();
 }
 
 export function applyFontSize(size){
@@ -282,18 +292,15 @@ export function saveSettings(){
   cfg.theme=document.getElementById('cfg-theme').value;
   applyTheme();
   cfg.defaultView=document.getElementById('cfg-default-view').value;
-  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  saveCfg();
   updateProviderBadge();
-  const t=state.t;
-  const toast=document.getElementById('save-toast');
-  toast.textContent=t.saveToast;toast.classList.add('visible');
-  setTimeout(()=>toast.classList.remove('visible'),2000);
+  showSaveToast();
   updateApiKeyStatus();
 }
 
 export function updateProviderBadge(){
   const lb={anthropic:'Claude',openai:'GPT',gemini:'Gemini',ollama:'Ollama',custom:'Custom'};
-  const ok=cfg.provider==='ollama'||(cfg.provider==='custom'&&!!cfg.customUrl&&!!cfg.customModel)||(cfg.apiKey&&cfg.apiKey.length>8);
+  const ok=hasApiAccess();
   const text=lb[cfg.provider]||cfg.provider;
   const cls='provider-badge'+(ok?'':' warn');
   ['provider-badge','quiz-provider-badge'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=text;el.className=cls;}});
@@ -329,7 +336,6 @@ export function onAdvTemperatureDefaultChange(checked){
 }
 
 export function saveAdvancedSettings(){
-  const t=state.t;
   const mt=parseInt(document.getElementById('cfg-adv-max-tokens').value,10);
   cfg.maxTokens=(!isNaN(mt)&&mt>=128&&mt<=8192)?mt:8192;
   const useProviderDefault=document.getElementById('cfg-adv-temperature-default').checked;
@@ -341,11 +347,9 @@ export function saveAdvancedSettings(){
   const _sebv=parseFloat(document.getElementById('cfg-sm-easy-bonus').value);cfg.smEasyBonus=(!isNaN(_sebv)&&_sebv>=1.0&&_sebv<=1.5)?_sebv:1.0;
   const _ttsv=parseFloat(document.getElementById('cfg-tts-rate').value);cfg.ttsRate=(!isNaN(_ttsv)&&_ttsv>=0.5&&_ttsv<=1.5)?_ttsv:0.9;
   cfg.vocabImportDuplicates=document.getElementById('cfg-vocab-import-dups').value;
-  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  saveCfg();
   closeAdvancedSettings();
-  const toast=document.getElementById('save-toast');
-  toast.textContent=t.saveToast;toast.classList.add('visible');
-  setTimeout(()=>toast.classList.remove('visible'),2000);
+  showSaveToast();
 }
 
 export function resetAdvancedSettings(){
@@ -362,7 +366,7 @@ export function resetAdvancedSettings(){
   document.getElementById('cfg-sm-easy-bonus').value=1.0;document.getElementById('cfg-sm-easy-bonus-val').textContent='1.00';
   document.getElementById('cfg-tts-rate').value=0.9;document.getElementById('cfg-tts-rate-val').textContent='0.9';
   document.getElementById('cfg-vocab-import-dups').value='skip';
-  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  saveCfg();
 }
 
 export const _SETTINGS_KEYS=['lt-backup-dismissed','lt-backup-last-count','lt-backup-reminder-on','lt-cfg','lt-lang','lt-levels','lt-onboarded','lt-pwa-dismissed'];
@@ -402,13 +406,20 @@ export function saveCfgEditor(){
   safeAssign(cfg,savedCfg);
   if(!cfg.providerSettings||typeof cfg.providerSettings!=='object')cfg.providerSettings={};
   Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{if(!cfg.providerSettings[p])cfg.providerSettings[p]={...DEFAULT_PROVIDER_SETTINGS[p]};});
+  saveCfg();
+  // lt-levels a lt-lang se musí znovu načíst z právě přepsaného localStorage,
+  // jinak je příští uložení tiše přepíše starou kopií z paměti
+  Object.keys(langLevels).forEach(k=>delete langLevels[k]);
+  try{safeAssign(langLevels,JSON.parse(localStorage.getItem('lt-levels')||'{}'));}catch{}
+  const _sl=localStorage.getItem('lt-lang');
+  if(_sl&&LANG_META[_sl])setActiveLang(_sl);
   state.t=I18N[cfg.uiLang]||I18N.cs;
   closeCfgEditor();
+  applyFontSize(cfg.fontSize||'medium');
+  applyTheme();
   applyI18n();
   populateSettingsUI();
-  const toast=document.getElementById('save-toast');
-  toast.textContent=state.t.saveToast;toast.classList.add('visible');
-  setTimeout(()=>toast.classList.remove('visible'),2000);
+  showSaveToast();
 }
 
 export function exportAll(){
@@ -463,7 +474,6 @@ export function importAll(){
 }
 
 export function closeBackupModal(){document.getElementById('backup-import-modal').classList.remove('open');}
-export function closeBackupModalOutside(e){if(e.target===document.getElementById('backup-import-modal'))closeBackupModal();}
 
 export function loadBackupFile(e){
   const f=e.target.files[0];if(!f)return;
@@ -477,20 +487,46 @@ export function confirmBackupImport(){
   const t=state.t;
   const raw=document.getElementById('backup-import-text').value.trim();
   if(!raw)return;
-  try{const data=JSON.parse(raw);closeBackupModal();applyBackup(data);}catch{alert(t.alertInvalidJson);}
+  let data;
+  try{data=JSON.parse(raw);}catch{alert(t.alertInvalidJson);return;}
+  closeBackupModal();
+  try{applyBackup(data);}catch(e){alert(`${t.errGeneric} ${e.message}`);}
+}
+
+// Adresy, na které llm.js odesílá API klíče — jejich změnu při importu zálohy musí uživatel potvrdit
+function _collectEndpointUrls(c){
+  const urls={};
+  if(!c||typeof c!=='object')return urls;
+  ['anthropicProxyUrl','openaiEndpointUrl','geminiEndpointUrl','ollamaUrl','customUrl'].forEach(k=>{if(c[k])urls[k]=String(c[k]);});
+  const ps=c.providerSettings;
+  if(ps&&typeof ps==='object')Object.keys(ps).forEach(p=>{const s=ps[p];if(s&&typeof s==='object')['proxyUrl','endpointUrl','url'].forEach(k=>{if(s[k])urls[`${p}.${k}`]=String(s[k]);});});
+  return urls;
 }
 
 export function applyBackup(data){
-  if(data.cfg)safeAssign(cfg,data.cfg);
+  if(data.cfg){
+    const cur=_collectEndpointUrls(cfg);
+    const changed=Object.entries(_collectEndpointUrls(data.cfg)).filter(([k,v])=>v!==(cur[k]||''));
+    if(changed.length&&!confirm(state.t.sImportUrlWarningFn(changed.map(([k,v])=>`${k}: ${v}`).join('\n'))))return;
+    safeAssign(cfg,data.cfg);
+  }
   if(data.langLevels)safeAssign(langLevels,data.langLevels);
   Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{if(!cfg.providerSettings||typeof cfg.providerSettings!=='object')cfg.providerSettings={};if(!cfg.providerSettings[p])cfg.providerSettings[p]={...DEFAULT_PROVIDER_SETTINGS[p]};});
-  if(data.vocab)Object.keys(data.vocab).forEach(l=>{if(LANG_META[l]&&Array.isArray(data.vocab[l]))setVocab(l,data.vocab[l]);});
-  if(data.tips)Object.keys(data.tips).forEach(l=>{if(LANG_META[l]&&Array.isArray(data.tips[l]))setSavedTips(l,data.tips[l]);});
-  localStorage.setItem('lt-cfg',JSON.stringify(cfg));
+  // Položky s nestringovými poli by po uložení trvale shazovaly renderVocabList/renderTipsList
+  const _vocabItems=arr=>arr
+    .filter(w=>w&&typeof w==='object'&&typeof w.word==='string'&&typeof w.translation==='string')
+    .map(w=>({...w,id:typeof w.id==='string'&&w.id?w.id:uid(),notes:typeof w.notes==='string'?w.notes:'',tags:Array.isArray(w.tags)?w.tags.map(String):[],sm2:(w.sm2&&typeof w.sm2==='object')?w.sm2:undefined}));
+  const _tipItems=arr=>arr
+    .filter(tp=>tp&&typeof tp==='object'&&typeof tp.text==='string')
+    .map(tp=>({...tp,id:typeof tp.id==='string'&&tp.id?tp.id:uid(),date:typeof tp.date==='number'?tp.date:Date.now()}));
+  if(data.vocab)Object.keys(data.vocab).forEach(l=>{if(LANG_META[l]&&Array.isArray(data.vocab[l]))setVocab(l,_vocabItems(data.vocab[l]));});
+  if(data.tips)Object.keys(data.tips).forEach(l=>{if(LANG_META[l]&&Array.isArray(data.tips[l]))setSavedTips(l,_tipItems(data.tips[l]));});
+  saveCfg();
   localStorage.setItem('lt-levels',JSON.stringify(langLevels));
   localStorage.setItem('lt-backup-last-count',String(getTotalVocabCount()));
   localStorage.removeItem('lt-backup-dismissed');
   state.t=I18N[cfg.uiLang]||I18N.cs;
+  applyFontSize(cfg.fontSize||'medium');applyTheme();
   applyI18n();populateSettingsUI();updateProviderBadge();
   alert(state.t.alertBackupRestored);
 }

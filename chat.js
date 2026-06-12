@@ -1,8 +1,8 @@
 import { state, getLangLevel, getNativeLangName } from './state.js';
 import { LANG_META, esc, renderMarkdown } from './constants.js';
-import { safeLLMStream, abortPending, resolveErr, clean } from './llm.js';
+import { safeLLMStream, abortPending, resolveErr, clean, hasApiAccess } from './llm.js';
 import { getVocab } from './vocab.js';
-import { syncLangSelectors } from './dom.js';
+import { setActiveLang } from './dom.js';
 import { saveTip, attachFeedbackCard } from './tips.js';
 import { updateModeBadge, updateEmptyState, updateInputPlaceholder } from './updates.js';
 
@@ -12,9 +12,7 @@ export function onSettingsLevelLangChange(l){
   document.getElementById('cfg-level').value=getLangLevel(l);
 }
 
-export function setMode(lesson){cfg.lessonMode=lesson;updateModeBadge();}
-
-export function toggleLessonMode(){setMode(!cfg.lessonMode);}
+export function setMode(lesson){cfg.lessonMode=lesson;updateModeBadge();localStorage.setItem('lt-cfg',JSON.stringify(cfg));}
 
 export function clearChat(){
   abortPending();
@@ -28,7 +26,7 @@ export function clearChat(){
 }
 
 export function onLangChange(l){
-  state.currentLang=l;state.vocabLang=l;localStorage.setItem('lt-lang',l);syncLangSelectors(l);
+  setActiveLang(l);
   updateEmptyState();updateInputPlaceholder();updateModeBadge();clearChat();
   const lls=document.getElementById('cfg-level-lang-select');
   if(lls){lls.value=l;document.getElementById('cfg-level').value=getLangLevel(l);}
@@ -80,12 +78,13 @@ export async function sendMessage(){
   const t=state.t;
   const input=document.getElementById('msg-input');
   const text=input.value.trim();if(!text)return;
-  if(cfg.provider!=='ollama'&&cfg.provider!=='custom'&&(!cfg.apiKey||cfg.apiKey.length<8)){appendMsg('tutor',t.errNoKey,null);return;}
+  if(!hasApiAccess()){appendMsg('tutor',t.errNoKey,null);return;}
   abortPending();
   state._abortCtrl=new AbortController();
   input.value='';input.style.height='auto';document.getElementById('send-btn').disabled=true;
   appendMsg('user',text,null);
-  state.chatHistory.push({role:'user',content:text});
+  const userMsg={role:'user',content:text};
+  state.chatHistory.push(userMsg);
   setTyping(true);
   let streamingBubble=null;
   let displayedText='';
@@ -109,9 +108,16 @@ export async function sendMessage(){
     if(msgWrap)attachFeedbackCard(msgWrap,parsed.feedback);
   }catch(err){
     setTyping(false);
-    if(err.name==='AbortError'){if(streamingBubble&&displayedText)streamingBubble.finalize(displayedText,null);return;}
-    if(streamingBubble&&displayedText){streamingBubble.finalize(displayedText,null);}
-    else{appendMsg('tutor',resolveErr(err),null);}
+    // userMsg hledáme přes indexOf — abortnutý starý request může doběhnout až poté,
+    // co nový sendMessage do historie přidal další zprávy
+    const idx=state.chatHistory.indexOf(userMsg);
+    if(streamingBubble&&displayedText){
+      streamingBubble.finalize(displayedText,null);
+      if(idx>=0)state.chatHistory.splice(idx+1,0,{role:'assistant',content:displayedText});
+    }else if(idx>=0){
+      state.chatHistory.splice(idx,1);
+    }
+    if(err.name!=='AbortError')appendMsg('tutor',resolveErr(err),null);
   }
 }
 
@@ -143,7 +149,7 @@ export function renderFeedback(tab){
 
 export function makeReplyExtractor(onDisplayText){
   const KEY='"reply"';
-  let st='before',km=0,escaped=false;
+  let st='before',km=0,escaped=false,uni=null; // uni !== null → sbírají se 4 hex znaky \uXXXX
   return function feed(chunk){
     let out='';
     for(const ch of chunk){
@@ -157,7 +163,15 @@ export function makeReplyExtractor(onDisplayText){
         if(ch==='"')st='in_reply';
         else if(ch!==' '&&ch!=='\t'&&ch!=='\n'&&ch!=='\r'){st='before';km=ch===KEY[0]?1:0;}
       }else if(st==='in_reply'){
-        if(escaped){out+=ch==='n'?'\n':ch==='t'?'\t':ch;escaped=false;}
+        if(uni!==null){
+          uni+=ch;
+          if(uni.length===4){const code=parseInt(uni,16);if(!isNaN(code))out+=String.fromCharCode(code);uni=null;}
+        }
+        else if(escaped){
+          if(ch==='u')uni='';
+          else out+=ch==='n'?'\n':ch==='t'?'\t':ch==='r'?'\r':ch;
+          escaped=false;
+        }
         else if(ch==='\\'){escaped=true;}
         else if(ch==='"'){st='done';}
         else{out+=ch;}

@@ -1,8 +1,8 @@
 import { state } from './state.js';
 import { getLangLevel, getNativeLangName, getUiLocale } from './state.js';
 import { esc, uid, LANG_META, SORT_MODES } from './constants.js';
-import { safeLLM, abortPending, resolveErr, clean } from './llm.js';
-import { syncLangSelectors, playWord } from './dom.js';
+import { safeLLM, abortPending, resolveErr, clean, hasApiAccess } from './llm.js';
+import { setActiveLang, playWord } from './dom.js';
 
 const { cfg, langLevels } = state;
 
@@ -15,7 +15,7 @@ export function newSM2(){return{interval:1,ef:2.5,due:Date.now(),reps:0};}
 // ── VOCAB VIEW ──
 
 export function onVocabLangChange(l){
-  state.currentLang=l;state.vocabLang=l;localStorage.setItem('lt-lang',l);syncLangSelectors(l);
+  setActiveLang(l);
   const lls=document.getElementById('cfg-level-lang-select');
   if(lls){lls.value=l;document.getElementById('cfg-level').value=getLangLevel(l);}
   renderVocabList();
@@ -55,7 +55,7 @@ export function renderVocabList(){
     const inner=`<div class="wi"><div class="word">${esc(w.word)}</div><div class="trans">${esc(w.translation)}${w.notes?` · <em>${esc(w.notes)}</em>`:''}</div>${tagsHtml}</div><button class="speak-btn" title="${t.pronounceBtn||'Hear pronunciation'}">🔊</button><span class="sm2-badge ${cls}">${badge}</span>`;
     if(state.bulkSelectMode){
       el.innerHTML=`<input type="checkbox" class="cb"${sel?' checked':''}>${inner}`;
-      el.addEventListener('click',()=>toggleItemSelect(w.id));
+      el.addEventListener('click',()=>toggleItemSelect(w.id,el));
     }else{
       el.innerHTML=inner;
       el.addEventListener('click',()=>openWordModal(w));
@@ -100,7 +100,6 @@ export function openWordModal(word){
   setTimeout(()=>document.getElementById('modal-word').focus(),100);
 }
 export function closeWordModal(){document.getElementById('word-modal').classList.remove('open');state.editingWordId=null;}
-export function closeWordModalOutside(e){if(e.target===document.getElementById('word-modal'))closeWordModal();}
 export function saveWord(){
   const t=state.t;
   const word=document.getElementById('modal-word').value.trim();
@@ -141,10 +140,14 @@ export function toggleBulkMode(){
   document.getElementById('bulk-count').textContent=state.t.bulkCountFn(0);
   renderVocabList();
 }
-export function toggleItemSelect(id){
-  if(state.selectedIds.has(id))state.selectedIds.delete(id);else state.selectedIds.add(id);
+// Přepíná jen kliknutý řádek in-place — full re-render při každém tapu
+// znamenal parse celého slovníku, přestavbu seznamu a ztrátu scroll pozice
+export function toggleItemSelect(id,el){
+  const sel=!state.selectedIds.has(id);
+  if(sel)state.selectedIds.add(id);else state.selectedIds.delete(id);
   document.getElementById('bulk-count').textContent=state.t.bulkCountFn(state.selectedIds.size);
-  renderVocabList();
+  el.classList.toggle('selected',sel);
+  const cb=el.querySelector('.cb');if(cb)cb.checked=sel;
 }
 export function bulkSelectAll(){
   const q=(document.getElementById('vocab-search').value||'').toLowerCase();
@@ -171,7 +174,6 @@ export function importVocab(){
   document.getElementById('import-modal').classList.add('open');
 }
 export function closeImportModal(){document.getElementById('import-modal').classList.remove('open');}
-export function closeImportOutside(e){if(e.target===document.getElementById('import-modal'))closeImportModal();}
 export function loadFile(e){
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
@@ -183,39 +185,54 @@ export function previewImport(){
   const raw=document.getElementById('import-text').value.trim();
   if(!raw){document.getElementById('import-preview').textContent='';return;}
   try{const d=JSON.parse(raw);if(d.version&&d.vocab){document.getElementById('import-preview').textContent=t.importPreviewBackup;return;}}catch{}
-  const lines=raw.split('\n').filter(l=>l.trim()&&!l.startsWith('#'));
-  document.getElementById('import-preview').textContent=t.importPreviewLinesFn(lines.length);
+  document.getElementById('import-preview').textContent=t.importPreviewLinesFn(importRows(raw).length);
 }
-// Parser jednoho CSV řádku s podporou uvozovek dle RFC 4180 ("" = literální uvozovka)
-function parseCsvLine(line){
-  const out=[];let cur='',inQ=false;
-  for(let i=0;i<line.length;i++){
-    const c=line[i];
+// CSV parser celého textu dle RFC 4180 ("" = literální uvozovka) — pole v uvozovkách
+// smí obsahovat čárky i nové řádky (exportVocab je tak legitimně produkuje)
+function parseCsv(text){
+  const rows=[];let row=[],cur='',inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
     if(inQ){
-      if(c==='"'){if(line[i+1]==='"'){cur+='"';i++;}else inQ=false;}
+      if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else inQ=false;}
       else cur+=c;
     }
     else if(c==='"'&&cur===''){inQ=true;}
-    else if(c===','){out.push(cur);cur='';}
+    else if(c===','){row.push(cur);cur='';}
+    else if(c==='\n'||c==='\r'){
+      if(c==='\r'&&text[i+1]==='\n')i++;
+      row.push(cur);rows.push(row);row=[];cur='';
+    }
     else cur+=c;
   }
-  out.push(cur);
-  return out;
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows;
+}
+// Řádky k importu: vynechá prázdné a komentáře (#); komentář uvnitř pole v uvozovkách komentářem není
+function importRows(raw){
+  return parseCsv(raw).filter(r=>r.some(f=>f.trim())&&!(r[0]||'').startsWith('#'));
 }
 
 export function confirmImport(){
   const t=state.t;
   const raw=document.getElementById('import-text').value.trim();if(!raw)return;
-  try{const d=JSON.parse(raw);if(d.version&&d.vocab){applyBackupImport(d);closeImportModal();return;}}catch{}
+  let backup=null;
+  try{const d=JSON.parse(raw);if(d.version&&d.vocab)backup=d;}catch{}
+  if(backup){
+    try{applyBackupImport(backup);}catch(e){alert(`${t.errGeneric} ${e.message}`);}
+    closeImportModal();return;
+  }
   const lang=document.getElementById('import-lang-sel').value;
-  const lines=raw.split('\n').filter(l=>l.trim()&&!l.startsWith('#'));
   const arr=getVocab(lang);
   const existing=new Map(arr.map(w=>[w.word.toLowerCase(),w]));
   const dupMode=cfg.vocabImportDuplicates||'skip';
   let added=0,skipped=0,merged=0;
-  lines.forEach(line=>{
-    let parts=parseCsvLine(line);
-    if(parts.length<2){const tp=line.split('\t');if(tp.length<2)return;parts=tp;}
+  // Sloupne anti-formula-injection prefix ' z vlastního exportu (viz exportVocab)
+  const unesc=v=>/^'[=+\-@\t\r]/.test(v)?v.slice(1):v;
+  importRows(raw).forEach(row=>{
+    let parts=row;
+    if(parts.length<2){const tp=(parts[0]||'').split('\t');if(tp.length<2)return;parts=tp;}
+    parts=parts.map(unesc);
     const rev=document.getElementById('import-col-order').value==='reverse';
     const word=(parts[rev?1:0]||'').trim();const trans=(parts[rev?0:1]||'').trim();
     if(!word||!trans)return;
@@ -237,7 +254,8 @@ export function confirmImport(){
 }
 export function exportVocab(){
   const arr=getVocab(state.vocabLang);
-  const cell=v=>{v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  // Prefix ' neutralizuje formula injection při otevření v Excelu/Sheets; confirmImport ho zpětně sloupne
+  const cell=v=>{v=String(v??'');if(/^[=+\-@\t\r]/.test(v))v="'"+v;return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
   const lines=arr.map(w=>[w.word,w.translation,w.notes||'',(w.tags||[]).join('|')].map(cell).join(','));
   const blob=new Blob([lines.join('\n')],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`vocab-${state.vocabLang}-${new Date().toISOString().slice(0,10)}.csv`;a.click();
@@ -259,8 +277,7 @@ export function openDictModal(word){
   document.getElementById('dict-modal').classList.add('open');
   setTimeout(()=>{const inp=document.getElementById('dict-input');inp.focus();if(word)dictLookup();},100);
 }
-export function closeDictModal(){document.getElementById('dict-modal').classList.remove('open');}
-export function closeDictModalOutside(e){if(e.target===document.getElementById('dict-modal'))closeDictModal();}
+export function closeDictModal(){abortPending();document.getElementById('dict-modal').classList.remove('open');}
 export function dictKey(e){if(e.key==='Enter')dictLookup();}
 export async function dictLookup(){
   const word=document.getElementById('dict-input').value.trim();if(!word)return;
@@ -272,13 +289,15 @@ export async function dictLookup(){
   const nativeLang=getNativeLangName();
   const sys=`You are a concise bilingual ${targetLang}–${nativeLang} dictionary. Reply with ONLY valid JSON, no markdown fences, no extra text. Keep all fields brief.`;
   const userPrompt=`Look up: "${word}"\nReturn JSON with fields:\n- "entry": plain-text dictionary entry in ${targetLang}, max 3 lines: word+colon on line 1, grammatical category+main translations on line 2, one short usage example in ${targetLang} on line 3\n- "word": the headword/lemma in ${targetLang}\n- "translation": main translations in ${nativeLang} as short comma-separated string (max 5 words)\n- "notes": one short grammatical note or typical collocation in ${targetLang} (e.g. verb government, gender, typical preposition); empty string if not applicable`;
+  abortPending();state._abortCtrl=new AbortController();
   try{
-    const raw=await safeLLM([{role:'user',content:userPrompt}],sys,4096);
+    const raw=await safeLLM([{role:'user',content:userPrompt}],sys,4096,state._abortCtrl.signal);
     let json;try{json=JSON.parse(clean(raw));}catch{throw new Error(t.errParseLlm);}
     dictResult=json;
     resEl.innerHTML=`<div class="dict-entry">${esc(json.entry)}</div>`;
     document.getElementById('dict-add-btn').style.display='';
   }catch(err){
+    if(err.name==='AbortError')return;
     resEl.innerHTML=`<div class="dict-msg" style="color:var(--err)">${resolveErr(err)}</div>`;
   }
 }
@@ -292,9 +311,6 @@ export function dictAddToVocab(){
 
 // ── GENERATE VOCAB ──
 
-export function hasApiAccess(){
-  return cfg.provider==='ollama'||(cfg.provider==='custom'&&!!cfg.customUrl&&!!cfg.customModel)||(cfg.apiKey&&cfg.apiKey.length>8);
-}
 export function openGenerateModal(){
   document.getElementById('gen-topic').value='';
   const hasApi=hasApiAccess();const t=state.t;
@@ -306,7 +322,6 @@ export function openGenerateModal(){
   setTimeout(()=>document.getElementById('gen-topic').focus(),100);
 }
 export function closeGenModal(){abortPending();document.getElementById('gen-modal').classList.remove('open');}
-export function closeGenModalOutside(e){if(e.target===document.getElementById('gen-modal'))closeGenModal();}
 export function showGenForm(){
   document.getElementById('gen-form').style.display='';
   document.getElementById('gen-preview').style.display='none';
