@@ -48,8 +48,8 @@ Respond ONLY with JSON: {"question":"<question in ${meta.name}; if the task requ
   try{raw=await safeLLM([{role:'user',content:quizPrompt}],quizSys,8192,state._abortCtrl.signal);}
   catch(err){setQuizTyping(false);if(err.name==='AbortError')return;appendQuizMsg('tutor',resolveErr(err));return;}
   setQuizTyping(false);
-  try{const p=JSON.parse(clean(raw));appendQuizMsg('tutor',p.question);state.quizHistory.push({role:'assistant-question',word:p.targetWord,content:p.question});}
-  catch{appendQuizMsg('tutor',clean(raw));}
+  try{const p=JSON.parse(clean(raw));appendQuizMsg('tutor',p.question);state.quizHistory.push({role:'assistant-question',word:p.targetWord||word.word,content:p.question});}
+  catch{const q=clean(raw);appendQuizMsg('tutor',q);state.quizHistory.push({role:'assistant-question',word:word.word,content:q});}
 }
 
 export function quizKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();quizSend();}}
