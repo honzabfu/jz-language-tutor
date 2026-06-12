@@ -66,6 +66,7 @@ export function toggleTipsBulkMode(){
   state.tipsBulkSelectMode=!state.tipsBulkSelectMode;state.selectedTipIds.clear();
   document.getElementById('tips-bulk-bar').style.display=state.tipsBulkSelectMode?'flex':'none';
   document.getElementById('tips-bulk-mode-btn').textContent=state.tipsBulkSelectMode?state.t.bulkModeOff:state.t.bulkModeOn;
+  document.getElementById('tips-bulk-count').textContent=state.t.bulkCountFn(0);
   renderTipsList();
 }
 export function tipsSelectAll(){
