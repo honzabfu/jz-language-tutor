@@ -84,20 +84,25 @@ export async function readSSE(response,onData){
   const reader=response.body.getReader();
   const decoder=new TextDecoder();
   let buf='';
+  const handleLine=line=>{
+    if(!line.startsWith('data: '))return false;
+    const data=line.slice(6).trim();
+    if(data==='[DONE]')return true;
+    try{onData(JSON.parse(data));}catch{}
+    return false;
+  };
   while(true){
     const{done,value}=await reader.read();
     if(done)break;
     buf+=decoder.decode(value,{stream:true});
     const lines=buf.split('\n');
     buf=lines.pop();
-    for(const line of lines){
-      if(!line.startsWith('data: '))continue;
-      const data=line.slice(6).trim();
-      if(data==='[DONE]')return;
-      try{onData(JSON.parse(data));}catch{}
-      await new Promise(r=>setTimeout(r,0));
-    }
+    for(const line of lines)if(handleLine(line))return;
+    // yield jednou per network chunk, ať se UI stihne překreslit
+    await new Promise(r=>setTimeout(r,0));
   }
+  buf+=decoder.decode();
+  if(buf)handleLine(buf); // poslední event bez koncového \n (nekonformní endpoint/proxy)
 }
 export async function callAnthropicStream(msgs,sys,maxTokens,signal,onChunk){
   if(!cfg.apiKey)throw new Error('NO_KEY');
@@ -157,16 +162,20 @@ export async function callOllamaStream(msgs,sys,maxTokens,signal,onChunk){
   const reader=res.body.getReader();
   const decoder=new TextDecoder();
   let buf='',full='';
+  const handleLine=line=>{
+    if(!line.trim())return false;
+    try{const data=JSON.parse(line);const text=data.message?.content;if(text){onChunk(text);full+=text;}if(data.done){if(data.done_reason==='length')throw new Error('MAX_TOKENS');return true;}}catch(e){if(e.message==='MAX_TOKENS')throw e;}
+    return false;
+  };
   while(true){
     const{done,value}=await reader.read();
     if(done)break;
     buf+=decoder.decode(value,{stream:true});
     const lines=buf.split('\n');buf=lines.pop();
-    for(const line of lines){
-      if(!line.trim())continue;
-      try{const data=JSON.parse(line);const text=data.message?.content;if(text){onChunk(text);full+=text;}if(data.done){if(data.done_reason==='length')throw new Error('MAX_TOKENS');return full;}}catch(e){if(e.message==='MAX_TOKENS')throw e;}
-    }
+    for(const line of lines)if(handleLine(line))return full;
   }
+  buf+=decoder.decode();
+  if(buf)handleLine(buf); // poslední řádek bez koncového \n
   return full;
 }
 export async function callCustomStream(msgs,sys,maxTokens,signal,onChunk){
