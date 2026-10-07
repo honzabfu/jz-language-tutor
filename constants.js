@@ -1,3 +1,5 @@
+// Seznam modelů, ceny a doporučení: naposledy revidováno 2026-10-07.
+// Revidovat zhruba čtvrtletně — postup viz CLAUDE.md → „Model list review“.
 // minReasoning: nejnižší úroveň přemýšlení, kterou model přijme (Anthropic output_config.effort,
 // OpenAI reasoning_effort, Gemini thinkingConfig.thinkingLevel). Chybí → model bez parametru
 // nepřemýšlí nebo ho nepodporuje (Haiku 4.5, Gemini 3.1 Flash-Lite) a neposílá se nic.

@@ -36,7 +36,7 @@ python3 -m http.server 8080
 npx serve .
 ```
 
-No lint, no tests. Deployment is via `.github/workflows/deploy.yml`:
+No lint, no unit tests. `tools/live-models-test.mjs` runs every model in `MODELS_METADATA` against the live APIs (see *Model list review*); `tools/` is not deployed. Deployment is via `.github/workflows/deploy.yml`:
 
 - **`main`** → deploys to `gh-pages` branch root → `honzabfu.github.io/jz-language-tutor/`
 - **Any other branch** → deploys to `gh-pages/preview/<branch>/` → `honzabfu.github.io/jz-language-tutor/preview/<branch>/`
@@ -123,6 +123,16 @@ Entry points `safeLLM(msgs, sys, maxTokens, signal)` and `safeLLMStream(…, onC
 `cfg.temperature` is sent only to `ollama`/`custom` (`supportsTemperature()` in `llm.js`) — current cloud reasoning models (Claude 4.7+, GPT-5+, Gemini 3.x+) reject or ignore non-default sampling; the advanced-settings temperature controls are disabled for cloud providers. By default `_minReasoning()` (`llm.js`) sends the lowest reasoning level from `MODELS_METADATA[].minReasoning` (Anthropic `output_config.effort`, OpenAI `reasoning_effort`, Gemini `generationConfig.thinkingConfig.thinkingLevel`); models without `minReasoning` (Haiku 4.5, Gemini 3.1 Flash-Lite, anything fetched via "Load models", Ollama, custom) get no reasoning parameter. `cfg.fullReasoning` (advanced settings) disables this. Parsers take only text blocks/parts (Anthropic skips `thinking` blocks, Gemini skips `thought` parts and joins all text parts). Refusals (Anthropic `stop_reason: "refusal"`, OpenAI `content_filter`/`refusal`, Gemini `SAFETY`/`PROHIBITED_CONTENT`/… or `promptFeedback.blockReason`) throw `REFUSAL`; an empty reply throws `EMPTY_RESPONSE` (both mapped in `resolveErr()`).
 
 API keys are sent in headers, never in URLs (Gemini: `x-goog-api-key`). Anthropic direct browser calls require the `anthropic-dangerous-direct-browser-access: true` header. All streaming paths detect truncation (stop/finish reason) and throw `MAX_TOKENS`, same as the non-streaming ones.
+
+### Model list review
+
+Model IDs, prices and recommendations go stale — review roughly **quarterly**. **Last reviewed: 2026-10-07** (keep this date and the comment above `MODELS_METADATA` in `constants.js` in sync).
+
+1. **Check official sources** (not aggregators): Anthropic models overview, OpenAI `developers.openai.com/api/docs/models` (+ per-model pages for Chat Completions support and reasoning effort levels), Gemini `ai.google.dev/gemini-api/docs/models` + `/pricing` + `/thinking`, `ollama.com/library`. Also look for deprecations of sampling/thinking parameters (cf. #166).
+2. **Update `MODELS_METADATA`**: IDs, `costEstimate` (USD per 1M tokens), `recommended`, `minReasoning` (lowest level each model accepts; omit if the model doesn't reason without a parameter). Order matters — the first entry is the default model for new users, so keep the cheapest recommended model first. Drop models the provider no longer recommends for new projects (saved user selections stay available via `rebuildModelList`).
+3. **Update texts**: `modelHint*` in all locales of `i18n.js`; README pricing example and the "more expensive alternatives" sentence (cs + en).
+4. **Live test**: `node tools/live-models-test.mjs <backup.json> [provider…]` — keys are read from an app backup export, never commit it. Every call must pass (sync + stream, minimal + full reasoning); also eyeball the translations — a model that answers wrongly/incompletely should not be `recommended`.
+5. Bump version + SW cache key, update the review date here and in `constants.js`.
 
 ### I18N (`i18n.js`, `updates.js`)
 
