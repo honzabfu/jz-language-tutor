@@ -366,22 +366,22 @@ Celkem: **~200–260 tokenů na jedno vyhledání.**
 
 Maximální výstupní budget: **8 192 tokenů** (pro ≤ 40 slov), případně `počet × 200` pro 50 slov.
 
-> **GPT-5 modely (reasoning):** Tyto modely interně „přemýšlí" — tokeny spotřebované na reasoning se počítají do stejného budgetu jako viditelná odpověď. Proto je budget nastaven výrazně výše (8 192), aby po odečtení reasoning tokenů (~2 000–3 000) zbylo dost místa pro samotná slovíčka.
+> **Reasoning modely (GPT-5+, Claude Sonnet/Opus 5.5, Gemini 3.x):** Tyto modely interně „přemýšlí" — tokeny spotřebované na reasoning se počítají do stejného budgetu jako viditelná odpověď. Proto je budget nastaven výrazně výše (8 192), aby po odečtení reasoning tokenů (~2 000–3 000) zbylo dost místa pro samotná slovíčka.
 
 #### Orientační ceny
 
-Příklad pro **gemini-2.5-flash** ($0,50/M vstupních, $1,50/M výstupních tokenů):
+Příklad pro **gemini-3.1-flash-lite** ($0,25/M vstupních, $1,50/M výstupních tokenů):
 
 | Scénář                              | Tokeny                    | Cena      |
 |-------------------------------------|---------------------------|-----------|
-| 1 chatová zpráva                    | ~700 in + ~350 out        | ~$0,001   |
-| Hodina aktivního chatu (~50 zpráv)  | ~35 000 in + ~17 500 out  | ~$0,04    |
+| 1 chatová zpráva                    | ~700 in + ~350 out        | ~$0,0007  |
+| Hodina aktivního chatu (~50 zpráv)  | ~35 000 in + ~17 500 out  | ~$0,035   |
 | Kvíz session (10 kol)               | ~3 500 celkem             | ~$0,003   |
 | 1 vyhledání ve slovníku             | ~110 in + ~150 out        | ~$0,0003  |
-| Generování 10 slovíček              | ~100 in + ~500 out        | ~$0,0009  |
+| Generování 10 slovíček              | ~100 in + ~500 out        | ~$0,0008  |
 | Generování 50 slovíček              | ~100 in + ~2 500 out      | ~$0,004   |
 
-Claude Sonnet a GPT-5 jsou výrazně dražší alternativy. Ollama (lokální) je bez poplatků.
+Gemini 3.8 Flash, Claude Sonnet 5.5 a GPT-6.1 Sol jsou dražší alternativy; reasoning modely navíc spotřebují tokeny na přemýšlení. Ollama (lokální) je bez poplatků.
 
 > **Tip:** Lesson mód přidává celý seznam slovíček do každého requestu — při velké slovní zásobě (50 slov) zdražuje chat přibližně o 30–40 %.
 
@@ -390,7 +390,7 @@ Claude Sonnet a GPT-5 jsou výrazně dražší alternativy. Ollama (lokální) j
 - [ ] Statistiky pokroku (růst slovní zásoby, přesnost v čase)
 - [ ] Učební cíle s progress barem
 - [x] Španělština jako třetí jazyk rozhraní (CS/EN/ES)
-- [x] Pokročilá nastavení LLM — overlay „Here Be Dragons": max. tokeny, teplota, přepínač streamingu
+- [x] Pokročilá nastavení LLM — overlay „Here Be Dragons": max. tokeny, teplota (jen Ollama / vlastní endpoint), přepínač streamingu
 - [x] Onboarding banner pro nové uživatele — průvodce prvním nastavením
 - [x] Proxy URL / endpoint URL override pro Anthropic, OpenAI a Gemini (řeší CORS, Azure, Vertex AI)
 - [x] Větší kroky velikosti písma (předchází auto-zoomu na iOS); volitelné škálování podle systémového písma
@@ -772,22 +772,22 @@ Total: **~200–260 tokens per lookup.**
 
 Maximum output budget: **8 192 tokens** (for ≤ 40 words), or `count × 200` for 50 words.
 
-> **GPT-5 models (reasoning):** These models think internally — tokens spent on reasoning count toward the same budget as the visible response. The budget is therefore set substantially higher (8 192) so that after deducting reasoning tokens (~2 000–3 000) there is still enough room for the actual vocabulary JSON.
+> **Reasoning models (GPT-5+, Claude Sonnet/Opus 5.5, Gemini 3.x):** These models think internally — tokens spent on reasoning count toward the same budget as the visible response. The budget is therefore set substantially higher (8 192) so that after deducting reasoning tokens (~2 000–3 000) there is still enough room for the actual vocabulary JSON.
 
 #### Indicative pricing
 
-Example for **gemini-2.5-flash** ($0.50/M input, $1.50/M output tokens):
+Example for **gemini-3.1-flash-lite** ($0.25/M input, $1.50/M output tokens):
 
 | Scenario                              | Tokens                    | Cost      |
 |---------------------------------------|---------------------------|-----------|
-| 1 chat message                        | ~700 in + ~350 out        | ~$0.001   |
-| 1 hour of active chat (~50 msgs)      | ~35 000 in + ~17 500 out  | ~$0.04    |
+| 1 chat message                        | ~700 in + ~350 out        | ~$0.0007  |
+| 1 hour of active chat (~50 msgs)      | ~35 000 in + ~17 500 out  | ~$0.035   |
 | Quiz session (10 rounds)              | ~3 500 total              | ~$0.003   |
 | 1 dictionary lookup                   | ~110 in + ~150 out        | ~$0.0003  |
-| Generate 10 words                     | ~100 in + ~500 out        | ~$0.0009  |
+| Generate 10 words                     | ~100 in + ~500 out        | ~$0.0008  |
 | Generate 50 words                     | ~100 in + ~2 500 out      | ~$0.004   |
 
-Claude Sonnet and GPT-5 are significantly more expensive alternatives. Ollama (local) is free.
+Gemini 3.8 Flash, Claude Sonnet 5.5 and GPT-6.1 Sol are more expensive alternatives; reasoning models also spend tokens on thinking. Ollama (local) is free.
 
 > **Tip:** Lesson mode adds your entire vocabulary list to every request — with a large vocabulary (50 words) this increases chat cost by roughly 30–40 %.
 
@@ -796,7 +796,7 @@ Claude Sonnet and GPT-5 are significantly more expensive alternatives. Ollama (l
 - [ ] Progress statistics (vocabulary growth, accuracy over time)
 - [ ] Learning goals with progress bar
 - [x] Spanish as third UI language (CS/EN/ES)
-- [x] Advanced LLM settings — "Here Be Dragons" overlay: max tokens, temperature, streaming toggle
+- [x] Advanced LLM settings — "Here Be Dragons" overlay: max tokens, temperature (Ollama / custom endpoint only), streaming toggle
 - [x] First-run onboarding banner guiding new users through initial setup
 - [x] Proxy URL / endpoint URL override for Anthropic, OpenAI, and Gemini (fixes CORS, enables Azure, Vertex AI)
 - [x] Larger font size steps (prevents iOS auto-zoom); optional system font size scaling

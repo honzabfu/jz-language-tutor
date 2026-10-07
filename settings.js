@@ -4,7 +4,7 @@ import { I18N } from './i18n.js';
 import { applyI18n, updateApiKeyHint } from './updates.js';
 import { getVocab, setVocab, setApplyBackupFn } from './vocab.js';
 import { setActiveLang } from './dom.js';
-import { hasApiAccess } from './llm.js';
+import { hasApiAccess, supportsTemperature } from './llm.js';
 import { getSavedTips, setSavedTips } from './tips.js';
 
 const { cfg } = state;
@@ -313,7 +313,10 @@ export function openAdvancedSettings(){
   document.getElementById('cfg-adv-max-tokens').value=mt;
   document.getElementById('cfg-adv-temperature-default').checked=useProviderDefault;
   document.getElementById('cfg-adv-temperature').value=temp;
-  document.getElementById('cfg-adv-temperature').disabled=useProviderDefault;
+  // U cloudových poskytovatelů se teplota neposílá → ovládání zamknout (uložená hodnota zůstává)
+  const tempLocked=!supportsTemperature();
+  document.getElementById('cfg-adv-temperature-default').disabled=tempLocked;
+  document.getElementById('cfg-adv-temperature').disabled=useProviderDefault||tempLocked;
   document.getElementById('cfg-adv-temperature-val').textContent=useProviderDefault?'—':parseFloat(temp).toFixed(2);
   document.getElementById('cfg-adv-streaming-disabled').checked=!!cfg.streamingDisabled;
   const _fcs=cfg.fcSessionSize??20;document.getElementById('cfg-fc-session-size').value=_fcs;

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-PWA language tutor split into ES modules — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.4.8**, PWA cache key: `langtutor-v26`.
+PWA language tutor split into ES modules — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.4.9**, PWA cache key: `langtutor-v27`.
 
 | File | Lines | Contents |
 |---|---|---|
@@ -118,6 +118,8 @@ Entry points `safeLLM(msgs, sys, maxTokens, signal)` and `safeLLMStream(…, onC
 `openai` and `custom` share `parse`/`chunk` (`_openAiParse`/`_openAiChunk`). Both stream readers flush the `TextDecoder` and process a final line without trailing `\n`; they yield (`setTimeout 0`) once per network chunk. To add a provider: add a registry entry (plus `MODELS_METADATA`, `DEFAULT_PROVIDER_SETTINGS` in `constants.js` and settings UI fields).
 
 `hasApiAccess()` (exported from `llm.js`) is the single "is the LLM usable" predicate used by chat, quiz, vocab generate, and the provider badge. Model metadata (tiers, capabilities, recommended flag) lives in `MODELS_METADATA` (`constants.js`).
+
+`cfg.temperature` is sent only to `ollama`/`custom` (`supportsTemperature()` in `llm.js`) — current cloud reasoning models (Claude 4.7+, GPT-5+, Gemini 3.x+) reject or ignore non-default sampling; the advanced-settings temperature controls are disabled for cloud providers. Parsers take only text blocks/parts (Anthropic skips `thinking` blocks, Gemini skips `thought` parts and joins all text parts). Refusals (Anthropic `stop_reason: "refusal"`, OpenAI `content_filter`/`refusal`, Gemini `SAFETY`/`PROHIBITED_CONTENT`/… or `promptFeedback.blockReason`) throw `REFUSAL`; an empty reply throws `EMPTY_RESPONSE` (both mapped in `resolveErr()`).
 
 API keys are sent in headers, never in URLs (Gemini: `x-goog-api-key`). Anthropic direct browser calls require the `anthropic-dangerous-direct-browser-access: true` header. All streaming paths detect truncation (stop/finish reason) and throw `MAX_TOKENS`, same as the non-streaming ones.
 

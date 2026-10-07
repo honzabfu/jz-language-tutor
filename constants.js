@@ -1,20 +1,18 @@
 export const MODELS_METADATA={
   anthropic:[
-    {id:'claude-haiku-4-5-20251001',name:'Claude Haiku 4.5',tier:'budget',capability:'general',speed:'fast',recommended:true,costEstimate:{input:1,output:5},features:['1M context','fast']},
-    {id:'claude-sonnet-4-6',name:'Claude Sonnet 4.6',tier:'standard',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:3,output:15},features:['1M context','balanced']},
-    {id:'claude-opus-4-7',name:'Claude Opus 4.7',tier:'premium',capability:'advanced',speed:'slow',recommended:true,costEstimate:{input:5,output:25},features:['1M context','most capable']}
+    {id:'claude-haiku-4-5-20251001',name:'Claude Haiku 4.5',tier:'budget',capability:'general',speed:'fast',recommended:true,costEstimate:{input:1,output:5},features:['200K context','fast']},
+    {id:'claude-sonnet-5-5',name:'Claude Sonnet 5.5',tier:'standard',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:2,output:10},features:['1M context','balanced']},
+    {id:'claude-opus-5-5',name:'Claude Opus 5.5',tier:'premium',capability:'advanced',speed:'slow',recommended:true,costEstimate:{input:4,output:20},features:['1M context','most capable']}
   ],
   openai:[
-    {id:'gpt-5-nano',name:'GPT-5 Nano',tier:'budget',capability:'basic',speed:'fast',recommended:false,costEstimate:{input:0.2,output:1.25},features:['ultra-cheap']},
-    {id:'gpt-5-mini',name:'GPT-5 Mini',tier:'budget',capability:'general',speed:'fast',recommended:true,costEstimate:{input:0.75,output:4.5},features:['budget-friendly']},
-    {id:'gpt-5',name:'GPT-5',tier:'standard',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:2.5,output:15},features:['standard','balanced']},
-    {id:'gpt-5.5',name:'GPT-5.5',tier:'premium',capability:'advanced',speed:'slow',recommended:true,costEstimate:{input:5,output:30},features:['newest','most capable']}
+    {id:'gpt-6-luna',name:'GPT-6 Luna',tier:'budget',capability:'general',speed:'fast',recommended:true,costEstimate:{input:0.1,output:0.5},features:['ultra-cheap','fast']},
+    {id:'gpt-6.1-sol',name:'GPT-6.1 Sol',tier:'standard',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:2,output:10},features:['balanced']},
+    {id:'gpt-6-astra',name:'GPT-6 Astra',tier:'premium',capability:'advanced',speed:'slow',recommended:false,costEstimate:{input:10,output:50},features:['most capable']}
   ],
   gemini:[
     {id:'gemini-3.1-flash-lite',name:'Gemini 3.1 Flash-Lite',tier:'budget',capability:'general',speed:'fast',recommended:true,costEstimate:{input:0.25,output:1.5},features:['ultra-cheap','fast']},
-    {id:'gemini-2.5-flash-lite',name:'Gemini 2.5 Flash-Lite',tier:'budget',capability:'general',speed:'fast',recommended:false,costEstimate:{input:0.1,output:0.4},features:['ultra-cheap','balanced']},
-    {id:'gemini-2.5-flash',name:'Gemini 2.5 Flash',tier:'standard',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:0.5,output:1.5},features:['balanced','fast']},
-    {id:'gemini-2.5-pro',name:'Gemini 2.5 Pro',tier:'standard',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:1.25,output:10},features:['capable','200k context']}
+    {id:'gemini-3.5-flash-lite',name:'Gemini 3.5 Flash-Lite',tier:'budget',capability:'general',speed:'fast',recommended:true,costEstimate:{input:0.3,output:2.5},features:['cheap','fast']},
+    {id:'gemini-3.8-flash',name:'Gemini 3.8 Flash',tier:'standard',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:0.75,output:3.75},features:['newest','balanced']}
   ],
   ollama:[
     {id:'llama3.2',name:'Llama 3.2',tier:'budget',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:0,output:0},features:['local','free']},
