@@ -190,6 +190,8 @@ export function applyI18n(){
   document.getElementById('adv-temperature-default-label').textContent=t.advTemperatureDefaultLabel;
   document.getElementById('adv-temperature-label').textContent=t.advTemperatureLabel;
   document.getElementById('adv-temperature-hint').textContent=t.advTemperatureHint;
+  document.getElementById('adv-full-reasoning-label').textContent=t.advFullReasoningLabel;
+  document.getElementById('adv-full-reasoning-hint').textContent=t.advFullReasoningHint;
   document.getElementById('adv-streaming-label').textContent=t.advStreamingLabel;
   document.getElementById('adv-streaming-hint').textContent=t.advStreamingHint;
   document.getElementById('adv-save-btn').textContent=t.advSaveBtn;

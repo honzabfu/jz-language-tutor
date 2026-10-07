@@ -390,7 +390,7 @@ Gemini 3.8 Flash, Claude Sonnet 5.5 a GPT-6.1 Sol jsou dražší alternativy; re
 - [ ] Statistiky pokroku (růst slovní zásoby, přesnost v čase)
 - [ ] Učební cíle s progress barem
 - [x] Španělština jako třetí jazyk rozhraní (CS/EN/ES)
-- [x] Pokročilá nastavení LLM — overlay „Here Be Dragons": max. tokeny, teplota (jen Ollama / vlastní endpoint), přepínač streamingu
+- [x] Pokročilá nastavení LLM — overlay „Here Be Dragons": max. tokeny, teplota (jen Ollama / vlastní endpoint), plné přemýšlení modelu (výchozí: minimální), přepínač streamingu
 - [x] Onboarding banner pro nové uživatele — průvodce prvním nastavením
 - [x] Proxy URL / endpoint URL override pro Anthropic, OpenAI a Gemini (řeší CORS, Azure, Vertex AI)
 - [x] Větší kroky velikosti písma (předchází auto-zoomu na iOS); volitelné škálování podle systémového písma
@@ -796,7 +796,7 @@ Gemini 3.8 Flash, Claude Sonnet 5.5 and GPT-6.1 Sol are more expensive alternati
 - [ ] Progress statistics (vocabulary growth, accuracy over time)
 - [ ] Learning goals with progress bar
 - [x] Spanish as third UI language (CS/EN/ES)
-- [x] Advanced LLM settings — "Here Be Dragons" overlay: max tokens, temperature (Ollama / custom endpoint only), streaming toggle
+- [x] Advanced LLM settings — "Here Be Dragons" overlay: max tokens, temperature (Ollama / custom endpoint only), full model reasoning (default: minimal), streaming toggle
 - [x] First-run onboarding banner guiding new users through initial setup
 - [x] Proxy URL / endpoint URL override for Anthropic, OpenAI, and Gemini (fixes CORS, enables Azure, Vertex AI)
 - [x] Larger font size steps (prevents iOS auto-zoom); optional system font size scaling

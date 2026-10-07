@@ -23,6 +23,7 @@ export function defaultCfg(){
     maxTokens:          8192,
     temperature:        null,
     streamingDisabled:  false,
+    fullReasoning:      false,
     fcSessionSize:      20,
     quizSessionSize:    10,
     smEasyBonus:        1.0,

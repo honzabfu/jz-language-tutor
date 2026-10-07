@@ -1,4 +1,5 @@
 import { state } from './state.js';
+import { MODELS_METADATA } from './constants.js';
 
 const { cfg } = state;
 
@@ -19,6 +20,9 @@ export function hasApiAccess(){
 // odmítají (400) nebo ignorují → teplotu posíláme jen lokálním/vlastním endpointům
 export const supportsTemperature=(p=cfg.provider)=>p==='ollama'||p==='custom';
 const _temp=()=>cfg.temperature!=null&&supportsTemperature()?{temperature:cfg.temperature}:{};
+// Přemýšlení tutorovi spíš škodí (latence, cena, spotřeba max_tokens) → ve výchozím stavu
+// nejnižší úroveň z MODELS_METADATA; u neznámých modelů (Načíst modely) neposílat nic
+const _minReasoning=()=>cfg.fullReasoning?null:(MODELS_METADATA[cfg.provider]||[]).find(m=>m.id===cfg.model)?.minReasoning||null;
 const _filterMsgs=msgs=>msgs.filter(m=>m.role==='user'||m.role==='assistant');
 const _withSys=(msgs,sys)=>sys?[{role:'system',content:sys},..._filterMsgs(msgs)]:_filterMsgs(msgs);
 
@@ -54,7 +58,7 @@ const PROVIDERS={
       return{
         url:ps.proxyUrl||'https://api.anthropic.com/v1/messages',
         headers:{'x-api-key':cfg.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body:{model:cfg.model,max_tokens:maxTokens,...(stream?{stream:true}:{}),system:sys||undefined,messages:_filterMsgs(msgs)}
+        body:{model:cfg.model,max_tokens:maxTokens,...(stream?{stream:true}:{}),...(_minReasoning()?{output_config:{effort:_minReasoning()}}:{}),system:sys||undefined,messages:_filterMsgs(msgs)}
       };
     },
     // Nové modely vracejí před textem blok thinking → bereme jen bloky type:'text'
@@ -77,7 +81,7 @@ const PROVIDERS={
       return{
         url:ps.endpointUrl||'https://api.openai.com/v1/chat/completions',
         headers:ps.authHeader==='api-key'?{'api-key':cfg.apiKey}:{'Authorization':`Bearer ${cfg.apiKey}`},
-        body:{model:cfg.model,max_completion_tokens:maxTokens,...(stream?{stream:true}:{}),messages:_withSys(msgs,sys)}
+        body:{model:cfg.model,max_completion_tokens:maxTokens,...(stream?{stream:true}:{}),...(_minReasoning()?{reasoning_effort:_minReasoning()}:{}),messages:_withSys(msgs,sys)}
       };
     },
     parse:_openAiParse,
@@ -91,6 +95,7 @@ const PROVIDERS={
       const base=(ps.endpointUrl||'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/,'');
       const body={contents:_filterMsgs(msgs).map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]})),generationConfig:{maxOutputTokens:maxTokens}};
       if(sys)body.system_instruction={parts:[{text:sys}]};
+      const lvl=_minReasoning();if(lvl)body.generationConfig.thinkingConfig={thinkingLevel:lvl};
       return{
         url:`${base}/models/${cfg.model}:${stream?'streamGenerateContent?alt=sse':'generateContent'}`,
         headers:{'x-goog-api-key':cfg.apiKey},

@@ -318,6 +318,7 @@ export function openAdvancedSettings(){
   document.getElementById('cfg-adv-temperature-default').disabled=tempLocked;
   document.getElementById('cfg-adv-temperature').disabled=useProviderDefault||tempLocked;
   document.getElementById('cfg-adv-temperature-val').textContent=useProviderDefault?'—':parseFloat(temp).toFixed(2);
+  document.getElementById('cfg-adv-full-reasoning').checked=!!cfg.fullReasoning;
   document.getElementById('cfg-adv-streaming-disabled').checked=!!cfg.streamingDisabled;
   const _fcs=cfg.fcSessionSize??20;document.getElementById('cfg-fc-session-size').value=_fcs;
   const _qss=cfg.quizSessionSize??10;document.getElementById('cfg-quiz-session-size').value=_qss;
@@ -344,6 +345,7 @@ export function saveAdvancedSettings(){
   const useProviderDefault=document.getElementById('cfg-adv-temperature-default').checked;
   const _t=parseFloat(document.getElementById('cfg-adv-temperature').value);
   cfg.temperature=useProviderDefault?null:Math.min(1,Math.max(0,isNaN(_t)?0.7:_t));
+  cfg.fullReasoning=document.getElementById('cfg-adv-full-reasoning').checked;
   cfg.streamingDisabled=document.getElementById('cfg-adv-streaming-disabled').checked;
   const _fcsv=parseInt(document.getElementById('cfg-fc-session-size').value,10);cfg.fcSessionSize=(!isNaN(_fcsv)&&_fcsv>=5&&_fcsv<=50)?_fcsv:20;
   const _qssv=parseInt(document.getElementById('cfg-quiz-session-size').value,10);cfg.quizSessionSize=(!isNaN(_qssv)&&_qssv>=5&&_qssv<=30)?_qssv:10;
@@ -356,13 +358,14 @@ export function saveAdvancedSettings(){
 }
 
 export function resetAdvancedSettings(){
-  cfg.maxTokens=8192;cfg.temperature=null;cfg.streamingDisabled=false;
+  cfg.maxTokens=8192;cfg.temperature=null;cfg.streamingDisabled=false;cfg.fullReasoning=false;
   cfg.fcSessionSize=20;cfg.quizSessionSize=10;cfg.smEasyBonus=1.0;cfg.ttsRate=0.9;cfg.vocabImportDuplicates='skip';
   document.getElementById('cfg-adv-max-tokens').value=8192;
   document.getElementById('cfg-adv-temperature-default').checked=true;
   document.getElementById('cfg-adv-temperature').value=0.7;
   document.getElementById('cfg-adv-temperature').disabled=true;
   document.getElementById('cfg-adv-temperature-val').textContent='—';
+  document.getElementById('cfg-adv-full-reasoning').checked=false;
   document.getElementById('cfg-adv-streaming-disabled').checked=false;
   document.getElementById('cfg-fc-session-size').value=20;
   document.getElementById('cfg-quiz-session-size').value=10;
