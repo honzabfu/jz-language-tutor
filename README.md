@@ -366,7 +366,7 @@ Celkem: **~200–260 tokenů na jedno vyhledání.**
 
 Maximální výstupní budget: **8 192 tokenů** (pro ≤ 40 slov), případně `počet × 200` pro 50 slov.
 
-> **Reasoning modely (GPT-5+, Claude Sonnet/Opus 5.5, Gemini 3.x):** Tyto modely interně „přemýšlí" — tokeny spotřebované na reasoning se počítají do stejného budgetu jako viditelná odpověď. Proto je budget nastaven výrazně výše (8 192), aby po odečtení reasoning tokenů (~2 000–3 000) zbylo dost místa pro samotná slovíčka.
+> **Reasoning modely (GPT-5+, Claude Sonnet/Opus 5.5, Gemini 3.x):** Tyto modely interně „přemýšlí" — tokeny spotřebované na reasoning se počítají do stejného budgetu jako viditelná odpověď. Aplikace proto ve výchozím stavu posílá nejnižší úroveň přemýšlení, kterou model podporuje (rychlejší a levnější odpovědi). Budget 8 192 tokenů ponechává rezervu i pro případ, že v pokročilém nastavení zapneš **plné přemýšlení modelu**. Pokud endpoint parametr přemýšlení odmítne (např. Azure deployment se starším modelem), zapni plné přemýšlení — parametr se pak neposílá.
 
 #### Orientační ceny
 
@@ -772,7 +772,7 @@ Total: **~200–260 tokens per lookup.**
 
 Maximum output budget: **8 192 tokens** (for ≤ 40 words), or `count × 200` for 50 words.
 
-> **Reasoning models (GPT-5+, Claude Sonnet/Opus 5.5, Gemini 3.x):** These models think internally — tokens spent on reasoning count toward the same budget as the visible response. The budget is therefore set substantially higher (8 192) so that after deducting reasoning tokens (~2 000–3 000) there is still enough room for the actual vocabulary JSON.
+> **Reasoning models (GPT-5+, Claude Sonnet/Opus 5.5, Gemini 3.x):** These models think internally — tokens spent on reasoning count toward the same budget as the visible response. By default the app therefore requests the lowest reasoning level the model supports (faster, cheaper responses). The 8 192-token budget leaves headroom even if you enable **full model reasoning** in the advanced settings. If an endpoint rejects the reasoning parameter (e.g. an Azure deployment with an older model), enable full reasoning — the parameter is then not sent.
 
 #### Indicative pricing
 
