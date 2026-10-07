@@ -126,13 +126,25 @@ export function onThemeChange(val){cfg.theme=val;applyTheme();saveCfg();}
 export function onDefaultViewChange(val){cfg.defaultView=val;saveCfg();}
 export function onCustomInstructionsChange(val){cfg.customInstructions=val.trim();saveCfg();}
 
+// Popisek modelu ve výběru: název · cena vstup/výstup za 1M tokenů · ★ doporučeno.
+// Modely načtené z API se párují s MODELS_METADATA podle id (Ollama tag „gemma3:12b“ → „gemma3“).
+function _modelLabel(p,m){
+  const id=String(m.id||m);
+  const meta=(MODELS_METADATA[p]||[]).find(x=>x.id===id||x.id===id.split(':')[0]);
+  const name=m.name||m.id||m;
+  if(!meta)return name;
+  const c=meta.costEstimate;
+  const price=c&&(c.input||c.output)?` · $${c.input}/$${c.output}`:'';
+  return `${name}${price}${meta.recommended?' ★':''}`;
+}
+
 export function rebuildModelList(p,models){
   const s=document.getElementById('cfg-model');
   s.innerHTML='';
   models.forEach(m=>{
     const o=document.createElement('option');
     o.value=m.id||m;
-    o.textContent=m.name||m.id||m;
+    o.textContent=_modelLabel(p,m);
     s.appendChild(o);
   });
   const ids=models.map(m=>m.id||m);
@@ -154,12 +166,13 @@ export function setModelHint(p){
   const el=document.getElementById('s-model-hint');
   if(!el)return;
   const hints={
-    anthropic:t.modelHintAnthropic||'Pro běžné použití doporučujeme Haiku nebo Sonnet — jsou rychlé a výrazně levnější než Opus.',
-    openai:t.modelHintOpenai||'Pro běžné použití doporučujeme modely řady Mini nebo Flash — jsou rychlé a výrazně levnější.',
-    gemini:t.modelHintGemini||'Pro běžné použití doporučujeme modely řady Flash nebo Flash-Lite — jsou rychlé a levné.',
-    ollama:'',custom:''
+    anthropic:t.modelHintAnthropic,
+    openai:t.modelHintOpenai,
+    gemini:t.modelHintGemini,
+    ollama:t.modelHintOllama,custom:''
   };
-  el.textContent=hints[p]||'';
+  const legend=p==='ollama'?t.modelLegendLocal:t.modelLegendPrice;
+  el.textContent=hints[p]?`${hints[p]} ${legend}`:'';
 }
 
 export async function fetchModels(provider,apiKey,ollamaUrl){

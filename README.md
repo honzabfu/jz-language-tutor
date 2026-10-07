@@ -62,7 +62,7 @@ Hlavním smyslem aplikace je **procvičování slovíček, která si sám zadá�
    - **OpenAI** — [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
    - **Ollama** — lokální provoz bez klíče, zcela zdarma
    - **Vlastní provider** — libovolný OpenAI-compatible endpoint (viz níže)
-3. Přejdi do **Nastavení** → vyber poskytovatele → zadej API klíč → klikni **↻ Načíst modely** → vyber model. Nastavení providera (klíč, model) se ukládá automaticky ihned po změně.
+3. Přejdi do **Nastavení** → vyber poskytovatele → zadej API klíč → klikni **↻ Načíst modely** → vyber model. U známých modelů je ve výběru orientační cena v USD za 1M tokenů (vstup/výstup) a ★ u doporučených. Nastavení providera (klíč, model) se ukládá automaticky ihned po změně.
 4. Přejdi do záložky **Slovíčka** → přidej první slovíčka.
 5. Procvičuj na záložce **Flashcards** nebo **Kvíz**.
 
@@ -468,7 +468,7 @@ The primary purpose of this app is **practicing the vocabulary words you enter y
    - **OpenAI** — [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
    - **Ollama** — runs locally, no key needed, completely free
    - **Custom provider** — any OpenAI-compatible endpoint (see below)
-3. Go to **Settings** → select your provider → enter your API key → click **↻ Load models** → select a model. Provider settings (key, model) save automatically as you change them.
+3. Go to **Settings** → select your provider → enter your API key → click **↻ Load models** → select a model. Known models show an indicative price in USD per 1M tokens (input/output) and ★ for recommended ones. Provider settings (key, model) save automatically as you change them.
 4. Go to the **Vocab** tab → add your first words.
 5. Practice in the **Flashcards** or **Quiz** tab.
 
