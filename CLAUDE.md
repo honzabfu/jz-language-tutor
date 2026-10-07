@@ -8,20 +8,20 @@ PWA language tutor split into ES modules — no build tool, no npm, no bundler. 
 
 | File | Lines | Contents |
 |---|---|---|
-| `index.html` | ~615 | HTML structure only (views, overlays, nav) — no inline event handlers |
-| `style.css` | ~260 | All CSS |
-| `i18n.js` | ~900 | `I18N` object with `cs`, `en`, `es` locale strings (exported) |
-| `constants.js` | ~113 | MODELS_METADATA, LANG_META, UI_LANGS, UI_LANG_*, esc(), uid(), safeAssign(), renderMarkdown() |
-| `state.js` | ~73 | Shared mutable `state` object; defaultCfg(), getLangLevel(), getNativeLangName(), getUiLocale() |
+| `index.html` | ~624 | HTML structure only (views, overlays, nav) — no inline event handlers |
+| `style.css` | ~258 | All CSS |
+| `i18n.js` | ~909 | `I18N` object with `cs`, `en`, `es` locale strings (exported) |
+| `constants.js` | ~114 | MODELS_METADATA (incl. `minReasoning`), LANG_META, UI_LANGS, UI_LANG_*, esc(), uid(), safeAssign(), renderMarkdown() |
+| `state.js` | ~74 | Shared mutable `state` object; defaultCfg(), getLangLevel(), getNativeLangName(), getUiLocale() |
 | `dom.js` | ~26 | playWord(), syncLangSelectors(), setActiveLang(), autoResize() — breaks circular deps |
-| `llm.js` | ~203 | PROVIDERS registry, streaming, safeLLM(), safeLLMStream(), abortPending(), hasApiAccess() |
+| `llm.js` | ~236 | PROVIDERS registry, streaming, safeLLM(), safeLLMStream(), abortPending(), hasApiAccess(), supportsTemperature() |
 | `vocab.js` | ~393 | Vocab CRUD, newSM2(), CSV import/export (RFC 4180), dictionary, generate, renderVocabList() |
 | `tips.js` | ~119 | Saved tips CRUD, renderTipsList(), attachFeedbackCard() |
-| `updates.js` | ~243 | applyI18n(), updateModeBadge(), updateInputPlaceholder(), updateEmptyState(), updateApiKeyHint() |
+| `updates.js` | ~244 | applyI18n(), updateModeBadge(), updateInputPlaceholder(), updateEmptyState(), updateApiKeyHint() |
 | `flashcard.js` | ~114 | sm2Update(), startFlashcards(), renderFC(), revealFC(), rateFC() |
 | `quiz.js` | ~111 | startQuiz(), quizAsk(), quizSend() |
 | `chat.js` | ~212 | sendMessage(), appendMsg(), makeReplyExtractor(), SSE streaming |
-| `settings.js` | ~537 | populateSettingsUI(), saveSettings(), export/import backup, cfg editor |
+| `settings.js` | ~543 | populateSettingsUI(), saveSettings(), export/import backup, cfg editor |
 | `nav.js` | ~22 | navTo() — also aborts any in-flight LLM call |
 | `app.js` | ~297 | Entry point: init(), addEventListener wiring, PWA install, SW registration |
 | `sw.js` | ~79 | Service worker (network-first with `cache:'no-cache'` revalidation, cache key in line 1) |
@@ -112,13 +112,13 @@ Keys that have not yet been written are absent from localStorage (treated as the
 Entry points `safeLLM(msgs, sys, maxTokens, signal)` and `safeLLMStream(…, onChunk)` dispatch through the `PROVIDERS` registry — one entry per provider (`anthropic`, `openai`, `gemini`, `ollama`, `custom`) with:
 
 - `request(msgs, sys, maxTokens, stream)` → `{url, headers, body}` (driver adds `Content-Type` and `fetch`es)
-- `parse(d)` — extracts text from the non-streaming response, throws `MAX_TOKENS` on truncation
+- `parse(d)` — extracts text from the non-streaming response, throws `MAX_TOKENS` on truncation and `REFUSAL` on a refusal/safety block
 - `sse` — `true` = SSE (`data:` lines, `readSSE`), `false` = NDJSON (Ollama, `readNDJSON`)
-- `chunk(data, out)` — streaming event handler; `out.text(t)` appends, `out.truncated`/`out.done` flags
+- `chunk(data, out)` — streaming event handler; `out.text(t)` appends, `out.truncated`/`out.refused`/`out.done` flags
 
 `openai` and `custom` share `parse`/`chunk` (`_openAiParse`/`_openAiChunk`). Both stream readers flush the `TextDecoder` and process a final line without trailing `\n`; they yield (`setTimeout 0`) once per network chunk. To add a provider: add a registry entry (plus `MODELS_METADATA`, `DEFAULT_PROVIDER_SETTINGS` in `constants.js` and settings UI fields).
 
-`hasApiAccess()` (exported from `llm.js`) is the single "is the LLM usable" predicate used by chat, quiz, vocab generate, and the provider badge. Model metadata (tiers, capabilities, recommended flag) lives in `MODELS_METADATA` (`constants.js`).
+`hasApiAccess()` (exported from `llm.js`) is the single "is the LLM usable" predicate used by chat, quiz, vocab generate, and the provider badge. Model metadata (tiers, capabilities, recommended flag, `minReasoning`) lives in `MODELS_METADATA` (`constants.js`). When adding a cloud model that reasons by default, set `minReasoning` to the lowest level the provider accepts for it (verify against the provider docs — e.g. GPT-6 Luna accepts `none`, Sol/Astra only `low`); omit it for models that don't reason without an explicit parameter.
 
 `cfg.temperature` is sent only to `ollama`/`custom` (`supportsTemperature()` in `llm.js`) — current cloud reasoning models (Claude 4.7+, GPT-5+, Gemini 3.x+) reject or ignore non-default sampling; the advanced-settings temperature controls are disabled for cloud providers. By default `_minReasoning()` (`llm.js`) sends the lowest reasoning level from `MODELS_METADATA[].minReasoning` (Anthropic `output_config.effort`, OpenAI `reasoning_effort`, Gemini `generationConfig.thinkingConfig.thinkingLevel`); models without `minReasoning` (Haiku 4.5, Gemini 3.1 Flash-Lite, anything fetched via "Load models", Ollama, custom) get no reasoning parameter. `cfg.fullReasoning` (advanced settings) disables this. Parsers take only text blocks/parts (Anthropic skips `thinking` blocks, Gemini skips `thought` parts and joins all text parts). Refusals (Anthropic `stop_reason: "refusal"`, OpenAI `content_filter`/`refusal`, Gemini `SAFETY`/`PROHIBITED_CONTENT`/… or `promptFeedback.blockReason`) throw `REFUSAL`; an empty reply throws `EMPTY_RESPONSE` (both mapped in `resolveErr()`).
 
@@ -142,7 +142,7 @@ No changes needed in `applyI18n()`, `getUiLocale()`, or `getNativeLangName()` �
 
 ### Advanced settings / cfg editor
 
-The **⚠ Zde jsou draci** overlay (`#advanced-settings-overlay`) exposes tuneable parameters (max tokens, temperature, streaming, session sizes, SM-2 bonus, TTS rate, import duplicates). These are saved into `cfg` and persisted in `lt-cfg`.
+The **⚠ Zde jsou draci** overlay (`#advanced-settings-overlay`) exposes tuneable parameters (max tokens, temperature — locked for cloud providers, full model reasoning, streaming, session sizes, SM-2 bonus, TTS rate, import duplicates). These are saved into `cfg` and persisted in `lt-cfg`.
 
 The **Edit config** button (`openCfgEditor()`) opens a second overlay (`#cfg-editor-overlay`) with a monospace textarea. It calls `_getAllSettings()` which collects all `lt-*` keys defined in `_SETTINGS_KEYS` plus any additional `lt-*` keys currently in localStorage (excluding `lt-vocab-*` and `lt-tips-*`), parsed as JSON where possible. Keys not yet in localStorage appear as `null`.
 
@@ -195,8 +195,8 @@ index.html
         │     ├── dom.js, tips.js, updates.js
         ├── tips.js        (CRUD, renderTipsList, attachFeedbackCard)
         │     ├── state.js, constants.js
-        ├── llm.js         (safeLLM, safeLLMStream, PROVIDERS registry, hasApiAccess)
-        │     └── state.js
+        ├── llm.js         (safeLLM, safeLLMStream, PROVIDERS registry, hasApiAccess, supportsTemperature)
+        │     ├── state.js, constants.js
         └── dom.js         (playWord, syncLangSelectors, setActiveLang, autoResize)
               └── state.js, constants.js
 ```
