@@ -14,15 +14,14 @@ export const MODELS_METADATA={
   ],
   gemini:[
     {id:'gemini-3.1-flash-lite',name:'Gemini 3.1 Flash-Lite',tier:'budget',capability:'general',speed:'fast',recommended:true,costEstimate:{input:0.25,output:1.5},features:['ultra-cheap','fast']},
-    {id:'gemini-3.5-flash-lite',name:'Gemini 3.5 Flash-Lite',tier:'budget',capability:'general',speed:'fast',recommended:true,costEstimate:{input:0.3,output:2.5},features:['cheap','fast'],minReasoning:'minimal'},
+    {id:'gemini-3.5-flash-lite',name:'Gemini 3.5 Flash-Lite',tier:'budget',capability:'general',speed:'fast',recommended:false,costEstimate:{input:0.3,output:2.5},features:['cheap','fast'],minReasoning:'minimal'},
     {id:'gemini-3.8-flash',name:'Gemini 3.8 Flash',tier:'standard',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:0.75,output:3.75},features:['newest','balanced'],minReasoning:'low'}
   ],
   ollama:[
-    {id:'llama3.2',name:'Llama 3.2',tier:'budget',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:0,output:0},features:['local','free']},
-    {id:'llama3.3',name:'Llama 3.3',tier:'budget',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:0,output:0},features:['local','free','newest']},
-    {id:'mistral',name:'Mistral',tier:'budget',capability:'general',speed:'fast',recommended:true,costEstimate:{input:0,output:0},features:['local','free']},
-    {id:'phi4',name:'Phi-4',tier:'budget',capability:'general',speed:'fast',recommended:false,costEstimate:{input:0,output:0},features:['local','free']},
-    {id:'qwen2.5',name:'Qwen 2.5',tier:'budget',capability:'general',speed:'balanced',recommended:false,costEstimate:{input:0,output:0},features:['local','free']}
+    {id:'gemma3',name:'Gemma 3',tier:'budget',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:0,output:0},features:['local','free','multilingual']},
+    {id:'qwen2.5',name:'Qwen 2.5',tier:'budget',capability:'general',speed:'balanced',recommended:true,costEstimate:{input:0,output:0},features:['local','free','multilingual']},
+    {id:'llama3.2',name:'Llama 3.2',tier:'budget',capability:'general',speed:'fast',recommended:false,costEstimate:{input:0,output:0},features:['local','free','small']},
+    {id:'mistral',name:'Mistral',tier:'budget',capability:'general',speed:'fast',recommended:false,costEstimate:{input:0,output:0},features:['local','free']}
   ],
   custom:[]
 };

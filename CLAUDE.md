@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-PWA language tutor split into ES modules — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.4.10**, PWA cache key: `langtutor-v28`.
+PWA language tutor split into ES modules — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.4.11**, PWA cache key: `langtutor-v29`.
 
 | File | Lines | Contents |
 |---|---|---|
@@ -118,7 +118,7 @@ Entry points `safeLLM(msgs, sys, maxTokens, signal)` and `safeLLMStream(…, onC
 
 `openai` and `custom` share `parse`/`chunk` (`_openAiParse`/`_openAiChunk`). Both stream readers flush the `TextDecoder` and process a final line without trailing `\n`; they yield (`setTimeout 0`) once per network chunk. To add a provider: add a registry entry (plus `MODELS_METADATA`, `DEFAULT_PROVIDER_SETTINGS` in `constants.js` and settings UI fields).
 
-`hasApiAccess()` (exported from `llm.js`) is the single "is the LLM usable" predicate used by chat, quiz, vocab generate, and the provider badge. Model metadata (tiers, capabilities, recommended flag, `minReasoning`) lives in `MODELS_METADATA` (`constants.js`). When adding a cloud model that reasons by default, set `minReasoning` to the lowest level the provider accepts for it (verify against the provider docs — e.g. GPT-6 Luna accepts `none`, Sol/Astra only `low`); omit it for models that don't reason without an explicit parameter.
+`hasApiAccess()` (exported from `llm.js`) is the single "is the LLM usable" predicate used by chat, quiz, vocab generate, and the provider badge. Model metadata (tiers, capabilities, recommended flag, `minReasoning`) lives in `MODELS_METADATA` (`constants.js`). The model `<select>` label is built by `_modelLabel()` (`settings.js`): name · `$input/$output` per 1M tokens (omitted when 0) · ★ if `recommended` — models fetched via "Load models" are matched to the metadata by id (Ollama tags by the part before `:`). The first entry of each provider list is the default model for new users. When adding a cloud model that reasons by default, set `minReasoning` to the lowest level the provider accepts for it (verify against the provider docs — e.g. GPT-6 Luna accepts `none`, Sol/Astra only `low`); omit it for models that don't reason without an explicit parameter.
 
 `cfg.temperature` is sent only to `ollama`/`custom` (`supportsTemperature()` in `llm.js`) — current cloud reasoning models (Claude 4.7+, GPT-5+, Gemini 3.x+) reject or ignore non-default sampling; the advanced-settings temperature controls are disabled for cloud providers. By default `_minReasoning()` (`llm.js`) sends the lowest reasoning level from `MODELS_METADATA[].minReasoning` (Anthropic `output_config.effort`, OpenAI `reasoning_effort`, Gemini `generationConfig.thinkingConfig.thinkingLevel`); models without `minReasoning` (Haiku 4.5, Gemini 3.1 Flash-Lite, anything fetched via "Load models", Ollama, custom) get no reasoning parameter. `cfg.fullReasoning` (advanced settings) disables this. Parsers take only text blocks/parts (Anthropic skips `thinking` blocks, Gemini skips `thought` parts and joins all text parts). Refusals (Anthropic `stop_reason: "refusal"`, OpenAI `content_filter`/`refusal`, Gemini `SAFETY`/`PROHIBITED_CONTENT`/… or `promptFeedback.blockReason`) throw `REFUSAL`; an empty reply throws `EMPTY_RESPONSE` (both mapped in `resolveErr()`).
 
