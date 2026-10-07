@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="LangTutor">
+<link rel="manifest" href="manifest.json">
+<title>Language Tutor</title>
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+<div id="app">
+
+<!-- ═══════ CHAT VIEW ═══════ -->
+
+<div id="chat-view" class="view">
+  <div class="hdr">
+    <button class="icon-btn" id="clear-chat-btn" title="Nový rozhovor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.68"/></svg>
+    </button>
+    <h1 id="hdr-title">Language Tutor</h1>
+    <div class="hdr-right" style="display:flex;gap:6px;align-items:center">
+      <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" class="icon-btn" id="chat-help-btn" title="Nápověda">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </a>
+      <div class="mode-toggle">
+        <button class="mode-opt active" id="mode-btn-chat">💬 <span id="mode-lbl-chat">Chat</span></button>
+        <button class="mode-opt lesson" id="mode-btn-lesson">📚 <span id="mode-lbl-lesson">Lekce</span></button>
+      </div>
+      <span id="provider-badge" class="provider-badge warn">–</span>
+      <select id="lang-select"></select>
+    </div>
+  </div>
+  <div id="vocab-cost-warn" style="display:none;font-size:0.8rem;padding:6px 14px;border-bottom:1px solid"></div>
+  <div id="msg-list">
+    <div id="empty">
+      <div class="flag" id="empty-flag">🌍</div>
+      <h2 id="empty-title">Připrav se na procvičování!</h2>
+      <p id="empty-desc">Napiš cokoliv a tutor ti odpoví s vysvětlením a zpětnou vazbou.</p>
+    </div>
+    <div id="typing-row" class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  </div>
+  <div id="feedback-bar">
+    <div class="fb-tabs">
+      <button class="fb-tab active" id="fb-tab-positive">✅ <span id="fb-lbl-positive">Správně</span></button>
+      <button class="fb-tab" id="fb-tab-corrections">✏️ <span id="fb-lbl-corrections">Opravy</span></button>
+      <button class="fb-tab" id="fb-tab-suggestions">💡 <span id="fb-lbl-suggestions">Tipy</span></button>
+    </div>
+    <div id="fb-content" class="fb-content"></div>
+  </div>
+  <div id="input-area">
+    <textarea id="msg-input" rows="1"></textarea>
+    <button id="send-btn" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════ VOCAB VIEW ═══════ -->
+
+<div id="vocab-view" class="view">
+  <div class="hdr">
+    <h1 id="vocab-hdr-title">Slovní zásoba</h1>
+    <div style="display:flex;gap:6px;align-items:center">
+      <select id="vocab-lang-select"></select>
+      <button class="icon-btn" id="add-word-btn" title="Přidat slovo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="vocab-toolbar">
+    <input type="text" id="vocab-search" placeholder="Hledat…">
+    <button class="btn btn-ghost btn-sm" id="vocab-import-btn">⬆ Import</button>
+    <button class="btn btn-ghost btn-sm" id="vocab-export-btn">⬇ Export</button>
+    <button class="btn btn-ghost btn-sm" id="vocab-gen-btn">✨ Generovat</button>
+    <button class="btn btn-ghost btn-sm" id="dict-btn">📖 Slovník</button>
+    <button class="btn btn-ghost btn-sm" id="sort-btn">↕ Řadit</button>
+    <button class="btn btn-ghost btn-sm" id="delete-learned-btn">🗑 Naučená</button>
+    <button class="btn btn-ghost btn-sm" id="bulk-mode-btn">☑ Vybrat</button>
+    <span id="vocab-count" style="font-size:0.8rem;color:var(--mut);margin-left:auto"></span>
+  </div>
+  <div id="vocab-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
+  <div id="bulk-bar">
+    <span id="bulk-count" style="font-size:0.87rem;flex:1;color:var(--mut)">0 vybráno</span>
+    <button class="btn btn-ghost btn-sm" id="bulk-select-all-btn">Vybrat vše</button>
+    <button class="btn btn-danger btn-sm" id="bulk-delete-btn">Smazat</button>
+    <button class="btn btn-ghost btn-sm" id="bulk-cancel-btn">Zrušit</button>
+  </div>
+</div>
+
+<!-- ═══════ FLASHCARD VIEW ═══════ -->
+
+<div id="fc-view" class="view">
+  <div class="hdr">
+    <h1 id="fc-hdr-title">Flashcards</h1>
+    <div class="hdr-right" style="display:flex;gap:6px;align-items:center">
+      <select id="fc-lang-select"></select>
+      <select id="fc-filter-select">
+        <option value="today">Dnes</option>
+        <option value="all">Vše</option>
+        <option value="new">Nová</option>
+        <option value="weak">Obtížná</option>
+      </select>
+      <button class="fc-dir-btn" id="fc-dir-btn">⇄ Cizí</button>
+    </div>
+  </div>
+  <div id="fc-body" class="fc-body"></div>
+</div>
+
+<!-- ═══════ QUIZ VIEW ═══════ -->
+
+<div id="quiz-view" class="view">
+  <div class="hdr">
+    <button class="icon-btn" id="quiz-restart-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.68"/></svg>
+    </button>
+    <h1 id="quiz-hdr-title">Quiz</h1>
+    <span id="quiz-provider-badge" class="provider-badge warn">–</span>
+    <select id="quiz-lang-select"></select>
+  </div>
+  <div id="quiz-msg-list"><div id="quiz-empty" class="quiz-empty-state"><div style="font-size:2.67rem">🎯</div><h2 id="quiz-empty-title"></h2><p id="quiz-empty-desc"></p></div><div id="quiz-typing-row" class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+  <div id="quiz-input-area">
+    <textarea id="quiz-input" rows="1" placeholder="Tvoje odpověď…"></textarea>
+    <button id="quiz-send-btn" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════ TIPS VIEW ═══════ -->
+
+<div id="tips-view" class="view">
+  <div class="hdr">
+    <h1 id="tips-hdr-title">Uložená doporučení</h1>
+    <div style="display:flex;gap:6px;align-items:center">
+      <select id="tips-lang-select"></select>
+    </div>
+  </div>
+  <div class="tips-toolbar">
+    <button class="tips-filter-btn active" id="tips-filter-all">Vše</button>
+    <button class="tips-filter-btn" id="tips-filter-positive">✅ <span id="tips-lbl-positive">Správně</span></button>
+    <button class="tips-filter-btn" id="tips-filter-corrections">✏️ <span id="tips-lbl-corrections">Opravy</span></button>
+    <button class="tips-filter-btn" id="tips-filter-suggestions">💡 <span id="tips-lbl-suggestions">Tipy</span></button>
+    <span id="tips-count" style="font-size:0.8rem;color:var(--mut);margin-left:auto"></span>
+    <button class="btn btn-ghost btn-sm" id="tips-bulk-mode-btn">☑ Vybrat</button>
+  </div>
+  <div id="tips-list"></div>
+  <div id="tips-bulk-bar">
+    <span id="tips-bulk-count" style="font-size:0.87rem;flex:1;color:var(--mut)">0 vybráno</span>
+    <button class="btn btn-ghost btn-sm" id="tips-bulk-select-all-btn">Vybrat vše</button>
+    <button class="btn btn-danger btn-sm" id="tips-bulk-delete-btn">Smazat</button>
+    <button class="btn btn-ghost btn-sm" id="tips-bulk-cancel-btn">Zrušit</button>
+  </div>
+</div>
+
+<!-- ═══════ SETTINGS VIEW ═══════ -->
+
+<div id="settings-view" class="view">
+  <div class="hdr">
+    <div style="font-size:0.72rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--mut);text-align:center;padding-top:2px">Language Tutor</div>
+    <h1 id="settings-title">Nastavení</h1>
+  </div>
+  <div class="settings-body">
+    <div id="onboarding-banner" class="onboarding-banner" style="display:none">
+      <div class="onboarding-banner-hd" id="ob-title"></div>
+      <ol class="onboarding-steps">
+        <li id="ob-step1"></li>
+        <li id="ob-step2"></li>
+        <li id="ob-step3"></li>
+        <li id="ob-step4"></li>
+      </ol>
+      <div class="onboarding-banner-footer">
+        <button class="btn btn-sm btn-ghost" id="ob-dismiss"></button>
+      </div>
+    </div>
+    <div class="card">
+      <h3 id="s-provider-title">LLM Poskytovatel</h3>
+      <div class="field"><label id="s-provider-label">Poskytovatel</label>
+        <select id="cfg-provider">
+          <option value="anthropic">Anthropic (Claude)</option>
+          <option value="openai">OpenAI (GPT)</option>
+          <option value="gemini">Google (Gemini)</option>
+          <option value="ollama">Ollama (lokální)</option>
+          <option value="custom">Vlastní / Custom (OpenAI-compatible)</option>
+        </select>
+      </div>
+      <div class="field" id="field-apikey"><label id="s-apikey-label">API klíč</label>
+        <input type="password" id="cfg-apikey" placeholder="sk-…" autocomplete="off">
+        <div class="hint" id="apikey-hint"></div>
+        <div class="provider-status" id="apikey-status"></div>
+        <div class="hint" id="apikey-storage-warn" style="margin-top:4px"></div>
+        <div class="hint-warn" id="s-anthropic-hint" style="display:none"></div>
+      </div>
+      <div id="field-advanced" style="display:none">
+        <label class="adv-toggle">
+          <input type="checkbox" id="cfg-advanced">
+          <span id="s-advanced-label">Pokročilé</span>
+        </label>
+      </div>
+      <div id="advanced-fields" style="display:none">
+        <div class="field" id="field-anthropic-proxy-url" style="display:none">
+          <label id="s-anthropic-proxy-label">Proxy URL</label>
+          <input type="text" id="cfg-anthropic-proxy-url" placeholder="https://…" autocomplete="off">
+          <div class="hint" id="s-anthropic-proxy-hint"></div>
+        </div>
+        <div class="field" id="field-openai-endpoint-url" style="display:none">
+          <label id="s-openai-endpoint-label">API URL</label>
+          <input type="text" id="cfg-openai-endpoint-url" placeholder="https://api.openai.com/v1/chat/completions" autocomplete="off">
+          <div class="hint" id="s-openai-endpoint-hint"></div>
+        </div>
+        <div class="field" id="field-openai-auth-header" style="display:none">
+          <label id="s-openai-auth-label">Auth header</label>
+          <select id="cfg-openai-auth-header">
+            <option value="bearer">Authorization: Bearer (default)</option>
+            <option value="api-key">api-key (Azure)</option>
+          </select>
+        </div>
+        <div class="field" id="field-gemini-endpoint-url" style="display:none">
+          <label id="s-gemini-endpoint-label">API URL</label>
+          <input type="text" id="cfg-gemini-endpoint-url" placeholder="https://generativelanguage.googleapis.com/v1beta" autocomplete="off">
+          <div class="hint" id="s-gemini-endpoint-hint"></div>
+        </div>
+      </div>
+      <div class="field" id="field-ollama-url" style="display:none"><label>Ollama URL</label>
+        <input type="text" id="cfg-ollama-url" placeholder="http://localhost:11434">
+        <div class="hint" id="s-ollama-hint">Ollama musí mít povoleno CORS pro tuto doménu.</div>
+      </div>
+      <div class="field" id="field-custom-url" style="display:none"><label>API URL</label>
+        <input type="text" id="cfg-custom-url" placeholder="https://openrouter.ai/api/v1">
+        <div class="hint" id="s-custom-url-hint">OpenAI-compatible endpoint (bez /chat/completions). API klíč výše je volitelný.</div>
+      </div>
+      <div class="field" id="field-model-select">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <label id="s-model-label" style="margin:0">Model</label>
+          <button class="btn btn-ghost btn-sm" id="fetch-models-btn" style="padding:2px 8px;font-size:0.8rem">↻ <span id="fetch-models-lbl">Načíst modely</span></button>
+        </div>
+        <select id="cfg-model"></select>
+        <div class="hint" id="model-fetch-status" style="margin-top:4px"></div>
+        <div class="hint" id="s-model-hint" style="margin-top:4px"></div>
+      </div>
+      <div class="field" id="field-custom-model" style="display:none"><label id="s-custom-model-label">Model (název)</label>
+        <input type="text" id="cfg-custom-model" placeholder="gpt-4o-mini">
+      </div>
+    </div>
+    <div class="card">
+      <h3 id="s-tutor-title">Chování tutora</h3>
+      <div class="field"><label id="s-lang-label">Jazyk</label>
+        <select id="cfg-level-lang-select"></select>
+      </div>
+      <div class="field"><label id="s-level-label">Úroveň studenta</label>
+        <select id="cfg-level">
+          <option value="beginner">Začátečník (A1–A2)</option>
+          <option value="intermediate">Mírně pokročilý (B1–B2)</option>
+          <option value="advanced">Pokročilý (C1–C2)</option>
+        </select>
+      </div>
+      <div class="field"><label id="s-native-lang-label">Mateřský jazyk</label>
+        <select id="cfg-native-lang">
+          <option value="">Automaticky (= jazyk UI)</option>
+        </select>
+      </div>
+      <div class="field"><label id="s-feedback-label">Styl zpětné vazby</label>
+        <select id="cfg-feedback-style">
+          <option value="gentle">Jemný (povzbuzující)</option>
+          <option value="balanced">Vyvážený</option>
+          <option value="strict">Přísný (každá chyba)</option>
+        </select>
+      </div>
+      <div class="field"><label id="s-custom-instructions-label">Vlastní instrukce pro tutora</label>
+        <textarea id="cfg-custom-instructions" rows="3" maxlength="500" style="resize:vertical" placeholder="Vždy používej formální tykání. Vysvětluj gramatická pravidla při opravách."></textarea>
+        <span id="cfg-custom-instructions-count" style="font-size:0.78rem;color:var(--mut);float:right">0</span><span style="font-size:0.78rem;color:var(--mut);float:right">&nbsp;/ 500&nbsp;</span>
+        <small id="s-custom-instructions-hint" style="color:var(--mut);display:block;margin-top:4px">Pro nejlepší výsledky piš instrukce v angličtině.</small>
+      </div>
+    </div>
+    <div class="card">
+      <h3 id="s-ui-title">Rozhraní</h3>
+      <div class="field"><label id="s-ui-lang-label">Jazyk rozhraní</label>
+        <select id="cfg-ui-lang"></select>
+      </div>
+      <div class="field"><label id="s-font-size-label">Velikost písma</label>
+        <select id="cfg-font-size">
+          <option value="small">Malé</option>
+          <option value="medium">Střední</option>
+          <option value="large">Velké</option>
+          <option value="xl">Extra velké</option>
+        </select>
+      </div>
+      <div class="field"><label id="s-theme-label">Vzhled</label>
+        <select id="cfg-theme">
+          <option value="auto">Automaticky (systém)</option>
+          <option value="light">Světlý</option>
+          <option value="dark">Tmavý</option>
+        </select>
+      </div>
+      <div class="field"><label id="s-default-view-label">Výchozí záložka</label>
+        <select id="cfg-default-view">
+          <option value="chat" id="s-default-view-chat">Chat</option>
+          <option value="vocab" id="s-default-view-vocab">Slovíčka</option>
+          <option value="fc" id="s-default-view-fc">Flashcards</option>
+          <option value="quiz" id="s-default-view-quiz">Quiz</option>
+          <option value="tips" id="s-default-view-tips">Uložené</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <h3 id="s-data-title">Data & záloha</h3>
+      <p id="s-data-desc" style="font-size:0.87rem;color:var(--mut);margin-bottom:12px">Export zahrnuje konfiguraci, veškerou slovní zásobu (všechny jazyky) a SM-2 data.</p>
+      <div id="backup-reminder-banner" class="backup-reminder" style="display:none">
+        <p id="backup-reminder-text" class="backup-reminder-text"></p>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn btn-primary btn-sm" id="backup-reminder-export-btn">Exportovat zálohu</button>
+          <button class="btn btn-ghost btn-sm" id="backup-reminder-later-btn">Připomenout za 14 dní</button>
+          <button class="btn btn-ghost btn-sm" id="backup-reminder-disable-btn">Nevypomínat</button>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button id="s-save-btn" class="btn btn-primary">Uložit</button>
+        <button id="s-export-btn" class="btn btn-ghost">Export zálohy</button>
+        <button id="s-import-btn" class="btn btn-ghost">Import zálohy</button>
+      </div>
+      <div style="margin-top:10px" class="btn-row">
+        <button id="s-clear-btn" class="btn btn-danger">Smazat vše</button>
+        <button id="s-adv-btn" class="btn btn-warn">⚠ Zde jsou draci</button>
+      </div>
+      <span id="save-toast" class="save-toast"></span>
+    </div>
+    <div style="text-align:center;font-size:0.8rem;color:var(--mut);padding-bottom:4px">Language Tutor v1.4.1 · PWA:<button id="s-add-to-home" style="background:none;border:none;padding:0;color:var(--mut);cursor:pointer;font-size:inherit;text-decoration:underline">Přidat na plochu</button> · <a href="https://github.com/honzabfu/jz-language-tutor#readme" target="_blank" rel="noopener" style="color:var(--mut)" id="s-help-link">Nápověda</a></div>
+    <div style="text-align:center;font-size:0.8rem;color:var(--mut);padding-bottom:8px"><a href="https://jan-zak.cz" target="_blank" rel="noopener" style="color:var(--mut)">jan-zak.cz</a> <span id="footer-tagline">— další užitečné aplikace</span></div>
+  </div>
+</div>
+
+<!-- ═══════ ADVANCED SETTINGS OVERLAY ═══════ -->
+
+<div id="advanced-settings-overlay" class="overlay">
+  <div class="sheet">
+    <h2 id="adv-title">⚠ Zde jsou draci</h2>
+    <div class="hint-warn" id="adv-warning" style="margin-bottom:14px">Tato nastavení jsou určena pro pokročilé uživatele. Špatné hodnoty mohou způsobit nefunkčnost nebo vysoké náklady na API.</div>
+    <div class="field">
+      <label id="adv-max-tokens-label">Max. tokenů (chat odpovědi)</label>
+      <input type="number" id="cfg-adv-max-tokens" min="128" max="8192" step="64" style="width:100%">
+      <span class="hint" id="adv-max-tokens-hint">Výchozí: 8192. Řídí maximální délku odpovědí tutora v chatu.</span>
+    </div>
+    <div class="field">
+      <label class="adv-toggle" style="margin-bottom:6px">
+        <input type="checkbox" id="cfg-adv-temperature-default">
+        <span id="adv-temperature-default-label">Použít výchozí hodnotu provideru</span>
+      </label>
+      <label><span id="adv-temperature-label">Teplota</span>: <span id="cfg-adv-temperature-val">0.70</span></label>
+      <input type="range" id="cfg-adv-temperature" min="0" max="1" step="0.05" style="width:100%">
+      <span class="hint" id="adv-temperature-hint">0 = deterministický, 1 = kreativnější.</span>
+    </div>
+    <div class="field">
+      <label class="adv-toggle">
+        <input type="checkbox" id="cfg-adv-streaming-disabled">
+        <span id="adv-streaming-label">Zakázat streaming odpovědí</span>
+      </label>
+      <span class="hint" id="adv-streaming-hint">Pro vlastní endpointy bez podpory SSE streamingu.</span>
+    </div>
+    <div class="field">
+      <label id="s-fc-session-size-label">Počet karet za sezení</label>
+      <input type="number" id="cfg-fc-session-size" min="5" max="50" step="1" style="width:100%">
+      <span class="hint" id="s-fc-session-size-hint">Kolik karet se zobrazí za jedno sezení (5–50).</span>
+    </div>
+    <div class="field">
+      <label id="s-quiz-session-size-label">Otázek na kvíz</label>
+      <input type="number" id="cfg-quiz-session-size" min="5" max="30" step="1" style="width:100%">
+      <span class="hint" id="s-quiz-session-size-hint">Počet slovíček testovaných na jeden kvíz (5–30).</span>
+    </div>
+    <div class="field">
+      <label><span id="s-sm-easy-bonus-label">SM-2 bonus pro snadné</span>: <span id="cfg-sm-easy-bonus-val">1.00</span>×</label>
+      <input type="range" id="cfg-sm-easy-bonus" min="1.0" max="1.5" step="0.05" style="width:100%">
+      <span class="hint" id="s-sm-easy-bonus-hint">Interval snadných karet se vynásobí tímto koeficientem. 1.0 = bez bonusu.</span>
+    </div>
+    <div class="field">
+      <label><span id="s-tts-rate-label">Rychlost výslovnosti</span>: <span id="cfg-tts-rate-val">0.9</span>×</label>
+      <input type="range" id="cfg-tts-rate" min="0.5" max="1.5" step="0.1" style="width:100%">
+      <span class="hint" id="s-tts-rate-hint">Rychlost přehrávání výslovnosti (0.5–1.5×).</span>
+    </div>
+    <div class="field">
+      <label id="s-vocab-import-dups-label">Při importu duplicit</label>
+      <select id="cfg-vocab-import-dups">
+        <option value="skip">Přeskočit</option>
+        <option value="merge">Sloučit (aktualizovat překlad)</option>
+        <option value="overwrite">Přepsat (překlad + poznámky)</option>
+      </select>
+      <span class="hint" id="s-vocab-import-dups-hint">Chování při importu slovíčka, které již existuje ve slovníku.</span>
+    </div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-primary" id="adv-save-btn">Uložit</button>
+      <button class="btn btn-ghost" id="adv-cancel-btn">Zrušit</button>
+      <button class="btn btn-ghost" id="adv-reset-btn">Výchozí</button>
+      <button class="btn btn-ghost" id="adv-cfg-edit-btn">Upravit konfiguraci</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ CFG EDITOR OVERLAY ═══════ -->
+
+<div id="cfg-editor-overlay" class="overlay">
+  <div class="sheet">
+    <h2 id="cfg-editor-title">Úprava konfigurace</h2>
+    <div class="hint-warn" id="cfg-editor-hint" style="margin-bottom:14px">Přímo editujte JSON objekt konfigurace. Neplatný JSON nebo nesprávné hodnoty mohou způsobit nefunkčnost.</div>
+    <textarea id="cfg-editor-textarea" style="width:100%;height:40vh;min-height:150px;font-family:monospace;font-size:12px;border:1px solid var(--bdr);border-radius:6px;padding:8px;resize:none;background:var(--bg);color:var(--txt);box-sizing:border-box;overflow-y:auto"></textarea>
+    <div id="cfg-editor-error" style="color:var(--err);margin-top:6px;display:none;font-size:13px"></div>
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-primary" id="cfg-editor-save-btn">Uložit</button>
+      <button class="btn btn-ghost" id="cfg-editor-cancel-btn">Zrušit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ PWA INSTALL BANNER ═══════ -->
+
+<div id="pwa-banner">
+  <span id="pwa-banner-text">📲 Přidat Language Tutor na plochu</span>
+  <button class="pwa-install-btn" id="pwa-install-btn">Přidat</button>
+  <button class="pwa-dismiss-btn" id="pwa-dismiss-btn" title="Zavřít">×</button>
+</div>
+
+<!-- ═══════ PWA GUIDE MODAL ═══════ -->
+
+<div id="pwa-guide-modal" class="overlay">
+  <div class="sheet">
+    <h2 id="pwa-guide-title">Přidat na plochu</h2>
+    <div id="pwa-guide-ios" style="display:none">
+      <ol style="margin:12px 0;padding-left:1.4em;line-height:1.8">
+        <li id="pwa-guide-ios-s1"></li>
+        <li id="pwa-guide-ios-s2"></li>
+        <li id="pwa-guide-ios-s3"></li>
+      </ol>
+      <p id="pwa-guide-ios-warn" style="margin:10px 0 4px;font-size:0.83rem;color:var(--mut);line-height:1.5"></p>
+    </div>
+    <div id="pwa-guide-other" style="display:none">
+      <p id="pwa-guide-other-text" style="margin:12px 0;line-height:1.6"></p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="pwa-guide-close">Zavřít</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SW UPDATE BANNER ═══════ -->
+
+<div id="sw-update-banner">
+  <span id="sw-update-banner-text">🔄 Nová verze je k dispozici</span>
+  <button class="sw-reload-btn" id="sw-reload-btn">Obnovit</button>
+  <button class="sw-dismiss-btn" id="sw-dismiss-btn" title="Zavřít">×</button>
+</div>
+
+<!-- ═══════ NAVBAR ═══════ -->
+
+<div id="navbar">
+  <button class="nav-btn" id="nav-chat">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span id="nav-lbl-chat">Chat</span>
+  </button>
+  <button class="nav-btn" id="nav-vocab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    <span id="nav-lbl-vocab">Slovíčka</span>
+  </button>
+  <button class="nav-btn" id="nav-fc">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+    <span id="nav-lbl-fc">Flashcards</span>
+  </button>
+  <button class="nav-btn" id="nav-quiz">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span id="nav-lbl-quiz">Quiz</span>
+  </button>
+  <button class="nav-btn" id="nav-tips">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+    <span id="nav-lbl-tips">Uložené</span>
+  </button>
+  <button class="nav-btn" id="nav-settings">
+    <span class="nav-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span id="backup-badge" class="backup-badge" style="display:none"></span>
+    </span>
+    <span id="nav-lbl-settings">Nastavení</span>
+  </button>
+</div>
+
+<!-- ═══════ WORD MODAL ═══════ -->
+
+<div id="word-modal" class="overlay">
+  <div class="sheet">
+    <h2 id="modal-title">Přidat slovo</h2>
+    <div class="field"><label id="modal-word-label" style="display:flex;align-items:center;gap:6px"><span id="modal-word-label-text">Slovo / fráze *</span><button type="button" class="speak-btn" id="modal-word-speak-btn" title="Hear word pronunciation">🔊</button></label><input type="text" id="modal-word" placeholder="hola"></div>
+    <div style="display:flex;justify-content:center;margin:-4px 0"><button type="button" class="icon-btn" id="modal-swap-btn" title="Záměna">⇅</button></div>
+    <div class="field"><label id="modal-trans-label"><span id="modal-trans-label-text">Překlad *</span></label><input type="text" id="modal-trans" placeholder="ahoj"></div>
+    <div class="field"><label id="modal-note-label">Poznámka</label><textarea id="modal-notes" placeholder="příklad použití, kontext…"></textarea></div>
+    <div class="field"><label id="modal-tags-label">Tagy</label><input type="text" id="modal-tags" placeholder="pozdravy, B1 (čárkou oddělené)"></div>
+    <div id="modal-sm2-info" style="display:none;background:var(--bg);border-radius:10px;padding:10px 14px;font-size:0.87rem;color:var(--mut)">
+      <div id="modal-sm2-title" style="font-weight:600;margin-bottom:6px;color:var(--txt)">Statistiky opakování</div>
+      <div id="modal-sm2-rows" style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="modal-save-btn">Uložit</button>
+      <button class="btn btn-ghost" id="modal-cancel-btn">Zrušit</button>
+      <button class="btn btn-danger" id="modal-delete-btn" style="display:none">Smazat</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ IMPORT MODAL ═══════ -->
+
+<div id="import-modal" class="overlay">
+  <div class="sheet">
+    <h2 id="import-title">Import slovní zásoby</h2>
+    <p id="import-desc" style="font-size:0.87rem;color:var(--mut);margin-bottom:12px">CSV nebo TXT: každý řádek = <code>slovo,překlad,poznámka(volitelné)</code><br>Nebo vlož JSON ze zálohy.</p>
+    <div class="field"><label id="import-content-label">Obsah souboru</label><textarea id="import-text" style="min-height:120px;font-family:monospace;font-size:0.8rem" placeholder="hola,ahoj,pozdrav&#10;gracias,děkuji"></textarea></div>
+    <div class="field"><label id="import-lang-label">Cílový jazyk</label>
+      <select id="import-lang-sel"></select>
+    </div>
+    <div class="field"><label id="import-col-label">Pořadí sloupců</label>
+      <select id="import-col-order">
+        <option value="normal">Cizí jazyk, Překlad (výchozí)</option>
+        <option value="reverse">Překlad, Cizí jazyk</option>
+      </select>
+    </div>
+    <div class="hint" id="import-preview" style="margin-bottom:10px"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="import-confirm-btn">Importovat</button>
+      <button class="btn btn-ghost" id="import-cancel-btn">Zrušit</button>
+      <button class="btn btn-ghost" id="import-file-btn">📂 Ze souboru</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="file-input" accept=".csv,.txt,.json" style="display:none">
+
+<!-- ═══════ BACKUP IMPORT MODAL ═══════ -->
+
+<div id="backup-import-modal" class="overlay">
+  <div class="sheet">
+    <h2 id="backup-import-title">Import zálohy</h2>
+    <p id="backup-import-desc" style="font-size:0.87rem;color:var(--mut);margin-bottom:12px">Vlož JSON zálohu nebo ji načti ze souboru.</p>
+    <div class="field"><label id="backup-import-label">JSON záloha</label><textarea id="backup-import-text" style="min-height:120px;font-family:monospace;font-size:0.8rem" placeholder='{"version":2,"cfg":{},"vocab":{}}'></textarea></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="backup-import-btn">Importovat</button>
+      <button class="btn btn-ghost" id="backup-cancel-btn">Zrušit</button>
+      <button class="btn btn-ghost" id="backup-file-btn">📂 Ze souboru</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="backup-file-input" accept=".json" style="display:none">
+
+<!-- ═══════ GENERATE MODAL ═══════ -->
+
+<div id="gen-modal" class="overlay">
+  <div class="sheet">
+    <h2 id="gen-title">✨ Generovat slovíčka</h2>
+    <div id="gen-form">
+      <div class="field"><label id="gen-topic-label">Téma *</label>
+        <input type="text" id="gen-topic" placeholder="cestování, jídlo, rodina…">
+      </div>
+      <div class="field"><label id="gen-count-label">Počet slov</label>
+        <select id="gen-count">
+          <option value="5">5</option>
+          <option value="10" selected>10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+        </select>
+      </div>
+      <div class="field"><label id="gen-level-label">Úroveň</label>
+        <select id="gen-level">
+          <option value="beginner">Začátečník (A1–A2)</option>
+          <option value="intermediate">Mírně pokročilý (B1–B2)</option>
+          <option value="advanced">Pokročilý (C1–C2)</option>
+        </select>
+      </div>
+      <p id="gen-api-note" class="hint" style="margin-bottom:12px"></p>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="gen-action-btn">Generovat</button>
+        <button class="btn btn-ghost" id="gen-cancel-btn">Zrušit</button>
+      </div>
+    </div>
+    <div id="gen-preview" style="display:none">
+      <p id="gen-preview-hint" style="font-size:0.87rem;color:var(--mut);margin-bottom:8px">Zaškrtni slovíčka, která chceš importovat:</p>
+      <div id="gen-word-list" style="max-height:260px;overflow-y:auto;border:1px solid var(--bdr);border-radius:var(--rs)"></div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn btn-primary" id="gen-import-selected-btn">Importovat vybrané</button>
+        <button class="btn btn-ghost" id="gen-back-btn">← Zpět</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ DICTIONARY MODAL ═══════ -->
+
+<div id="dict-modal" class="overlay">
+  <div class="sheet">
+    <h2 id="dict-modal-title">Slovník</h2>
+    <div class="field">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="dict-input" style="flex:1;min-width:0">
+        <button class="btn btn-primary btn-sm" id="dict-lookup-btn">Hledat</button>
+      </div>
+    </div>
+    <div id="dict-result"></div>
+    <p id="dict-warning" class="hint"></p>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-sm" id="dict-add-btn" style="display:none">+ Přidat do slovíček</button>
+      <button class="btn btn-ghost" id="dict-close-btn">Zavřít</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+
+</body>
+</html>
