@@ -14,12 +14,12 @@ PWA language tutor split into ES modules — no build tool, no npm, no bundler. 
 | `constants.js` | ~114 | MODELS_METADATA (incl. `minReasoning`), LANG_META, UI_LANGS, UI_LANG_*, esc(), uid(), safeAssign(), renderMarkdown() |
 | `state.js` | ~74 | Shared mutable `state` object; defaultCfg(), getLangLevel(), getNativeLangName(), getUiLocale() |
 | `dom.js` | ~26 | playWord(), syncLangSelectors(), setActiveLang(), autoResize() — breaks circular deps |
-| `llm.js` | ~236 | PROVIDERS registry, streaming, safeLLM(), safeLLMStream(), abortPending(), hasApiAccess(), supportsTemperature() |
+| `llm.js` | ~252 | PROVIDERS registry, streaming, safeLLM(), safeLLMStream(), abortPending(), hasApiAccess(), supportsTemperature() |
 | `vocab.js` | ~393 | Vocab CRUD, newSM2(), CSV import/export (RFC 4180), dictionary, generate, renderVocabList() |
 | `tips.js` | ~119 | Saved tips CRUD, renderTipsList(), attachFeedbackCard() |
 | `updates.js` | ~244 | applyI18n(), updateModeBadge(), updateInputPlaceholder(), updateEmptyState(), updateApiKeyHint() |
 | `flashcard.js` | ~114 | sm2Update(), startFlashcards(), renderFC(), revealFC(), rateFC() |
-| `quiz.js` | ~111 | startQuiz(), quizAsk(), quizSend() |
+| `quiz.js` | ~160 | startQuiz(), quizAsk(), quizSend(), pauseQuiz(), resumeQuiz() |
 | `chat.js` | ~212 | sendMessage(), appendMsg(), makeReplyExtractor(), SSE streaming |
 | `settings.js` | ~543 | populateSettingsUI(), saveSettings(), export/import backup, cfg editor |
 | `nav.js` | ~22 | navTo() — also aborts any in-flight LLM call |
@@ -36,7 +36,7 @@ python3 -m http.server 8080
 npx serve .
 ```
 
-No lint or build step. Run offline regression tests with Node.js 24: `node --test tools/review-regressions.test.mjs`. These cover error rendering, streaming errors, cache isolation and quiz session changes without API keys or dependencies. `tools/live-models-test.mjs` runs every model in `MODELS_METADATA` against the live APIs (see *Model list review*); `tools/` is not deployed. Deployment is via `.github/workflows/deploy.yml`:
+No lint or build step. See [TESTING.md](TESTING.md) for browser/offline procedures and the dated production verification record. Run offline regression tests with Node.js 24: `node tools/review-regressions.test.mjs`. These cover error rendering, streaming errors, cache isolation and quiz session changes without API keys or dependencies. `tools/live-models-test.mjs` runs every model in `MODELS_METADATA` against the live APIs (see *Model list review*); `tools/` is not deployed. Deployment is via `.github/workflows/deploy.yml`:
 
 - **`main`** → deploys to `gh-pages` branch root → `honzabfu.github.io/jz-language-tutor/`
 - **Any other branch** → deploys to `gh-pages/preview/<branch>/` → `honzabfu.github.io/jz-language-tutor/preview/<branch>/`
@@ -167,6 +167,8 @@ To add a new persistent non-vocabulary key: add it to `_SETTINGS_KEYS` (`setting
 
 ### Views
 
+`navTo()` first calls `pauseQuiz()`, which aborts the global in-flight request, clears the next-question timer and invalidates pending quiz callbacks. Entering the quiz calls `resumeQuiz()` to preserve a same-language session or restart after a language change.
+
 Six bottom-nav views: `#chat-view`, `#vocab-view`, `#fc-view`, `#quiz-view`, `#tips-view`, `#settings-view`. Navigation via `navTo(name)` (`nav.js`) which toggles `.active` on the matching `.view` and `.nav-btn` elements and runs view-specific setup (e.g. `startFlashcards`, `renderVocabList`, `populateSettingsUI`).
 
 ### SM-2 (`vocab.js`, `flashcard.js`)
@@ -235,7 +237,7 @@ index.html
 - **Settings save**: `saveSettings()` (`settings.js`) reads all `#cfg-*` inputs into `cfg`, then persists via the `saveCfg()` helper (the only place in `settings.js` that writes `lt-cfg`)
 - **Provider settings**: per-provider state lives in `cfg.providerSettings[provider]`; use `_saveProviderSettings(p)` / `_loadProviderSettings(p)` before switching providers
 - **Overlays (modals)**: `.overlay.open` shows the sheet; close by removing `.open`
-- **XSS safety**: use `esc(str)` (`constants.js`) to HTML-escape strings before injecting into `innerHTML` — it escapes `& < > " '`, so it is attribute-safe
+- **XSS safety**: render remote error messages with `textContent` (the dictionary uses `replaceChildren()` with a text-only error element). For HTML templates, use `esc(str)` (`constants.js`) to HTML-escape strings before injecting into `innerHTML` — it escapes `& < > " '`, so it is attribute-safe
 - **Untrusted JSON**: never `Object.assign` parsed JSON from localStorage or backup files onto live objects — use `safeAssign()` (`constants.js`), which skips `__proto__`/`constructor`/`prototype`; backup import additionally validates that vocab/tips are arrays, languages exist in `LANG_META`, item fields are strings (non-conforming items are dropped, `id`/`notes`/`tags`/`sm2`/`date` normalized), and asks for explicit confirmation when the imported cfg changes any API endpoint URL (`_collectEndpointUrls()` in `settings.js` — API keys are sent to those URLs)
 - **Service worker cache**: bump the version suffix in `sw.js` whenever cached assets change; preserve the scope-derived prefix and only clean up caches belonging to that prefix; add new JS files to the `ASSETS` array
 

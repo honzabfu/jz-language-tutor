@@ -385,6 +385,18 @@ Gemini 3.8 Flash, Claude Sonnet 5.5 a GPT-6.1 Sol jsou dražší alternativy; re
 
 > **Tip:** Lesson mód přidává celý seznam slovíček do každého requestu — při velké slovní zásobě (50 slov) zdražuje chat přibližně o 30–40 %.
 
+### Vývoj a testování
+
+Aplikace používá nativní ES moduly bez build nástroje. Pro lokální spuštění použij HTTP server, například `python3 -m http.server 8080`.
+
+Regresní testy bez API klíčů a bez instalace závislostí spustíš pomocí Node.js 24:
+
+```bash
+node tools/review-regressions.test.mjs
+```
+
+[Postup testování a výsledky ověření v1.4.12](TESTING.md) zahrnují kontroly v prohlížeči, offline režim a samostatné živé testy AI. Simulované odpovědi neověřují dostupnost ani kvalitu skutečných modelů.
+
 ### Roadmap
 
 - [ ] Statistiky pokroku (růst slovní zásoby, přesnost v čase)
@@ -790,6 +802,18 @@ Example for **gemini-3.1-flash-lite** ($0.25/M input, $1.50/M output tokens):
 Gemini 3.8 Flash, Claude Sonnet 5.5 and GPT-6.1 Sol are more expensive alternatives; reasoning models also spend tokens on thinking. Ollama (local) is free.
 
 > **Tip:** Lesson mode adds your entire vocabulary list to every request — with a large vocabulary (50 words) this increases chat cost by roughly 30–40 %.
+
+### Development and testing
+
+The app uses native ES modules with no build step. For local development, use an HTTP server such as `python3 -m http.server 8080`.
+
+Run regression tests with Node.js 24, without API keys or dependency installation:
+
+```bash
+node tools/review-regressions.test.mjs
+```
+
+[Testing instructions and the v1.4.12 verification record](TESTING.md) cover browser checks, offline behavior and separate live AI tests. Controlled responses do not verify live model availability or answer quality.
 
 ### Roadmap
 
