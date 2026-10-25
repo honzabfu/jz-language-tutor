@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-PWA language tutor split into ES modules — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.4.11**, PWA cache key: `langtutor-v29`.
+PWA language tutor split into ES modules — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.4.12**, PWA cache key: `langtutor:<service-worker-scope>:v30`.
 
 | File | Lines | Contents |
 |---|---|---|
@@ -24,7 +24,7 @@ PWA language tutor split into ES modules — no build tool, no npm, no bundler. 
 | `settings.js` | ~543 | populateSettingsUI(), saveSettings(), export/import backup, cfg editor |
 | `nav.js` | ~22 | navTo() — also aborts any in-flight LLM call |
 | `app.js` | ~297 | Entry point: init(), addEventListener wiring, PWA install, SW registration |
-| `sw.js` | ~79 | Service worker (network-first with `cache:'no-cache'` revalidation, cache key in line 1) |
+| `sw.js` | ~80 | Service worker (network-first with `cache:'no-cache'` revalidation, scope prefix + cache version) |
 
 ## Development
 
@@ -36,12 +36,12 @@ python3 -m http.server 8080
 npx serve .
 ```
 
-No lint, no unit tests. `tools/live-models-test.mjs` runs every model in `MODELS_METADATA` against the live APIs (see *Model list review*); `tools/` is not deployed. Deployment is via `.github/workflows/deploy.yml`:
+No lint or build step. Run offline regression tests with Node.js 24: `node --test tools/review-regressions.test.mjs`. These cover error rendering, streaming errors, cache isolation and quiz session changes without API keys or dependencies. `tools/live-models-test.mjs` runs every model in `MODELS_METADATA` against the live APIs (see *Model list review*); `tools/` is not deployed. Deployment is via `.github/workflows/deploy.yml`:
 
 - **`main`** → deploys to `gh-pages` branch root → `honzabfu.github.io/jz-language-tutor/`
 - **Any other branch** → deploys to `gh-pages/preview/<branch>/` → `honzabfu.github.io/jz-language-tutor/preview/<branch>/`
 
-Preview SW cache key is patched to `langtutor-preview-<branch>` so it doesn't collide with production cache. Preview folders are deleted automatically when the PR is closed. If an open PR exists for the branch, the bot posts its preview URL as a PR comment.
+SW cache names include `self.registration.scope`, separating production and each preview. Activation removes only older versions in the same scope; legacy and unrelated caches are left untouched. No preview cache patch is needed in the deploy workflow. Preview folders are deleted automatically when the PR is closed. If an open PR exists for the branch, the bot posts its preview URL as a PR comment.
 
 > **One-time setup:** GitHub Pages must be set to deploy from the `gh-pages` branch (Settings → Pages → Source → Branch: `gh-pages` / `/(root)`). The `gh-pages` branch is created automatically on the first push to `main`.
 
@@ -56,6 +56,7 @@ Preview SW cache key is patched to `langtutor-preview-<branch>` so it doesn't co
 - `tipsLang` — active language for the tips tab
 - `fcQueue`, `fcIdx`, `fcRevealed`, `fcDirection` — flashcard session state
 - `chatHistory`, `quizHistory`, `quizQueue`, `quizCurrentWord` — chat/quiz session state
+- `quizLang`, `quizSessionId`, `quizTimer`, `quizBusy`, `quizNeedsQuestion` — quiz language, generation guard, next-question timer and request state; `pauseQuiz()` invalidates pending callbacks, `resumeQuiz()` restarts on language changes or resumes an interrupted question
 
 #### `cfg` fields
 
@@ -116,7 +117,7 @@ Entry points `safeLLM(msgs, sys, maxTokens, signal)` and `safeLLMStream(…, onC
 - `sse` — `true` = SSE (`data:` lines, `readSSE`), `false` = NDJSON (Ollama, `readNDJSON`)
 - `chunk(data, out)` — streaming event handler; `out.text(t)` appends, `out.truncated`/`out.refused`/`out.done` flags
 
-`openai` and `custom` share `parse`/`chunk` (`_openAiParse`/`_openAiChunk`). Both stream readers flush the `TextDecoder` and process a final line without trailing `\n`; they yield (`setTimeout 0`) once per network chunk. To add a provider: add a registry entry (plus `MODELS_METADATA`, `DEFAULT_PROVIDER_SETTINGS` in `constants.js` and settings UI fields).
+`openai` and `custom` share `parse`/`chunk` (`_openAiParse`/`_openAiChunk`). Both stream readers flush the `TextDecoder` and process a final line without trailing `\n`; they yield (`setTimeout 0`) once per network chunk. Provider error events reject the request even after partial text; only JSON parse failures are skipped, callback exceptions propagate. Interrupted chat replies receive a localized incomplete-response marker. To add a provider: add a registry entry (plus `MODELS_METADATA`, `DEFAULT_PROVIDER_SETTINGS` in `constants.js` and settings UI fields).
 
 `hasApiAccess()` (exported from `llm.js`) is the single "is the LLM usable" predicate used by chat, quiz, vocab generate, and the provider badge. Model metadata (tiers, capabilities, recommended flag, `minReasoning`) lives in `MODELS_METADATA` (`constants.js`). The model `<select>` label is built by `_modelLabel()` (`settings.js`): name · `$input/$output` per 1M tokens (omitted when 0) · ★ if `recommended` — models fetched via "Load models" are matched to the metadata by id (Ollama tags by the part before `:`). The first entry of each provider list is the default model for new users. When adding a cloud model that reasons by default, set `minReasoning` to the lowest level the provider accepts for it (verify against the provider docs — e.g. GPT-6 Luna accepts `none`, Sol/Astra only `low`); omit it for models that don't reason without an explicit parameter.
 
@@ -236,4 +237,5 @@ index.html
 - **Overlays (modals)**: `.overlay.open` shows the sheet; close by removing `.open`
 - **XSS safety**: use `esc(str)` (`constants.js`) to HTML-escape strings before injecting into `innerHTML` — it escapes `& < > " '`, so it is attribute-safe
 - **Untrusted JSON**: never `Object.assign` parsed JSON from localStorage or backup files onto live objects — use `safeAssign()` (`constants.js`), which skips `__proto__`/`constructor`/`prototype`; backup import additionally validates that vocab/tips are arrays, languages exist in `LANG_META`, item fields are strings (non-conforming items are dropped, `id`/`notes`/`tags`/`sm2`/`date` normalized), and asks for explicit confirmation when the imported cfg changes any API endpoint URL (`_collectEndpointUrls()` in `settings.js` — API keys are sent to those URLs)
-- **Service worker cache**: bump the version string in `sw.js` line 1 whenever cached assets change; add new JS files to the `ASSETS` array
+- **Service worker cache**: bump the version suffix in `sw.js` whenever cached assets change; preserve the scope-derived prefix and only clean up caches belonging to that prefix; add new JS files to the `ASSETS` array
+

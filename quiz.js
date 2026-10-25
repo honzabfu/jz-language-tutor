@@ -10,14 +10,33 @@ export function onQuizLangChange(l){
   setActiveLang(l);startQuiz();
 }
 
+export function pauseQuiz(){
+  abortPending();
+  clearTimeout(state.quizTimer);state.quizTimer=null;
+  state.quizSessionId++;
+  state.quizBusy=false;
+  setQuizTyping(false);
+}
+
+export function resumeQuiz(){
+  if(state.quizLang!==state.currentLang||!state.quizHistory.length){startQuiz();return;}
+  if(state.quizNeedsQuestion&&state.quizQueue.length)quizAsk(state.quizLang);
+}
+
+const isCurrentSession=(id,lang)=>id===state.quizSessionId&&lang===state.quizLang&&lang===state.currentLang;
+
 export function startQuiz(){
+  pauseQuiz();
   state.quizHistory=[];
   state.quizQueue=[];
   state.quizCurrentWord=null;
+  state.quizNeedsQuestion=true;
   const qList=document.getElementById('quiz-msg-list');
   [...qList.children].forEach(el=>{if(el.id!=='quiz-typing-row'&&el.id!=='quiz-empty')el.remove();});
   document.getElementById('quiz-empty').style.display='none';
-  const lang=document.getElementById('quiz-lang-select').value;
+  const lang=state.currentLang;
+  state.quizLang=lang;
+  document.getElementById('quiz-lang-select').value=lang;
   const arr=getVocab(lang);
   if(!arr.length){document.getElementById('quiz-empty').style.display='';return;}
   const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
@@ -31,7 +50,9 @@ export function startQuiz(){
 
 export async function quizAsk(lang){
   const t=state.t;
-  if(!state.quizQueue.length)return;
+  const sessionId=state.quizSessionId;
+  if(!isCurrentSession(sessionId,lang)||!state.quizQueue.length||state.quizBusy)return;
+  state.quizNeedsQuestion=true;
   state.quizCurrentWord=state.quizQueue[0];
   const word=state.quizCurrentWord;
   const meta=LANG_META[lang];
@@ -42,10 +63,19 @@ Respond ONLY with JSON: {"question":"<question in ${meta.name}; if the task requ
   if(!hasApiAccess()){appendQuizMsg('tutor',t.errNoKey);return;}
   abortPending();
   state._abortCtrl=new AbortController();
+  const signal=state._abortCtrl.signal;
+  state.quizBusy=true;
   setQuizTyping(true);
   let raw;
-  try{raw=await safeLLM([{role:'user',content:quizPrompt}],quizSys,8192,state._abortCtrl.signal);}
-  catch(err){setQuizTyping(false);if(err.name==='AbortError')return;appendQuizMsg('tutor',resolveErr(err));return;}
+  try{raw=await safeLLM([{role:'user',content:quizPrompt}],quizSys,8192,signal);}
+  catch(err){
+    if(!isCurrentSession(sessionId,lang))return;
+    state.quizBusy=false;setQuizTyping(false);
+    if(err.name!=='AbortError')appendQuizMsg('tutor',resolveErr(err));
+    return;
+  }
+  if(!isCurrentSession(sessionId,lang)||signal.aborted)return;
+  state.quizBusy=false;state.quizNeedsQuestion=false;
   setQuizTyping(false);
   try{const p=JSON.parse(clean(raw));appendQuizMsg('tutor',p.question);state.quizHistory.push({role:'assistant-question',word:p.targetWord||word.word,content:p.question});}
   catch{const q=clean(raw);appendQuizMsg('tutor',q);state.quizHistory.push({role:'assistant-question',word:word.word,content:q});}
@@ -54,6 +84,7 @@ Respond ONLY with JSON: {"question":"<question in ${meta.name}; if the task requ
 export function quizKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();quizSend();}}
 
 export async function quizSend(){
+  if(state.quizBusy||state.quizNeedsQuestion||state.quizLang!==state.currentLang||!state.quizQueue.length)return;
   const t=state.t;
   const inp=document.getElementById('quiz-input');
   const txt=inp.value.trim();if(!txt)return;
@@ -63,8 +94,11 @@ export async function quizSend(){
   state.quizHistory.push({role:'user',content:txt});
   abortPending();
   state._abortCtrl=new AbortController();
+  const signal=state._abortCtrl.signal;
+  const sessionId=state.quizSessionId;
+  state.quizBusy=true;
   setQuizTyping(true);
-  const lang=document.getElementById('quiz-lang-select').value;
+  const lang=state.quizLang;
   const meta=LANG_META[lang];
   const last=state.quizHistory.filter(h=>h.role==='assistant-question').slice(-1)[0];
   const targetWord=last?.word||'';
@@ -75,8 +109,14 @@ Target word: "${targetWord}"
 Student answer: "${txt}"
 Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief feedback in ${getNativeLangName()}>"}`;
   let raw;
-  try{raw=await safeLLM([{role:'user',content:evalPrompt}],'',8192,state._abortCtrl.signal);}
-  catch(err){setQuizTyping(false);if(err.name==='AbortError'){document.getElementById('quiz-send-btn').disabled=false;return;}appendQuizMsg('tutor',resolveErr(err));document.getElementById('quiz-send-btn').disabled=false;return;}
+  try{raw=await safeLLM([{role:'user',content:evalPrompt}],'',8192,signal);}
+  catch(err){
+    if(!isCurrentSession(sessionId,lang))return;
+    state.quizBusy=false;setQuizTyping(false);
+    if(err.name!=='AbortError')appendQuizMsg('tutor',resolveErr(err));
+    return;
+  }
+  if(!isCurrentSession(sessionId,lang)||signal.aborted)return;
   setQuizTyping(false);
   try{
     const p=JSON.parse(clean(raw));
@@ -88,16 +128,24 @@ Evaluate and respond with JSON only: {"correct":true/false,"feedback":"<brief fe
     }else{
       state.quizQueue.push(state.quizQueue.shift());
     }
+    state.quizNeedsQuestion=state.quizQueue.length>0;
     if(!state.quizQueue.length){
-      setTimeout(()=>appendQuizMsg('tutor',t.quizDoneMsg),600);
+      appendQuizMsg('tutor',state.t.quizDoneMsg);
+      state.quizBusy=false;
     }else{
-      setTimeout(()=>quizAsk(lang),600);
+      document.getElementById('quiz-send-btn').disabled=true;
+      state.quizTimer=setTimeout(()=>{
+        if(!isCurrentSession(sessionId,lang))return;
+        state.quizTimer=null;state.quizBusy=false;
+        quizAsk(lang);
+      },600);
     }
-  }catch{appendQuizMsg('tutor',t.errGeneric+' '+clean(raw));}
-  document.getElementById('quiz-send-btn').disabled=false;
+  }catch{state.quizBusy=false;appendQuizMsg('tutor',t.errGeneric+' '+clean(raw));}
 }
 
 export function setQuizTyping(v){
+  document.getElementById('quiz-input').disabled=v;
+  document.getElementById('quiz-send-btn').disabled=v||!document.getElementById('quiz-input').value.trim();
   const r=document.getElementById('quiz-typing-row');r.style.display=v?'flex':'none';
   if(v){const l=document.getElementById('quiz-msg-list');l.scrollTop=l.scrollHeight;}
 }
@@ -109,3 +157,4 @@ export function appendQuizMsg(role,text){
   const b=document.createElement('div');b.className='bubble';b.innerHTML=renderMarkdown(text);
   wrap.appendChild(b);list.insertBefore(wrap,typingRow);list.scrollTop=list.scrollHeight;
 }
+

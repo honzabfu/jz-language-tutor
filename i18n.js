@@ -29,6 +29,7 @@ export const I18N={
     err401:'Neplatný API klíč (401). Zkontroluj Nastavení.',
     err429:'Překročen limit požadavků (429). Zkus to za chvíli.',
     err500:'Výpadek serveru poskytovatele. Zkus to za chvíli.',
+    errIncompleteReply:'⚠ Odpověď byla přerušena a není úplná.',
     errMaxTokens:'Model překročil limit tokenů — odpověď byla zkrácena. Zkus kratší dotaz.',
     errRefusal:'Model odmítl na tento požadavek odpovědět. Zkus ho přeformulovat.',
     errEmptyResponse:'Model vrátil prázdnou odpověď. Zkus to znovu.',
@@ -334,6 +335,7 @@ export const I18N={
     err401:'Invalid API key (401). Check Settings.',
     err429:'Rate limit exceeded (429). Try again in a moment.',
     err500:'Provider server error. Try again in a moment.',
+    errIncompleteReply:'⚠ The reply was interrupted and is incomplete.',
     errMaxTokens:'Model exceeded token limit — response was cut off. Try a shorter query.',
     errRefusal:'The model declined to respond to this request. Try rephrasing it.',
     errEmptyResponse:'The model returned an empty response. Please try again.',
@@ -639,6 +641,7 @@ export const I18N={
     err401:'Clave API no válida (401). Revisa los Ajustes.',
     err429:'Límite de solicitudes superado (429). Inténtalo de nuevo en un momento.',
     err500:'Error del servidor del proveedor. Inténtalo de nuevo en un momento.',
+    errIncompleteReply:'⚠ La respuesta se interrumpió y está incompleta.',
     errMaxTokens:'El modelo superó el límite de tokens — la respuesta fue cortada. Prueba con una consulta más corta.',
     errRefusal:'El modelo se negó a responder a esta solicitud. Intenta reformularla.',
     errEmptyResponse:'El modelo devolvió una respuesta vacía. Inténtalo de nuevo.',
@@ -916,3 +919,4 @@ export const I18N={
     backupReminderDisable:'No recordar'
   }
 };
+

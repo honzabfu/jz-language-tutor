@@ -1,4 +1,5 @@
-const CACHE = 'langtutor-v29';
+const CACHE_PREFIX = `langtutor:${self.registration.scope}:`;
+const CACHE = `${CACHE_PREFIX}v30`;
 const ASSETS = [
 './',
 './index.html',
@@ -33,7 +34,7 @@ caches.open(CACHE)
 self.addEventListener('activate', e => {
 e.waitUntil(
 caches.keys().then(keys =>
-Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+Promise.all(keys.filter(k => k.startsWith(CACHE_PREFIX) && k !== CACHE).map(k => caches.delete(k)))
 ).then(() => self.clients.claim())
 );
 });
@@ -77,3 +78,4 @@ return resp;
 }).catch(() => caches.match(e.request))
 );
 });
+

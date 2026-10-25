@@ -26,6 +26,16 @@ const _minReasoning=()=>cfg.fullReasoning?null:(MODELS_METADATA[cfg.provider]||[
 const _filterMsgs=msgs=>msgs.filter(m=>m.role==='user'||m.role==='assistant');
 const _withSys=(msgs,sys)=>sys?[{role:'system',content:sys},..._filterMsgs(msgs)]:_filterMsgs(msgs);
 
+function checkStreamError(data){
+  if(data.type==='error'||data.error){
+    const type=data.error?.type||data.error?.code;
+    if(type==='overloaded_error'||type==='api_error')throw new Error('ERR_500');
+    if(type==='rate_limit_error'||type==='rate_limit_exceeded')throw new Error('ERR_429');
+    const msg=typeof data.error==='string'?data.error:data.error?.message;
+    throw new Error(msg||'STREAM_ERROR');
+  }
+}
+
 // ── PROVIDER REGISTRY ──
 // request(...)  → {url, headers, body} (Content-Type doplní driver)
 // parse(d)      → text non-streaming odpovědi (hází MAX_TOKENS při truncation, REFUSAL při odmítnutí)
@@ -164,7 +174,9 @@ async function readSSE(response,onData){
     if(!line.startsWith('data: '))return false;
     const data=line.slice(6).trim();
     if(data==='[DONE]')return true;
-    try{onData(JSON.parse(data));}catch{}
+    let parsed;
+    try{parsed=JSON.parse(data);}catch{return false;}
+    onData(parsed);
     return false;
   };
   while(true){
@@ -186,7 +198,9 @@ async function readNDJSON(response,onData){
   let buf='';
   const handleLine=line=>{
     if(!line.trim())return false;
-    try{return !!onData(JSON.parse(line));}catch{return false;}
+    let parsed;
+    try{parsed=JSON.parse(line);}catch{return false;}
+    return !!onData(parsed);
   };
   while(true){
     const{done,value}=await reader.read();
@@ -226,11 +240,13 @@ export async function safeLLMStream(msgs,sys,maxTokens=1024,signal,onChunk){
   const res=await _fetchProvider(prov,msgs,sys,maxTokens,true,signal);
   let full='';
   const out={truncated:false,refused:false,done:false,text(t){onChunk(t);full+=t;}};
-  if(prov.sse)await readSSE(res,data=>prov.chunk(data,out));
-  else await readNDJSON(res,data=>{prov.chunk(data,out);return out.done;});
+  const onData=data=>{checkStreamError(data);prov.chunk(data,out);return out.done;};
+  if(prov.sse)await readSSE(res,onData);
+  else await readNDJSON(res,onData);
   if(out.refused)throw new Error('REFUSAL');
   if(out.truncated)throw new Error('MAX_TOKENS');
   // Prázdná odpověď by v chatu skončila prázdnou bublinou a prázdnou zprávou v historii
   if(!full)throw new Error('EMPTY_RESPONSE');
   return full;
 }
+

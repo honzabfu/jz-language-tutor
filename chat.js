@@ -112,7 +112,7 @@ export async function sendMessage(){
     // co nový sendMessage do historie přidal další zprávy
     const idx=state.chatHistory.indexOf(userMsg);
     if(streamingBubble&&displayedText){
-      streamingBubble.finalize(displayedText,null);
+      streamingBubble.finalize(displayedText+'\n\n'+t.errIncompleteReply,null);
       if(idx>=0)state.chatHistory.splice(idx+1,0,{role:'assistant',content:displayedText});
     }else if(idx>=0){
       state.chatHistory.splice(idx,1);
@@ -210,3 +210,4 @@ export function appendStreamingMsg(){
     }
   };
 }
+
