@@ -298,7 +298,10 @@ export async function dictLookup(){
     document.getElementById('dict-add-btn').style.display='';
   }catch(err){
     if(err.name==='AbortError')return;
-    resEl.innerHTML=`<div class="dict-msg" style="color:var(--err)">${resolveErr(err)}</div>`;
+    const msg=document.createElement('div');
+    msg.className='dict-msg';msg.style.color='var(--err)';
+    msg.textContent=resolveErr(err);
+    resEl.replaceChildren(msg);
   }
 }
 export function dictAddToVocab(){
@@ -391,3 +394,4 @@ export function confirmGenerateImport(){
 
 // Event listeners setup
 document.getElementById('import-text').addEventListener('input',previewImport);
+

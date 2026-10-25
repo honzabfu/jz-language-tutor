@@ -57,9 +57,6 @@ jobs:
           echo "branch=$SAFE" >> $GITHUB_OUTPUT
           echo "url=https://honzabfu.github.io/jz-language-tutor/preview/$SAFE/" >> $GITHUB_OUTPUT
 
-      - name: Patch SW cache key for preview
-        run: sed -i "s/langtutor-v[0-9]*/langtutor-preview-${{ steps.vars.outputs.branch }}/g" sw.js
-
       - name: Prepare deploy dir
         run: |
           mkdir -p /tmp/site
@@ -151,3 +148,4 @@ jobs:
           else
             echo "Preview directory not found, skipping"
           fi
+

@@ -43,6 +43,11 @@ export const state={
   quizHistory: [],
   quizQueue: [],
   quizCurrentWord: null,
+  quizLang: null,
+  quizSessionId: 0,
+  quizTimer: null,
+  quizBusy: false,
+  quizNeedsQuestion: false,
   currentLang: 'spanish',
   vocabLang: 'spanish',
   currentFbData: null,
@@ -72,3 +77,4 @@ Object.keys(DEFAULT_PROVIDER_SETTINGS).forEach(p=>{
 export function getLangLevel(lang){return state.langLevels[lang]||'beginner';}
 export function getNativeLangName(){const key=state.cfg.nativeLang||(UI_LANG_NATIVE_FALLBACK[state.cfg.uiLang]||'english');return LANG_META[key]?.name??'English';}
 export function getUiLocale(){return UI_LANG_LOCALE[state.cfg.uiLang]||'en-US';}
+
