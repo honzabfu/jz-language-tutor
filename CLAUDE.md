@@ -4,27 +4,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-PWA language tutor split into ES modules — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Current version: **v1.4.12**, PWA cache key: `langtutor:<service-worker-scope>:v30`.
+PWA language tutor split into ES modules — no build tool, no npm, no bundler. Deployed to GitHub Pages at `honzabfu.github.io/jz-language-tutor`. Version: footer of `index.html`; PWA cache key: `CACHE` in `sw.js` (`langtutor:<service-worker-scope>:vNN`).
 
-| File | Lines | Contents |
-|---|---|---|
-| `index.html` | ~624 | HTML structure only (views, overlays, nav) — no inline event handlers |
-| `style.css` | ~258 | All CSS |
-| `i18n.js` | ~909 | `I18N` object with `cs`, `en`, `es` locale strings (exported) |
-| `constants.js` | ~114 | MODELS_METADATA (incl. `minReasoning`), LANG_META, UI_LANGS, UI_LANG_*, esc(), uid(), safeAssign(), renderMarkdown() |
-| `state.js` | ~74 | Shared mutable `state` object; defaultCfg(), getLangLevel(), getNativeLangName(), getUiLocale() |
-| `dom.js` | ~26 | playWord(), syncLangSelectors(), setActiveLang(), autoResize() — breaks circular deps |
-| `llm.js` | ~252 | PROVIDERS registry, streaming, safeLLM(), safeLLMStream(), abortPending(), hasApiAccess(), supportsTemperature() |
-| `vocab.js` | ~393 | Vocab CRUD, newSM2(), CSV import/export (RFC 4180), dictionary, generate, renderVocabList() |
-| `tips.js` | ~119 | Saved tips CRUD, renderTipsList(), attachFeedbackCard() |
-| `updates.js` | ~244 | applyI18n(), updateModeBadge(), updateInputPlaceholder(), updateEmptyState(), updateApiKeyHint() |
-| `flashcard.js` | ~114 | sm2Update(), startFlashcards(), renderFC(), revealFC(), rateFC() |
-| `quiz.js` | ~160 | startQuiz(), quizAsk(), quizSend(), pauseQuiz(), resumeQuiz() |
-| `chat.js` | ~212 | sendMessage(), appendMsg(), makeReplyExtractor(), SSE streaming |
-| `settings.js` | ~543 | populateSettingsUI(), saveSettings(), export/import backup, cfg editor |
-| `nav.js` | ~22 | navTo() — also aborts any in-flight LLM call |
-| `app.js` | ~297 | Entry point: init(), addEventListener wiring, PWA install, SW registration |
-| `sw.js` | ~80 | Service worker (network-first with `cache:'no-cache'` revalidation, scope prefix + cache version) |
+| File | Contents |
+|---|---|
+| `index.html` | HTML structure only (views, overlays, nav) — no inline event handlers |
+| `style.css` | All CSS |
+| `i18n.js` | `I18N` object with `cs`, `en`, `es` locale strings (exported) |
+| `constants.js` | MODELS_METADATA (incl. `minReasoning`), LANG_META, UI_LANGS, UI_LANG_*, esc(), uid(), safeAssign(), renderMarkdown() |
+| `state.js` | Shared mutable `state` object; defaultCfg(), getLangLevel(), getNativeLangName(), getUiLocale() |
+| `dom.js` | playWord(), syncLangSelectors(), setActiveLang(), autoResize() — breaks circular deps |
+| `llm.js` | PROVIDERS registry, streaming, safeLLM(), safeLLMStream(), abortPending(), hasApiAccess(), supportsTemperature() |
+| `vocab.js` | Vocab CRUD, newSM2(), CSV import/export (RFC 4180), dictionary, generate, renderVocabList() |
+| `tips.js` | Saved tips CRUD, renderTipsList(), attachFeedbackCard() |
+| `updates.js` | applyI18n(), updateModeBadge(), updateInputPlaceholder(), updateEmptyState(), updateApiKeyHint() |
+| `flashcard.js` | sm2Update(), startFlashcards(), renderFC(), revealFC(), rateFC() |
+| `quiz.js` | startQuiz(), quizAsk(), quizSend(), pauseQuiz(), resumeQuiz() |
+| `chat.js` | sendMessage(), appendMsg(), makeReplyExtractor(), SSE streaming |
+| `settings.js` | populateSettingsUI(), saveSettings(), export/import backup, cfg editor |
+| `nav.js` | navTo() — also aborts any in-flight LLM call |
+| `app.js` | Entry point: init(), addEventListener wiring, PWA install, SW registration |
+| `sw.js` | Service worker (network-first with `cache:'no-cache'` revalidation, scope prefix + cache version) |
 
 ## Development
 
@@ -127,13 +127,7 @@ API keys are sent in headers, never in URLs (Gemini: `x-goog-api-key`). Anthropi
 
 ### Model list review
 
-Model IDs, prices and recommendations go stale — review roughly **quarterly**. **Last reviewed: 2026-10-07** (keep this date and the comment above `MODELS_METADATA` in `constants.js` in sync).
-
-1. **Check official sources** (not aggregators): Anthropic models overview, OpenAI `developers.openai.com/api/docs/models` (+ per-model pages for Chat Completions support and reasoning effort levels), Gemini `ai.google.dev/gemini-api/docs/models` + `/pricing` + `/thinking`, `ollama.com/library`. Also look for deprecations of sampling/thinking parameters (cf. #166).
-2. **Update `MODELS_METADATA`**: IDs, `costEstimate` (USD per 1M tokens), `recommended`, `minReasoning` (lowest level each model accepts; omit if the model doesn't reason without a parameter). Order matters — the first entry is the default model for new users, so keep the cheapest recommended model first. Drop models the provider no longer recommends for new projects (saved user selections stay available via `rebuildModelList`).
-3. **Update texts**: `modelHint*` in all locales of `i18n.js`; README pricing example and the "more expensive alternatives" sentence (cs + en).
-4. **Live test**: `node tools/live-models-test.mjs <backup.json> [provider…]` — keys are read from an app backup export, never commit it. Every call must pass (sync + stream, minimal + full reasoning); also eyeball the translations — a model that answers wrongly/incompletely should not be `recommended`.
-5. Bump version + SW cache key, update the review date here and in `constants.js`.
+Model IDs, prices and recommendations go stale — review roughly **quarterly**. The date of the last review lives in one place, the comment at the top of `constants.js` — update it with each review. The steps (sources, `MODELS_METADATA`, texts, live test, version bump) are in `tools/MAINTENANCE.md` — read it before a review.
 
 ### I18N (`i18n.js`, `updates.js`)
 
@@ -141,15 +135,7 @@ Locales — `cs`, `en`, `es` — in the exported `I18N` object (`i18n.js`). The 
 
 When adding a new translatable string: add the key to **all** locales in `i18n.js`, update `applyI18n()` in `updates.js` to wire the element.
 
-#### Adding a new UI language — checklist
-
-1. **`i18n.js`** — add a new locale object (copy `en`, translate all ~150 keys). Pay attention to arrow-function keys with pluralization (`fcDoneDesc`, `fcPendingFn`, `bulkCountFn`, `alertImportDoneFn`, `confirmDeleteLearnedFn`, `confirmDeleteSelectedFn`, `sm2DaysFn`).
-2. **`constants.js`** — add `{code:'xx', flag:'🏳️', label:'Language name'}` to `UI_LANGS`.
-3. **`state.js`** — in `defaultCfg()` extend the `uiLang` auto-detection chain: `navigator.language.startsWith('xx')?'xx':…`
-4. **`constants.js` `UI_LANG_NATIVE_FALLBACK`** — add `xx: 'languagename'` (key into `LANG_META`).
-5. **`constants.js` `UI_LANG_LOCALE`** — add `xx: 'xx-XX'` (BCP 47 locale tag for `toLocaleDateString`).
-
-No changes needed in `applyI18n()`, `getUiLocale()`, or `getNativeLangName()` — they are locale-agnostic.
+Adding a new UI language: follow the checklist in `tools/MAINTENANCE.md`.
 
 ### Advanced settings / cfg editor
 
@@ -179,52 +165,9 @@ Six bottom-nav views: `#chat-view`, `#vocab-view`, `#fc-view`, `#quiz-view`, `#t
 
 `fcDirection` ∈ `{'normal', 'reverse'}` — defaults to `'reverse'` (Native→Foreign). In `renderFC()`, `_rev = fcDirection === 'reverse'` flips which field is `_front` / `_back`. The speak button always uses `w.word` (target language) regardless of direction.
 
-## Module dependency graph
+## Module dependencies
 
-```
-index.html
-  └── app.js (entry point — init, addEventListener wiring, PWA, SW)
-        ├── i18n.js        (I18N locale data)
-        ├── state.js       (shared state object)
-        │     └── constants.js
-        ├── updates.js     (applyI18n, updateModeBadge, …)
-        │     ├── state.js
-        │     ├── constants.js
-        │     └── vocab.js
-        ├── nav.js         (navTo)
-        │     ├── state.js, vocab.js, flashcard.js
-        │     ├── quiz.js, settings.js, tips.js, updates.js
-        ├── settings.js    (populateSettingsUI, saveSettings, backup)
-        │     ├── state.js, constants.js, i18n.js
-        │     ├── updates.js, vocab.js, tips.js, dom.js, llm.js
-        ├── vocab.js       (CRUD, SM-2 init, render, dict, generate)
-        │     ├── state.js, constants.js, dom.js, llm.js
-        ├── flashcard.js   (sm2Update, startFlashcards, renderFC, …)
-        │     ├── state.js, constants.js, vocab.js, dom.js
-        ├── quiz.js        (startQuiz, quizSend, …)
-        │     ├── state.js, constants.js, llm.js, vocab.js, dom.js
-        ├── chat.js        (sendMessage, appendMsg, …)
-        │     ├── state.js, constants.js, llm.js, vocab.js
-        │     ├── dom.js, tips.js, updates.js
-        ├── tips.js        (CRUD, renderTipsList, attachFeedbackCard)
-        │     ├── state.js, constants.js
-        ├── llm.js         (safeLLM, safeLLMStream, PROVIDERS registry, hasApiAccess, supportsTemperature)
-        │     ├── state.js, constants.js
-        └── dom.js         (playWord, syncLangSelectors, setActiveLang, autoResize)
-              └── state.js, constants.js
-```
-
-### `app.js` structure (entry point, ~294 lines)
-
-| Section | Approx. line |
-|---|---|
-| Imports | 1 |
-| window.* globals (navTo, startFlashcards, revealFC, rateFC) | ~37 |
-| populateLangSelects() | ~43 |
-| init() IIFE | ~48 |
-| addEventListener wiring (all views + overlays) | ~86 |
-| PWA install prompt | ~256 |
-| Service Worker registration | ~288 |
+The dependencies are the `import`s of each module — read them from the code. `app.js` is the only entry point (init, `addEventListener` wiring, PWA, service worker); `state.js` and `constants.js` sit at the bottom; `dom.js` exists to break circular imports.
 
 ## Conventions
 
